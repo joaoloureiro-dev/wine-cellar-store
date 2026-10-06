@@ -55,7 +55,6 @@ export const products: WineCellarProduct[] = [
 
         images: [
             "/images/products/classic-24/front.webp",
-            "/images/products/classic-24/interior.webp",
         ],
 
         seo: {
@@ -126,7 +125,6 @@ export const products: WineCellarProduct[] = [
 
         images: [
             "/images/products/dual-zone-45/front.webp",
-            "/images/products/dual-zone-45/interior.webp",
         ],
 
         seo: {
@@ -195,7 +193,6 @@ export const products: WineCellarProduct[] = [
 
         images: [
             "/images/products/collection-109/front.webp",
-            "/images/products/collection-109/interior.webp",
         ],
 
         seo: {
