@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { CalendarClock, Layers, ShoppingBag, Thermometer, Wine } from "lucide-react";
+import { CalendarClock, Layers, Thermometer, Wine } from "lucide-react";
 
+import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
+import { getMaxPurchasableQuantity } from "@/lib/cart/availability";
 import {
     getDiscountPercentage,
     getTemperatureLabel,
@@ -19,8 +21,6 @@ type ProductPurchasePanelProps = {
 export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
     const discount = getDiscountPercentage(product);
     const temperature = getTemperatureLabel(product.temperatureRanges);
-    const canBuy =
-        product.stockStatus === "in_stock" || product.stockStatus === "low_stock";
 
     const keySpecs = [
         { label: "Capacidade", value: `${product.capacity} garrafas`, icon: Wine },
@@ -94,35 +94,32 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                     <StockBadge status={product.stockStatus} />
                 </div>
 
-                {/*
-                  Cart and reservations are implemented in the next stages.
-                  The buttons are rendered disabled (not hidden) so the final
-                  layout is already in place.
-                */}
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <button
-                        type="button"
-                        disabled
-                        aria-describedby="purchase-availability-note"
-                        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-wine"
-                    >
-                        <ShoppingBag size={18} strokeWidth={1.8} aria-hidden="true" />
-                        {canBuy ? "Adicionar ao carrinho" : "Indisponível"}
-                    </button>
+                <div className="mt-6 space-y-3">
+                    <AddToCartForm
+                        productId={product.id}
+                        productName={product.name}
+                        maxQuantity={getMaxPurchasableQuantity(product)}
+                        unavailableLabel={
+                            product.stockStatus === "preorder"
+                                ? "Disponível por reserva"
+                                : "Esgotado"
+                        }
+                    />
 
+                    {/* Reservations are implemented in the next stage. */}
                     <button
                         type="button"
                         disabled
-                        aria-describedby="purchase-availability-note"
-                        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-charcoal px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent"
+                        aria-describedby="reservation-availability-note"
+                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-charcoal px-5 text-sm font-semibold text-charcoal disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <CalendarClock size={18} strokeWidth={1.8} aria-hidden="true" />
                         Reservar
                     </button>
                 </div>
 
-                <p id="purchase-availability-note" className="mt-3 text-xs text-muted">
-                    Compra online e reservas disponíveis brevemente.
+                <p id="reservation-availability-note" className="mt-3 text-xs text-muted">
+                    Reservas disponíveis brevemente.
                 </p>
             </div>
         </div>
