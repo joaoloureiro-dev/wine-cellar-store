@@ -116,3 +116,8 @@ video {
   background: var(--wine);
   color: #ffffff;
 }
+
+/* Prevent the page behind an open modal (e.g. the mobile menu) from scrolling. */
+html:has(dialog[open]:modal) {
+  overflow: hidden;
+}

@@ -9,7 +9,7 @@ import {
     UserRound,
     X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
 import { siteConfig } from "@/lib/site";
@@ -33,12 +33,41 @@ const navigation = [
     },
 ];
 
+// Must match the `lg` breakpoint where the desktop navigation takes over.
+const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)";
+
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDialogElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+    function openMenu() {
+        menuRef.current?.showModal();
+        closeButtonRef.current?.focus();
+        setIsMenuOpen(true);
+    }
 
     function closeMenu() {
-        setIsMenuOpen(false);
+        // Triggers the dialog's `close` event, which resets state and
+        // returns focus to the menu button.
+        menuRef.current?.close();
     }
+
+    // The mobile menu is hidden from `lg` up, so close it when the viewport
+    // grows; otherwise the modal would keep the page inert while invisible.
+    useEffect(() => {
+        const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+
+        function handleChange(event: MediaQueryListEvent) {
+            if (event.matches) {
+                menuRef.current?.close();
+            }
+        }
+
+        mediaQuery.addEventListener("change", handleChange);
+
+        return () => mediaQuery.removeEventListener("change", handleChange);
+    }, []);
 
     return (
         <header className="border-b border-border bg-surface">
@@ -115,7 +144,7 @@ export function Header() {
                             aria-label="Abrir menu"
                             aria-expanded={isMenuOpen}
                             aria-controls="mobile-navigation"
-                            onClick={() => setIsMenuOpen(true)}
+                            onClick={openMenu}
                             className="ml-1 inline-flex rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted lg:hidden"
                         >
                             <Menu size={23} strokeWidth={1.8} />
@@ -124,87 +153,94 @@ export function Header() {
                 </div>
             </Container>
 
-            {isMenuOpen && (
-                <div
-                    id="mobile-navigation"
-                    className="fixed inset-0 z-50 bg-surface lg:hidden"
-                >
-                    <Container className="flex min-h-screen flex-col">
-                        <div className="flex h-20 items-center justify-between border-b border-border">
+            {/*
+              Native modal dialog: Escape closes it, focus stays inside while
+              open and the rest of the page becomes inert. No display utility
+              on the element itself, so the closed dialog stays hidden.
+            */}
+            <dialog
+                ref={menuRef}
+                id="mobile-navigation"
+                aria-label="Menu"
+                onClose={() => setIsMenuOpen(false)}
+                className="fixed inset-0 m-0 size-full max-h-none max-w-none overflow-y-auto bg-surface p-0 text-foreground lg:hidden"
+            >
+                <Container className="flex min-h-screen flex-col">
+                    <div className="flex h-20 items-center justify-between border-b border-border">
+                        <Link
+                            href="/"
+                            onClick={closeMenu}
+                            className="font-display text-2xl font-semibold tracking-[-0.03em] text-charcoal"
+                        >
+                            {siteConfig.name}
+                        </Link>
+
+                        <button
+                            ref={closeButtonRef}
+                            type="button"
+                            aria-label="Fechar menu"
+                            onClick={closeMenu}
+                            className="rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted"
+                        >
+                            <X size={24} strokeWidth={1.8} />
+                        </button>
+                    </div>
+
+                    <nav
+                        className="flex flex-1 flex-col py-8"
+                        aria-label="Navegação mobile"
+                    >
+                        {navigation.map((item) => (
                             <Link
-                                href="/"
+                                key={item.href}
+                                href={item.href}
                                 onClick={closeMenu}
-                                className="font-display text-2xl font-semibold tracking-[-0.03em] text-charcoal"
+                                className="border-b border-border py-5 font-display text-3xl font-medium text-charcoal transition-colors hover:text-wine"
                             >
-                                {siteConfig.name}
+                                {item.label}
+                            </Link>
+                        ))}
+
+                        <div className="mt-8 grid grid-cols-2 gap-3">
+                            <Link
+                                href="/pesquisa"
+                                onClick={closeMenu}
+                                className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
+                            >
+                                <Search size={19} strokeWidth={1.8} />
+                                Pesquisar
                             </Link>
 
-                            <button
-                                type="button"
-                                aria-label="Fechar menu"
+                            <Link
+                                href="/conta"
                                 onClick={closeMenu}
-                                className="rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted"
+                                className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
                             >
-                                <X size={24} strokeWidth={1.8} />
-                            </button>
+                                <UserRound size={19} strokeWidth={1.8} />
+                                Conta
+                            </Link>
+
+                            <Link
+                                href="/favoritos"
+                                onClick={closeMenu}
+                                className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
+                            >
+                                <Heart size={19} strokeWidth={1.8} />
+                                Favoritos
+                            </Link>
+
+                            <Link
+                                href="/carrinho"
+                                onClick={closeMenu}
+                                className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
+                            >
+                                <ShoppingBag size={19} strokeWidth={1.8} />
+                                Carrinho
+                            </Link>
                         </div>
-
-                        <nav
-                            className="flex flex-1 flex-col py-8"
-                            aria-label="Navegação mobile"
-                        >
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={closeMenu}
-                                    className="border-b border-border py-5 font-display text-3xl font-medium text-charcoal transition-colors hover:text-wine"
-                                >
-                                    {item.label}
-                                </Link>
-                            ))}
-
-                            <div className="mt-8 grid grid-cols-2 gap-3">
-                                <Link
-                                    href="/pesquisa"
-                                    onClick={closeMenu}
-                                    className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
-                                >
-                                    <Search size={19} strokeWidth={1.8} />
-                                    Pesquisar
-                                </Link>
-
-                                <Link
-                                    href="/conta"
-                                    onClick={closeMenu}
-                                    className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
-                                >
-                                    <UserRound size={19} strokeWidth={1.8} />
-                                    Conta
-                                </Link>
-
-                                <Link
-                                    href="/favoritos"
-                                    onClick={closeMenu}
-                                    className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
-                                >
-                                    <Heart size={19} strokeWidth={1.8} />
-                                    Favoritos
-                                </Link>
-
-                                <Link
-                                    href="/carrinho"
-                                    onClick={closeMenu}
-                                    className="flex items-center gap-3 rounded-md border border-border bg-surface px-4 py-4 text-sm font-semibold text-charcoal"
-                                >
-                                    <ShoppingBag size={19} strokeWidth={1.8} />
-                                    Carrinho
-                                </Link>
-                            </div>
-                        </nav>
-                    </Container>
-                </div>
-            )}
+                    </nav>
+                </Container>
+            </dialog>
         </header>
     );
 }
