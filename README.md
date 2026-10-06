@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cellarium — Wine Cellar Store
 
-## Getting Started
+Premium e-commerce platform for wine cellars, built with Next.js 16, React 19,
+TypeScript, Tailwind CSS v4, PostgreSQL and Prisma ORM.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20+
+- PostgreSQL 16 (local via Docker Compose, or any reachable instance)
+
+## Local development
 
 ```bash
+# 1. Install dependencies (also generates the Prisma Client)
+npm install
+
+# 2. Configure environment variables
+cp .env.example .env
+
+# 3. Start PostgreSQL
+docker compose up -d
+
+# 4. Apply migrations and load the sample catalogue
+npm run db:deploy
+npm run db:seed
+
+# 5. Start the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> `npm run build` also needs a reachable database: catalogue pages are
+> statically generated from PostgreSQL at build time.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Script               | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| `npm run dev`        | Start the development server                        |
+| `npm run build`      | Production build                                    |
+| `npm run lint`       | ESLint                                              |
+| `npm run typecheck`  | Generate route types and run TypeScript             |
+| `npm run db:migrate` | Create and apply a migration in development         |
+| `npm run db:deploy`  | Apply pending migrations (CI / production)          |
+| `npm run db:seed`    | Load the sample catalogue (idempotent)              |
+| `npm run db:studio`  | Open Prisma Studio                                  |
 
-To learn more about Next.js, take a look at the following resources:
+Run `npm run db:generate` after changing `prisma/schema.prisma`
+(`prisma migrate dev` does not regenerate the client in Prisma 7).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Path          | Responsibility                                            |
+| ------------- | --------------------------------------------------------- |
+| `app/`        | Routes, pages and layouts                                 |
+| `components/` | UI components                                             |
+| `lib/`        | Application logic, data access, validation and helpers    |
+| `types/`      | Domain types used by the UI                               |
+| `prisma/`     | Schema, migrations and seed data                          |
 
-## Deploy on Vercel
+## Conventions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- One coherent feature or update per commit, in English, following
+  [Conventional Commits](https://www.conventionalcommits.org/).
+- Before committing: `npm run lint`, `npm run typecheck` and `npm run build`.
