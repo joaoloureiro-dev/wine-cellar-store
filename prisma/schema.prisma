@@ -75,6 +75,7 @@ model Product {
 
   temperatureZones ProductTemperatureZone[]
   images           ProductImage[]
+  reservations     Reservation[]
 
   // Homepage featured products.
   @@index([active, featured])
@@ -109,4 +110,67 @@ model ProductImage {
   position  Int
 
   @@unique([productId, position])
+}
+
+// ─── Reservations ───────────────────────────────────────────────────────────
+//
+// A reservation is its own domain entity (not a flag on an order): it has a
+// lifecycle, a price snapshot and an append-only event log for auditing.
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  AWAITING_PAYMENT
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+enum ReservationActor {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+}
+
+model Reservation {
+  id               String             @id @default(cuid())
+  /// Public, unguessable reference shown to the customer (e.g. RSV-7K3P9QXM).
+  reference        String             @unique
+  status           ReservationStatus  @default(PENDING)
+  productId        String
+  product          Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity         Int
+  /// Unit price at the moment of the reservation.
+  unitPriceCents   Int
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  customerNotes    String?
+  internalNotes    String?
+  privacyConsentAt DateTime
+  /// Reservation deadline; set when confirmed (EXPIRED after this date).
+  expiresAt        DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  events           ReservationEvent[]
+
+  // Backoffice lists by status, newest first.
+  @@index([status, createdAt])
+  // Customer lookups and per-email abuse limits.
+  @@index([customerEmail, createdAt])
+  // Duplicate detection and per-product reservation counts.
+  @@index([productId, status])
+}
+
+model ReservationEvent {
+  id            String             @id @default(cuid())
+  reservationId String
+  reservation   Reservation        @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  fromStatus    ReservationStatus?
+  toStatus      ReservationStatus
+  actor         ReservationActor
+  note          String?
+  createdAt     DateTime           @default(now())
+
+  @@index([reservationId, createdAt])
 }

@@ -11,7 +11,7 @@ import {
     getZonesLabel,
     installationTypeLabels,
 } from "@/lib/product-display";
-import { getBrandHref } from "@/lib/routes";
+import { getBrandHref, getProductHref } from "@/lib/routes";
 import type { WineCellarProduct } from "@/types/product";
 
 type ProductPurchasePanelProps = {
@@ -106,20 +106,17 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                         }
                     />
 
-                    {/* Reservations are implemented in the next stage. */}
-                    <button
-                        type="button"
-                        disabled
-                        aria-describedby="reservation-availability-note"
-                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-charcoal px-5 text-sm font-semibold text-charcoal disabled:cursor-not-allowed disabled:opacity-60"
+                    <Link
+                        href={`${getProductHref(product)}/reservar`}
+                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-charcoal px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                     >
                         <CalendarClock size={18} strokeWidth={1.8} aria-hidden="true" />
                         Reservar
-                    </button>
+                    </Link>
                 </div>
 
-                <p id="reservation-availability-note" className="mt-3 text-xs text-muted">
-                    Reservas disponíveis brevemente.
+                <p className="mt-3 text-xs text-muted">
+                    Reserve sem pagamento imediato. Confirmamos a disponibilidade consigo.
                 </p>
             </div>
         </div>
