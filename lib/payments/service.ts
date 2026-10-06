@@ -231,27 +231,40 @@ async function processOnce(
             }
 
             const outcome = await handler(tx);
+            // Only final outcomes close the event. A rejected delivery (wrong
+            // amount, unknown payment) is kept for auditing but must never
+            // block a later, legitimate delivery with the same id.
+            const isFinal = outcome === "paid" || outcome === "failed" || outcome === "ignored";
+            const result = {
+                payload: sanitizeForAudit(event.payload),
+                processedAt: isFinal ? new Date() : null,
+                error: isFinal ? null : outcome,
+            };
 
             await tx.webhookDelivery.upsert({
                 where: {
                     provider_externalId: { provider: event.provider, externalId: event.externalId },
                 },
-                create: {
-                    provider: event.provider,
-                    externalId: event.externalId,
-                    payload: sanitizeForAudit(event.payload),
-                    processedAt: new Date(),
-                    error: outcome === "paid" || outcome === "failed" ? null : outcome,
-                },
-                update: { processedAt: new Date(), error: null },
+                create: { provider: event.provider, externalId: event.externalId, ...result },
+                update: result,
             });
 
             return outcome;
         });
     } catch (error) {
-        // A concurrent delivery of the same event won the race.
+        // A concurrent delivery of the same event may have won the race.
+        // Any other conflict is rethrown so the provider retries and it is logged.
         if (isUniqueViolation(error)) {
-            return "duplicate";
+            const delivery = await db.webhookDelivery.findUnique({
+                where: {
+                    provider_externalId: { provider: event.provider, externalId: event.externalId },
+                },
+                select: { processedAt: true },
+            });
+
+            if (delivery?.processedAt) {
+                return "duplicate";
+            }
         }
 
         throw error;
@@ -451,4 +464,17 @@ export async function getOrderPaymentView(orderReference: string) {
             ? { ...payment, status: isPendingExpired ? ("EXPIRED" as const) : payment.status }
             : null,
     };
+}
+
+/** Used by webhooks to decide how to double-check a provider notification. */
+export async function getPaymentMethodByReference(
+    provider: PaymentProvider,
+    providerReference: string,
+) {
+    const payment = await db.payment.findUnique({
+        where: { provider_providerReference: { provider, providerReference } },
+        select: { method: true },
+    });
+
+    return payment?.method ?? null;
 }
