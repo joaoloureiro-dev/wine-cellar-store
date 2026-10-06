@@ -161,10 +161,67 @@ export async function placeOrder(input: CheckoutInput, lines: CartLine[]) {
     throw new Error("Could not generate a unique order reference.");
 }
 
+type OrderActor = "CUSTOMER" | "ADMIN" | "SYSTEM";
+
 /**
- * Moves an order to a new status with a compare-and-set update, releasing
- * the stock hold when the order is cancelled or expires.
+ * Applies a status transition inside an existing transaction: lifecycle
+ * check, compare-and-set update, stock release (cancel/expire) and audit
+ * event. Lets other domains (payments) change an order atomically with
+ * their own writes.
  */
+export async function applyOrderTransition(
+    tx: Prisma.TransactionClient,
+    {
+        orderId,
+        to,
+        actor,
+        note,
+    }: { orderId: string; to: OrderStatus; actor: OrderActor; note?: string },
+) {
+    const order = await tx.order.findUnique({
+        where: { id: orderId },
+        select: {
+            id: true,
+            status: true,
+            items: { select: { productId: true, quantity: true } },
+        },
+    });
+
+    if (!order) {
+        throw new OrderError("NOT_FOUND", "Encomenda não encontrada.");
+    }
+
+    if (!canTransitionOrder(order.status, to)) {
+        throw new OrderError(
+            "INVALID_TRANSITION",
+            `Não é possível passar de ${order.status} para ${to}.`,
+        );
+    }
+
+    const { count } = await tx.order.updateMany({
+        where: { id: order.id, status: order.status },
+        data: { status: to },
+    });
+
+    if (count === 0) {
+        throw new OrderError(
+            "CONFLICT",
+            "A encomenda foi alterada entretanto. Atualize e tente novamente.",
+        );
+    }
+
+    if (releasesStock(to)) {
+        for (const item of order.items) {
+            await releaseStock(tx, item.productId, item.quantity);
+        }
+    }
+
+    await tx.orderEvent.create({
+        data: { orderId: order.id, fromStatus: order.status, toStatus: to, actor, note },
+    });
+}
+
+/** Moves an order to a new status in its own transaction. */
 export async function transitionOrderStatus({
     reference,
     to,
@@ -173,51 +230,17 @@ export async function transitionOrderStatus({
 }: {
     reference: string;
     to: OrderStatus;
-    actor: "CUSTOMER" | "ADMIN" | "SYSTEM";
+    actor: OrderActor;
     note?: string;
 }) {
     return db.$transaction(async (tx) => {
-        const order = await tx.order.findUnique({
-            where: { reference },
-            select: {
-                id: true,
-                status: true,
-                items: { select: { productId: true, quantity: true } },
-            },
-        });
+        const order = await tx.order.findUnique({ where: { reference }, select: { id: true } });
 
         if (!order) {
             throw new OrderError("NOT_FOUND", "Encomenda não encontrada.");
         }
 
-        if (!canTransitionOrder(order.status, to)) {
-            throw new OrderError(
-                "INVALID_TRANSITION",
-                `Não é possível passar de ${order.status} para ${to}.`,
-            );
-        }
-
-        const { count } = await tx.order.updateMany({
-            where: { id: order.id, status: order.status },
-            data: { status: to },
-        });
-
-        if (count === 0) {
-            throw new OrderError(
-                "CONFLICT",
-                "A encomenda foi alterada entretanto. Atualize e tente novamente.",
-            );
-        }
-
-        if (releasesStock(to)) {
-            for (const item of order.items) {
-                await releaseStock(tx, item.productId, item.quantity);
-            }
-        }
-
-        await tx.orderEvent.create({
-            data: { orderId: order.id, fromStatus: order.status, toStatus: to, actor, note },
-        });
+        await applyOrderTransition(tx, { orderId: order.id, to, actor, note });
     });
 }
 

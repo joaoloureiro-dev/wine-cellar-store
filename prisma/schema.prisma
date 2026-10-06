@@ -197,6 +197,7 @@ enum PaymentMethod {
   MBWAY
   MULTIBANCO
   BANK_TRANSFER
+  KLARNA
 }
 
 enum OrderActor {
@@ -237,6 +238,7 @@ model Order {
   updatedAt          DateTime      @updatedAt
   items              OrderItem[]
   events             OrderEvent[]
+  payments           Payment[]
 
   // Backoffice lists by status, newest first; expiry job (AWAITING_PAYMENT).
   @@index([status, createdAt])
@@ -271,4 +273,85 @@ model OrderEvent {
   createdAt  DateTime     @default(now())
 
   @@index([orderId, createdAt])
+}
+
+// ─── Payments ───────────────────────────────────────────────────────────────
+//
+// A payment is never considered complete because the browser said so: only a
+// verified provider webhook (or a server-side status check) can mark it PAID.
+// An order can have several payment attempts (e.g. an expired MB WAY request
+// followed by a new one); at most one is ever PAID.
+
+enum PaymentProvider {
+  IFTHENPAY
+  EUPAGO
+  STRIPE
+  /// Bank transfer reconciled manually by the store.
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  orderId           String
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  provider          PaymentProvider
+  method            PaymentMethod
+  status            PaymentStatus   @default(PENDING)
+  amountCents       Int
+  currency          String          @default("EUR")
+  /// Provider transaction id (ifthenpay RequestId, eupago transactionID or
+  /// trid, Stripe Checkout Session id).
+  providerReference String?
+  mbEntity          String?
+  mbReference       String?
+  /// Hosted payment page (Klarna via Stripe Checkout).
+  checkoutUrl       String?
+  failureReason     String?
+  expiresAt         DateTime?
+  paidAt            DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  events            PaymentEvent[]
+
+  @@unique([provider, providerReference])
+  // Latest attempts of an order; expiry job.
+  @@index([orderId, createdAt])
+  @@index([status, expiresAt])
+}
+
+/// Append-only audit log of everything that happened to a payment.
+model PaymentEvent {
+  id        String   @id @default(cuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  type      String
+  message   String?
+  /// Sanitised provider data (never secrets or full card data).
+  data      Json?
+  createdAt DateTime @default(now())
+
+  @@index([paymentId, createdAt])
+}
+
+/// Every webhook delivery, for idempotency (each provider event is processed
+/// once even if delivered many times) and auditing.
+model WebhookDelivery {
+  id          String          @id @default(cuid())
+  provider    PaymentProvider
+  /// Provider event id (Stripe event id, eupago trid, ifthenpay RequestId).
+  externalId  String
+  payload     Json
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime        @default(now())
+
+  @@unique([provider, externalId])
 }
