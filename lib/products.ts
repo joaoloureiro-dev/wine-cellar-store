@@ -1,4 +1,6 @@
 import { products } from "@/data/products";
+import { filterAndSortProducts } from "@/lib/catalog/filter";
+import type { CatalogQuery } from "@/lib/catalog/query";
 import { getBrandSlug } from "@/lib/routes";
 import type { WineCellarProduct } from "@/types/product";
 
@@ -58,4 +60,24 @@ export async function getProductCountByBrand(): Promise<Map<string, number>> {
     }
 
     return counts;
+}
+
+export async function getCatalogProducts(
+    query: CatalogQuery,
+): Promise<WineCellarProduct[]> {
+    const activeProducts = await getActiveProducts();
+
+    return filterAndSortProducts(activeProducts, query);
+}
+
+/** Energy classes present in the active catalogue, best first. */
+export async function getAvailableEnergyClasses(): Promise<string[]> {
+    const activeProducts = await getActiveProducts();
+    const classes = new Set(
+        activeProducts.flatMap((product) =>
+            product.energyClass ? [product.energyClass] : [],
+        ),
+    );
+
+    return [...classes].sort();
 }
