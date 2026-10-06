@@ -50,3 +50,7 @@ export function getProductImageAlt(
 ) {
     return `Cave de vinho ${product.brand} ${product.name} para ${product.capacity} garrafas`;
 }
+
+export function getProductCountLabel(count: number) {
+    return count === 1 ? "1 modelo" : `${count} modelos`;
+}
