@@ -54,3 +54,54 @@ export function getProductImageAlt(
 export function getProductCountLabel(count: number) {
     return count === 1 ? "1 modelo" : `${count} modelos`;
 }
+
+export function formatTemperatureRange(range: TemperatureRange) {
+    return `${range.min}–${range.max} °C`;
+}
+
+export function formatDimensions(dimensions: WineCellarProduct["dimensions"]) {
+    return `${dimensions.width} × ${dimensions.height} × ${dimensions.depth} cm`;
+}
+
+export function formatYesNo(value: boolean) {
+    return value ? "Sim" : "Não";
+}
+
+/** Short, customer-facing highlights derived from the technical data. */
+export function getProductHighlights(product: WineCellarProduct) {
+    const highlights: string[] = [];
+
+    if (product.zones > 1) {
+        highlights.push(
+            `${product.zones} zonas com temperatura independente (${product.temperatureRanges
+                .map(formatTemperatureRange)
+                .join(" e ")})`,
+        );
+    } else if (product.temperatureRanges[0]) {
+        highlights.push(
+            `Temperatura regulável entre ${formatTemperatureRange(product.temperatureRanges[0])}`,
+        );
+    }
+
+    if (product.uvProtectedGlass) {
+        highlights.push("Porta de vidro com proteção UV");
+    }
+
+    if (product.ledLighting) {
+        highlights.push("Iluminação interior LED");
+    }
+
+    if (product.lock) {
+        highlights.push("Fechadura de segurança");
+    }
+
+    if (product.reversibleDoor) {
+        highlights.push("Porta reversível");
+    }
+
+    if (product.noiseLevel !== undefined) {
+        highlights.push(`Funcionamento silencioso (${product.noiseLevel} dB)`);
+    }
+
+    return highlights;
+}
