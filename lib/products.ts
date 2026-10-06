@@ -1,95 +1,177 @@
-import { products } from "@/data/products";
-import { filterAndSortProducts } from "@/lib/catalog/filter";
+import "server-only";
+
+import { cache } from "react";
+
+import {
+    InstallationType,
+    StockStatus,
+    type Prisma,
+} from "@/generated/prisma/client";
+import {
+    buildCatalogOrderBy,
+    buildCatalogWhere,
+    defaultProductOrder,
+} from "@/lib/catalog/prisma-query";
 import type { CatalogQuery } from "@/lib/catalog/query";
-import { getBrandSlug } from "@/lib/routes";
-import type { WineCellarProduct } from "@/types/product";
+import { db } from "@/lib/db";
+import type {
+    InstallationType as DomainInstallationType,
+    StockStatus as DomainStockStatus,
+    TemperatureZoneCount,
+    WineCellarProduct,
+} from "@/types/product";
 
 /**
- * Product data access layer.
+ * Product data access layer (PostgreSQL via Prisma).
  *
- * UI components must read products through these functions only, so the
- * mock data source can later be swapped for PostgreSQL/Prisma without
- * changing any component. Functions are async to match that future contract.
+ * UI components only receive the WineCellarProduct domain type; database
+ * details (cents, millimetres, enums, relations) never leak past this file.
  */
 
-/**
- * Default catalogue order: featured products first, then by capacity.
- * User-selectable sorting is introduced with filters & sorting.
- */
-function compareByDefaultOrder(a: WineCellarProduct, b: WineCellarProduct) {
-    if (a.featured !== b.featured) {
-        return a.featured ? -1 : 1;
-    }
+const productInclude = {
+    brand: { select: { name: true, slug: true } },
+    temperatureZones: { orderBy: { position: "asc" } },
+    images: { orderBy: { position: "asc" } },
+} satisfies Prisma.ProductInclude;
 
-    return a.capacity - b.capacity;
+type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
+
+const installationTypes: Record<InstallationType, DomainInstallationType> = {
+    FREESTANDING: "freestanding",
+    BUILT_IN: "built-in",
+    UNDERCOUNTER: "undercounter",
+};
+
+const stockStatuses: Record<StockStatus, DomainStockStatus> = {
+    IN_STOCK: "in_stock",
+    LOW_STOCK: "low_stock",
+    OUT_OF_STOCK: "out_of_stock",
+    PREORDER: "preorder",
+};
+
+const optional = <T>(value: T | null) => value ?? undefined;
+
+function toDomainProduct(row: ProductRow): WineCellarProduct {
+    return {
+        id: row.id,
+        slug: row.slug,
+        sku: row.sku,
+        ean: optional(row.ean),
+        name: row.name,
+        brand: row.brand.name,
+        brandSlug: row.brand.slug,
+        shortDescription: row.shortDescription,
+        description: row.description,
+        price: row.priceCents / 100,
+        compareAtPrice:
+            row.compareAtPriceCents === null ? undefined : row.compareAtPriceCents / 100,
+        capacity: row.capacity,
+        zones: row.zones as TemperatureZoneCount,
+        temperatureRanges: row.temperatureZones.map((zone) => ({
+            min: zone.minCelsius,
+            max: zone.maxCelsius,
+        })),
+        installationType: installationTypes[row.installationType],
+        dimensions: {
+            width: row.widthMm / 10,
+            height: row.heightMm / 10,
+            depth: row.depthMm / 10,
+        },
+        weight: row.weightGrams === null ? undefined : row.weightGrams / 1000,
+        energyClass: optional(row.energyClass),
+        annualEnergyConsumption: optional(row.annualEnergyKwh),
+        noiseLevel: optional(row.noiseDb),
+        reversibleDoor: optional(row.reversibleDoor),
+        uvProtectedGlass: optional(row.uvProtectedGlass),
+        ledLighting: optional(row.ledLighting),
+        lock: optional(row.lock),
+        stockStatus: stockStatuses[row.stockStatus],
+        stockQuantity: row.stockQuantity,
+        featured: row.featured,
+        active: row.active,
+        images: row.images.map((image) => image.url),
+        seo: {
+            title: row.seoTitle,
+            description: row.seoDescription,
+        },
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt.toISOString(),
+    };
+}
+
+async function findProducts(
+    where: Prisma.ProductWhereInput,
+    options: {
+        orderBy?: Prisma.ProductOrderByWithRelationInput[];
+        take?: number;
+    } = {},
+) {
+    const rows = await db.product.findMany({
+        where: { AND: [{ active: true }, where] },
+        include: productInclude,
+        orderBy: options.orderBy ?? defaultProductOrder,
+        take: options.take,
+    });
+
+    return rows.map(toDomainProduct);
 }
 
 export async function getActiveProducts(): Promise<WineCellarProduct[]> {
-    return products
-        .filter((product) => product.active)
-        .sort(compareByDefaultOrder);
+    return findProducts({});
 }
 
-export async function getFeaturedProducts(
-    limit = 4,
-): Promise<WineCellarProduct[]> {
-    const activeProducts = await getActiveProducts();
-
-    return activeProducts
-        .filter((product) => product.featured)
-        .slice(0, limit);
+export async function getFeaturedProducts(limit = 4): Promise<WineCellarProduct[]> {
+    return findProducts({ featured: true }, { take: limit });
 }
 
 export async function getProductsByBrand(
     brandSlug: string,
 ): Promise<WineCellarProduct[]> {
-    const activeProducts = await getActiveProducts();
-
-    return activeProducts.filter(
-        (product) => getBrandSlug(product.brand) === brandSlug,
-    );
+    return findProducts({ brand: { slug: brandSlug } });
 }
 
 export async function getProductCountByBrand(): Promise<Map<string, number>> {
-    const activeProducts = await getActiveProducts();
-    const counts = new Map<string, number>();
+    const brands = await db.brand.findMany({
+        select: {
+            slug: true,
+            _count: { select: { products: { where: { active: true } } } },
+        },
+    });
 
-    for (const product of activeProducts) {
-        const slug = getBrandSlug(product.brand);
-        counts.set(slug, (counts.get(slug) ?? 0) + 1);
-    }
-
-    return counts;
+    return new Map(brands.map((brand) => [brand.slug, brand._count.products]));
 }
 
 export async function getCatalogProducts(
     query: CatalogQuery,
 ): Promise<WineCellarProduct[]> {
-    const activeProducts = await getActiveProducts();
-
-    return filterAndSortProducts(activeProducts, query);
+    return findProducts(buildCatalogWhere(query), {
+        orderBy: buildCatalogOrderBy(query.sort),
+    });
 }
 
 /** Energy classes present in the active catalogue, best first. */
 export async function getAvailableEnergyClasses(): Promise<string[]> {
-    const activeProducts = await getActiveProducts();
-    const classes = new Set(
-        activeProducts.flatMap((product) =>
-            product.energyClass ? [product.energyClass] : [],
-        ),
-    );
+    const rows = await db.product.findMany({
+        where: { active: true, energyClass: { not: null } },
+        select: { energyClass: true },
+        distinct: ["energyClass"],
+        orderBy: { energyClass: "asc" },
+    });
 
-    return [...classes].sort();
+    return rows.flatMap((row) => (row.energyClass ? [row.energyClass] : []));
 }
 
-/** Slugs are unique across the catalogue (enforced by a DB unique index later). */
-export async function getProductBySlug(
-    slug: string,
-): Promise<WineCellarProduct | null> {
-    const activeProducts = await getActiveProducts();
+/**
+ * Wrapped in React `cache` so generateMetadata and the page share one query
+ * per request.
+ */
+export const getProductBySlug = cache(
+    async (slug: string): Promise<WineCellarProduct | null> => {
+        const [product] = await findProducts({ slug }, { take: 1 });
 
-    return activeProducts.find((product) => product.slug === slug) ?? null;
-}
+        return product ?? null;
+    },
+);
 
 /**
  * Related products: same brand or a comparable capacity (±50%), closest
@@ -100,16 +182,23 @@ export async function getRelatedProducts(
     product: WineCellarProduct,
     limit = 3,
 ): Promise<WineCellarProduct[]> {
-    const activeProducts = await getActiveProducts();
+    const candidates = await findProducts(
+        {
+            id: { not: product.id },
+            OR: [
+                { brand: { slug: product.brandSlug } },
+                {
+                    capacity: {
+                        gte: Math.floor(product.capacity * 0.5),
+                        lte: Math.ceil(product.capacity * 1.5),
+                    },
+                },
+            ],
+        },
+        { take: 24 },
+    );
 
-    return activeProducts
-        .filter((candidate) => candidate.id !== product.id)
-        .filter(
-            (candidate) =>
-                candidate.brand === product.brand ||
-                Math.abs(candidate.capacity - product.capacity) <=
-                    product.capacity * 0.5,
-        )
+    return candidates
         .sort(
             (a, b) =>
                 Math.abs(a.capacity - product.capacity) -
@@ -118,19 +207,16 @@ export async function getRelatedProducts(
         .slice(0, limit);
 }
 
-export async function getProductById(
-    id: string,
-): Promise<WineCellarProduct | null> {
-    const activeProducts = await getActiveProducts();
+export async function getProductById(id: string): Promise<WineCellarProduct | null> {
+    const [product] = await findProducts({ id }, { take: 1 });
 
-    return activeProducts.find((product) => product.id === id) ?? null;
+    return product ?? null;
 }
 
-export async function getProductsByIds(
-    ids: string[],
-): Promise<WineCellarProduct[]> {
-    const wanted = new Set(ids);
-    const activeProducts = await getActiveProducts();
+export async function getProductsByIds(ids: string[]): Promise<WineCellarProduct[]> {
+    if (ids.length === 0) {
+        return [];
+    }
 
-    return activeProducts.filter((product) => wanted.has(product.id));
+    return findProducts({ id: { in: ids } });
 }

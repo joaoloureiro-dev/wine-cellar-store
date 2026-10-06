@@ -9,6 +9,9 @@ import { getProductCountLabel } from "@/lib/product-display";
 import { getProductCountByBrand } from "@/lib/products";
 import { getBrandHref } from "@/lib/routes";
 
+// Time-based revalidation until tag-based invalidation (Cache stage).
+export const revalidate = 300;
+
 export const metadata: Metadata = {
     title: "Marcas",
     description:
@@ -44,7 +47,7 @@ export default async function BrandsPage() {
 
                                 <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-charcoal">
                                     <Link
-                                        href={getBrandHref(brand.name)}
+                                        href={getBrandHref(brand.slug)}
                                         className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-wine focus-visible:after:ring-offset-2"
                                     >
                                         {brand.name}
