@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ShieldCheck, Truck } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { siteConfig } from "@/lib/site";
 
 export function Hero() {
     return (
@@ -81,7 +82,7 @@ export function Hero() {
                             <div className="relative flex h-97.5 w-47.5 flex-col overflow-hidden rounded-t-[1.75rem] rounded-b-xl border border-white/10 bg-charcoal shadow-[0_30px_80px_-30px_rgba(24,22,20,0.45)] sm:h-117.5 sm:w-57.5 lg:h-135 lg:w-65">
                                 <div className="flex h-14 items-center justify-between border-b border-white/10 px-5">
                                     <span className="font-display text-lg text-white/90">
-                                        Cellarium
+                                        {siteConfig.name}
                                     </span>
 
                                     <span className="size-2 rounded-full bg-champagne" />

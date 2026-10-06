@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 
 import { Container } from "@/components/layout/container";
+import { siteConfig } from "@/lib/site";
 
 const navigation = [
     {
@@ -50,10 +51,10 @@ export function Header() {
                     <Link
                         href="/"
                         className="shrink-0"
-                        aria-label="Wine Cellar Store - Página inicial"
+                        aria-label={`${siteConfig.name} - Página inicial`}
                     >
                         <span className="font-display text-2xl font-semibold tracking-[-0.03em] text-charcoal sm:text-3xl">
-                            Cellarium
+                            {siteConfig.name}
                         </span>
                     </Link>
 
@@ -135,7 +136,7 @@ export function Header() {
                                 onClick={closeMenu}
                                 className="font-display text-2xl font-semibold tracking-[-0.03em] text-charcoal"
                             >
-                                Cellarium
+                                {siteConfig.name}
                             </Link>
 
                             <button
