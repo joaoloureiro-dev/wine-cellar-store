@@ -59,20 +59,24 @@ export function CartSummary({ cart }: CartSummaryProps) {
                 </p>
             )}
 
-            {/* Checkout is implemented in a later stage. */}
-            <button
-                type="button"
-                disabled
-                aria-describedby="checkout-availability-note"
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                <Lock size={16} strokeWidth={1.8} aria-hidden="true" />
-                Finalizar compra
-            </button>
-
-            <p id="checkout-availability-note" className="mt-2 text-center text-xs text-muted">
-                Checkout disponível brevemente.
-            </p>
+            {cart.hasIssues ? (
+                <button
+                    type="button"
+                    disabled
+                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    <Lock size={16} strokeWidth={1.8} aria-hidden="true" />
+                    Finalizar compra
+                </button>
+            ) : (
+                <Link
+                    href="/checkout"
+                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                >
+                    <Lock size={16} strokeWidth={1.8} aria-hidden="true" />
+                    Finalizar compra
+                </Link>
+            )}
 
             <Link
                 href="/caves"
