@@ -33,6 +33,32 @@ Open [http://localhost:3000](http://localhost:3000).
 > `npm run build` also needs a reachable database: catalogue pages are
 > statically generated from PostgreSQL at build time.
 
+## Payments
+
+| Method                 | Provider                                   | Confirmation                          |
+| ---------------------- | ------------------------------------------ | ------------------------------------- |
+| MB WAY                 | ifthenpay or eupago (`PAYMENT_PROVIDER`)   | Provider callback / webhook           |
+| Multibanco             | ifthenpay or eupago (`PAYMENT_PROVIDER`)   | Provider callback / webhook           |
+| Klarna                 | Stripe Checkout                            | Signed Stripe webhook                 |
+| Transferência bancária | — (IBAN from `BANK_TRANSFER_*`)            | Manual reconciliation (backoffice)    |
+
+A method is only offered when its provider is configured (see `.env.example`).
+Payments are never marked as paid from the browser: only verified webhooks
+(or server-side status checks) can confirm them.
+
+Webhook endpoints to configure in each provider:
+
+- **ifthenpay** (callback, GET):
+  `{APP_URL}/api/webhooks/ifthenpay?key=[ANTI_PHISHING_KEY]&orderId=[ORDER_ID]&amount=[AMOUNT]&requestId=[REQUEST_ID]`
+- **eupago** (Webhook 2.0, POST): `{APP_URL}/api/webhooks/eupago`
+- **Stripe**: `{APP_URL}/api/webhooks/stripe` with the events
+  `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+  `checkout.session.async_payment_failed` and `checkout.session.expired`
+
+Schedule `GET /api/cron/expire-orders` (e.g. every 15 minutes) with
+`Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and release
+their stock.
+
 ## Scripts
 
 | Script               | Description                                         |
