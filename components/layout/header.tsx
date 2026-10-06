@@ -9,9 +9,10 @@ import {
     UserRound,
     X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
+import { useCloseDialogAtBreakpoint } from "@/lib/hooks/use-close-dialog-at-breakpoint";
 import { siteConfig } from "@/lib/site";
 
 const navigation = [
@@ -33,9 +34,6 @@ const navigation = [
     },
 ];
 
-// Must match the `lg` breakpoint where the desktop navigation takes over.
-const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)";
-
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDialogElement>(null);
@@ -53,21 +51,7 @@ export function Header() {
         menuRef.current?.close();
     }
 
-    // The mobile menu is hidden from `lg` up, so close it when the viewport
-    // grows; otherwise the modal would keep the page inert while invisible.
-    useEffect(() => {
-        const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
-
-        function handleChange(event: MediaQueryListEvent) {
-            if (event.matches) {
-                menuRef.current?.close();
-            }
-        }
-
-        mediaQuery.addEventListener("change", handleChange);
-
-        return () => mediaQuery.removeEventListener("change", handleChange);
-    }, []);
+    useCloseDialogAtBreakpoint(menuRef);
 
     return (
         <header className="border-b border-border bg-surface">
