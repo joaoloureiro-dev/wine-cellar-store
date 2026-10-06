@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { Header } from "@/components/layout/header";
+import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -18,11 +19,10 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: {
-    default: "Wine Cellar Store",
-    template: "%s | Wine Cellar Store",
+    default: `${siteConfig.name} | ${siteConfig.tagline}`,
+    template: `%s | ${siteConfig.name}`,
   },
-  description:
-    "Premium wine cellars designed to preserve your wine collection under ideal conditions.",
+  description: siteConfig.description,
 };
 
 type RootLayoutProps = Readonly<{
