@@ -117,3 +117,20 @@ export async function getRelatedProducts(
         )
         .slice(0, limit);
 }
+
+export async function getProductById(
+    id: string,
+): Promise<WineCellarProduct | null> {
+    const activeProducts = await getActiveProducts();
+
+    return activeProducts.find((product) => product.id === id) ?? null;
+}
+
+export async function getProductsByIds(
+    ids: string[],
+): Promise<WineCellarProduct[]> {
+    const wanted = new Set(ids);
+    const activeProducts = await getActiveProducts();
+
+    return activeProducts.filter((product) => wanted.has(product.id));
+}

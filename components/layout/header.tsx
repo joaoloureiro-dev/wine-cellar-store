@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { CartLink } from "@/components/cart/cart-link";
 import { Container } from "@/components/layout/container";
 import { useCloseDialogAtBreakpoint } from "@/lib/hooks/use-close-dialog-at-breakpoint";
 import { siteConfig } from "@/lib/site";
@@ -111,17 +112,7 @@ export function Header() {
                             <UserRound size={20} strokeWidth={1.8} />
                         </Link>
 
-                        <Link
-                            href="/carrinho"
-                            aria-label="Carrinho"
-                            className="relative rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted hover:text-wine"
-                        >
-                            <ShoppingBag size={20} strokeWidth={1.8} />
-
-                            <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-wine text-[10px] font-bold text-white">
-                                0
-                            </span>
-                        </Link>
+                        <CartLink className="rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted hover:text-wine" />
 
                         <button
                             type="button"
