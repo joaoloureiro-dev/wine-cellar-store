@@ -33,7 +33,7 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
     return (
         <div>
             <Link
-                href={getBrandHref(product.brand)}
+                href={getBrandHref(product.brandSlug)}
                 className="rounded-sm text-xs font-bold uppercase tracking-[0.18em] text-wine transition-colors hover:text-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
             >
                 {product.brand}

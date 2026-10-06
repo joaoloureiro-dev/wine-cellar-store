@@ -1,6 +1,9 @@
-import type { WineCellarProduct } from "@/types/product";
+import type { WineCellarProduct } from "../../types/product";
 
-export const products: WineCellarProduct[] = [
+/** Seed products; `brandSlug` is resolved from the brand name when seeding. */
+export type SeedProduct = Omit<WineCellarProduct, "brandSlug">;
+
+export const products: SeedProduct[] = [
     {
         id: "cellar-001",
 

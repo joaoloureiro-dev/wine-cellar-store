@@ -1,8 +1,5 @@
-export type WineCellarBrand =
-    | "La Sommelière"
-    | "Avintage"
-    | "Climadiff"
-    | "Other";
+/** Brand display name. Brands are data (database), not a closed list. */
+export type WineCellarBrand = string;
 
 export type InstallationType =
     | "freestanding"
@@ -37,6 +34,7 @@ export type WineCellarProduct = {
 
     name: string;
     brand: WineCellarBrand;
+    brandSlug: string;
 
     shortDescription: string;
     description: string;

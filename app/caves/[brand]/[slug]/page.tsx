@@ -18,15 +18,18 @@ import {
     getProductBySlug,
     getRelatedProducts,
 } from "@/lib/products";
-import { getBrandHref, getBrandSlug, getProductHref } from "@/lib/routes";
+import { getBrandHref, getProductHref } from "@/lib/routes";
 
 type ProductPageProps = PageProps<"/caves/[brand]/[slug]">;
+
+// Time-based revalidation until tag-based invalidation (Cache stage).
+export const revalidate = 300;
 
 export async function generateStaticParams() {
     const products = await getActiveProducts();
 
     return products.map((product) => ({
-        brand: getBrandSlug(product.brand),
+        brand: product.brandSlug,
         slug: product.slug,
     }));
 }
@@ -55,7 +58,7 @@ export default async function ProductPage(props: ProductPageProps) {
 
     // Slugs are unique, so a wrong brand segment still identifies the product:
     // send visitors (and crawlers) to the single canonical URL.
-    if (getBrandSlug(product.brand) !== brandSlug) {
+    if (product.brandSlug !== brandSlug) {
         permanentRedirect(getProductHref(product));
     }
 
@@ -69,7 +72,7 @@ export default async function ProductPage(props: ProductPageProps) {
                     items={[
                         { label: "Início", href: "/" },
                         { label: "Caves de Vinho", href: "/caves" },
-                        { label: product.brand, href: getBrandHref(product.brand) },
+                        { label: product.brand, href: getBrandHref(product.brandSlug) },
                         { label: product.name },
                     ]}
                 />

@@ -8,7 +8,9 @@ import { getBrandBySlug, getBrands } from "@/lib/brands";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getProductsByBrand } from "@/lib/products";
 
-export const dynamicParams = false;
+// Time-based revalidation until tag-based invalidation (Cache stage).
+// New brands render on demand; unknown slugs return 404 via notFound().
+export const revalidate = 300;
 
 export async function generateStaticParams() {
     const brands = await getBrands();

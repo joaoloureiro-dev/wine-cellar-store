@@ -6,3 +6,107 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─── Catalogue ──────────────────────────────────────────────────────────────
+//
+// Money is stored in integer cents and dimensions in millimetres to avoid
+// floating point rounding. Indexes mirror the storefront's real query
+// patterns (see comments) and should be re-validated with EXPLAIN ANALYZE
+// once production data exists.
+
+enum InstallationType {
+  FREESTANDING
+  BUILT_IN
+  UNDERCOUNTER
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  PREORDER
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String    @unique
+  country     String
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id                  String           @id @default(cuid())
+  slug                String           @unique
+  sku                 String           @unique
+  ean                 String?          @unique
+  name                String
+  brandId             String
+  brand               Brand            @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  shortDescription    String
+  description         String
+  priceCents          Int
+  compareAtPriceCents Int?
+  capacity            Int
+  zones               Int
+  installationType    InstallationType
+  widthMm             Int
+  heightMm            Int
+  depthMm             Int
+  weightGrams         Int?
+  energyClass         String?
+  annualEnergyKwh     Int?
+  noiseDb             Int?
+  reversibleDoor      Boolean?
+  uvProtectedGlass    Boolean?
+  ledLighting         Boolean?
+  lock                Boolean?
+  stockQuantity       Int              @default(0)
+  stockStatus         StockStatus      @default(OUT_OF_STOCK)
+  featured            Boolean          @default(false)
+  active              Boolean          @default(true)
+  seoTitle            String
+  seoDescription      String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  temperatureZones ProductTemperatureZone[]
+  images           ProductImage[]
+
+  // Homepage featured products.
+  @@index([active, featured])
+  // Brand pages and brand filter.
+  @@index([brandId, active])
+  // Capacity filter and capacity sorting.
+  @@index([active, capacity])
+  // Price filter and price sorting.
+  @@index([active, priceCents])
+  // "Novidades" sorting.
+  @@index([active, createdAt])
+}
+
+model ProductTemperatureZone {
+  id         String  @id @default(cuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  position   Int
+  minCelsius Int
+  maxCelsius Int
+
+  // Also serves "temperature reachable" filter lookups per product.
+  @@unique([productId, position])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  position  Int
+
+  @@unique([productId, position])
+}
