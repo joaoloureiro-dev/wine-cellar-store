@@ -18,6 +18,7 @@ type ProductGridProps = {
     /** `sidebar` leaves room for a filters column from `lg` up. */
     layout?: "full" | "sidebar";
     emptyState?: EmptyState;
+    headingLevel?: "h2" | "h3";
 };
 
 const defaultEmptyState: EmptyState = {
@@ -47,6 +48,7 @@ export function ProductGrid({
     products,
     layout = "full",
     emptyState = defaultEmptyState,
+    headingLevel = "h2",
 }: ProductGridProps) {
     if (products.length === 0) {
         return (
@@ -85,7 +87,7 @@ export function ProductGrid({
                     <ProductCard
                         product={product}
                         imageSizes={imageSizes}
-                        headingLevel="h2"
+                        headingLevel={headingLevel}
                     />
                 </li>
             ))}

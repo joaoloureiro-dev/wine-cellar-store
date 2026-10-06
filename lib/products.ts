@@ -81,3 +81,39 @@ export async function getAvailableEnergyClasses(): Promise<string[]> {
 
     return [...classes].sort();
 }
+
+/** Slugs are unique across the catalogue (enforced by a DB unique index later). */
+export async function getProductBySlug(
+    slug: string,
+): Promise<WineCellarProduct | null> {
+    const activeProducts = await getActiveProducts();
+
+    return activeProducts.find((product) => product.slug === slug) ?? null;
+}
+
+/**
+ * Related products: same brand or a comparable capacity (±50%), closest
+ * capacity first. Simple, explainable rules until real recommendation data
+ * exists.
+ */
+export async function getRelatedProducts(
+    product: WineCellarProduct,
+    limit = 3,
+): Promise<WineCellarProduct[]> {
+    const activeProducts = await getActiveProducts();
+
+    return activeProducts
+        .filter((candidate) => candidate.id !== product.id)
+        .filter(
+            (candidate) =>
+                candidate.brand === product.brand ||
+                Math.abs(candidate.capacity - product.capacity) <=
+                    product.capacity * 0.5,
+        )
+        .sort(
+            (a, b) =>
+                Math.abs(a.capacity - product.capacity) -
+                Math.abs(b.capacity - product.capacity),
+        )
+        .slice(0, limit);
+}
