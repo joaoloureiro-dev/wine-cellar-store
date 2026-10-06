@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock } from "lucide-react";
 
 import { OrderPlacedEffects } from "@/components/checkout/order-placed-effects";
+import { PaymentInstructions } from "@/components/payments/payment-instructions";
 import { Container } from "@/components/layout/container";
 import { ProductImage } from "@/components/product/product-image";
-import { getPaymentMethodLabel } from "@/lib/checkout/payment-methods";
 import { formatCurrency } from "@/lib/format";
 import { getPublicOrder } from "@/lib/orders/service";
 import { orderStatusLabels } from "@/lib/orders/status";
+import { getBankTransferDetails } from "@/lib/payments/config";
+import { getOrderPaymentView } from "@/lib/payments/service";
 import { getProductHref } from "@/lib/routes";
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
     }
 
     const isAwaitingPayment = order.status === "AWAITING_PAYMENT";
+    const paymentView = await getOrderPaymentView(order.reference);
 
     return (
         <main>
@@ -52,25 +54,20 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
 
                     <p className="mt-4 text-base leading-7 text-muted">
                         Guarde a referência <strong className="text-charcoal">{order.reference}</strong>.
-                        Os artigos estão reservados para si enquanto aguardamos o pagamento.
+                        {isAwaitingPayment
+                            ? " Os artigos estão reservados para si enquanto aguardamos o pagamento."
+                            : null}
                     </p>
 
-                    {isAwaitingPayment && (
-                        <section
-                            aria-labelledby="payment-heading"
-                            className="mt-8 rounded-xl border border-champagne/60 bg-surface p-5 sm:p-6"
-                        >
-                            <h2 id="payment-heading" className="flex items-center gap-2 text-sm font-semibold text-charcoal">
-                                <Clock size={16} strokeWidth={1.8} aria-hidden="true" className="text-wine" />
-                                Pagamento por {getPaymentMethodLabel(order.paymentMethod)}
-                            </h2>
-                            <p className="mt-2 text-sm leading-6 text-muted">
-                                Enviaremos as instruções de pagamento para o seu email. Conclua o
-                                pagamento até{" "}
-                                <strong className="text-charcoal">{dateFormatter.format(order.paymentDueAt)}</strong>;
-                                depois dessa data a reserva dos artigos é libertada.
-                            </p>
-                        </section>
+                    {paymentView && (
+                        <div className="mt-8">
+                            <PaymentInstructions
+                                reference={order.reference}
+                                view={paymentView}
+                                bankTransfer={getBankTransferDetails()}
+                                returnState={typeof searchParams.pagamento === "string" ? searchParams.pagamento : undefined}
+                            />
+                        </div>
                     )}
 
                     <section aria-label="Detalhes da encomenda" className="mt-8 rounded-xl border border-border bg-surface p-5 sm:p-6">
