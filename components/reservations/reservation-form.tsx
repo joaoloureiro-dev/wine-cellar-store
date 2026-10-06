@@ -1,8 +1,9 @@
 "use client";
 
 import { CalendarClock, LoaderCircle } from "lucide-react";
-import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
+import { Field, FieldError, inputClassName } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
 import {
     createReservationAction,
@@ -15,9 +16,6 @@ type ReservationFormProps = {
 };
 
 const initialState: ReservationFormState = { status: "idle", submissionId: 0 };
-
-const inputClassName =
-    "mt-1.5 block h-12 w-full rounded-md border border-border bg-surface px-3.5 text-sm text-charcoal transition-colors focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30 aria-invalid:border-danger";
 
 /**
  * Progressive enhancement: the form posts to a Server Action and works
@@ -202,36 +200,5 @@ export function ReservationForm({ productId }: ReservationFormProps) {
                 consigo.
             </p>
         </form>
-    );
-}
-
-type FieldProps = {
-    label: string;
-    name: string;
-    error?: string;
-    children: ReactNode;
-};
-
-function Field({ label, name, error, children }: FieldProps) {
-    return (
-        <div>
-            <label htmlFor={name} className="text-sm font-medium text-charcoal">
-                {label}
-            </label>
-            {children}
-            <FieldError name={name} error={error} />
-        </div>
-    );
-}
-
-function FieldError({ name, error }: { name: string; error?: string }) {
-    if (!error) {
-        return null;
-    }
-
-    return (
-        <p id={`${name}-error`} className="mt-1.5 text-xs font-medium text-danger">
-            {error}
-        </p>
     );
 }

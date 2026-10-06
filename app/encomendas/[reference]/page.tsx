@@ -1,0 +1,146 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Clock } from "lucide-react";
+
+import { OrderPlacedEffects } from "@/components/checkout/order-placed-effects";
+import { Container } from "@/components/layout/container";
+import { ProductImage } from "@/components/product/product-image";
+import { getPaymentMethodLabel } from "@/lib/checkout/payment-methods";
+import { formatCurrency } from "@/lib/format";
+import { getPublicOrder } from "@/lib/orders/service";
+import { orderStatusLabels } from "@/lib/orders/status";
+import { getProductHref } from "@/lib/routes";
+
+export const metadata: Metadata = {
+    title: "Encomenda",
+    robots: { index: false, follow: false },
+};
+
+const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/Lisbon",
+});
+
+export default async function OrderPage(props: PageProps<"/encomendas/[reference]">) {
+    const [{ reference }, searchParams] = await Promise.all([props.params, props.searchParams]);
+    const order = await getPublicOrder(reference);
+
+    if (!order) {
+        notFound();
+    }
+
+    const isAwaitingPayment = order.status === "AWAITING_PAYMENT";
+
+    return (
+        <main>
+            {searchParams.nova === "1" && <OrderPlacedEffects reference={order.reference} />}
+
+            <Container className="py-10 sm:py-14 lg:py-20">
+                <div className="mx-auto max-w-2xl">
+                    <div className="flex items-center gap-3">
+                        <span className="h-px w-8 bg-champagne" />
+                        <span className="text-xs font-bold uppercase tracking-[0.24em] text-wine">
+                            Encomenda {order.reference}
+                        </span>
+                    </div>
+
+                    <h1 className="mt-4 font-display text-4xl font-medium tracking-[-0.035em] text-charcoal sm:text-5xl">
+                        {isAwaitingPayment ? "Obrigado pela sua encomenda" : "A sua encomenda"}
+                    </h1>
+
+                    <p className="mt-4 text-base leading-7 text-muted">
+                        Guarde a referência <strong className="text-charcoal">{order.reference}</strong>.
+                        Os artigos estão reservados para si enquanto aguardamos o pagamento.
+                    </p>
+
+                    {isAwaitingPayment && (
+                        <section
+                            aria-labelledby="payment-heading"
+                            className="mt-8 rounded-xl border border-champagne/60 bg-surface p-5 sm:p-6"
+                        >
+                            <h2 id="payment-heading" className="flex items-center gap-2 text-sm font-semibold text-charcoal">
+                                <Clock size={16} strokeWidth={1.8} aria-hidden="true" className="text-wine" />
+                                Pagamento por {getPaymentMethodLabel(order.paymentMethod)}
+                            </h2>
+                            <p className="mt-2 text-sm leading-6 text-muted">
+                                Enviaremos as instruções de pagamento para o seu email. Conclua o
+                                pagamento até{" "}
+                                <strong className="text-charcoal">{dateFormatter.format(order.paymentDueAt)}</strong>;
+                                depois dessa data a reserva dos artigos é libertada.
+                            </p>
+                        </section>
+                    )}
+
+                    <section aria-label="Detalhes da encomenda" className="mt-8 rounded-xl border border-border bg-surface p-5 sm:p-6">
+                        <ul role="list" className="divide-y divide-border">
+                            {order.items.map((item) => (
+                                <li key={item.productName} className="flex gap-4 py-4 first:pt-0">
+                                    <div className="relative aspect-4/5 w-16 shrink-0 overflow-hidden rounded-md bg-surface-muted">
+                                        <ProductImage
+                                            src={item.product.images[0]?.url}
+                                            alt={`Cave de vinho ${item.product.brand.name} ${item.productName}`}
+                                            sizes="64px"
+                                        />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-wine">
+                                            {item.product.brand.name}
+                                        </p>
+                                        <Link
+                                            href={getProductHref({ brandSlug: item.product.brand.slug, slug: item.product.slug })}
+                                            className="text-sm font-semibold text-charcoal hover:text-wine"
+                                        >
+                                            {item.productName}
+                                        </Link>
+                                        <p className="text-xs text-muted">
+                                            {item.quantity} × {formatCurrency(item.unitPriceCents / 100)}
+                                        </p>
+                                    </div>
+                                    <p className="text-sm font-semibold text-charcoal">
+                                        {formatCurrency(item.lineTotalCents / 100)}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <dl className="mt-2 space-y-2.5 border-t border-border pt-4 text-sm">
+                            <div className="flex justify-between gap-4">
+                                <dt className="text-muted">Estado</dt>
+                                <dd className="font-semibold text-charcoal">{orderStatusLabels[order.status]}</dd>
+                            </div>
+                            <div className="flex justify-between gap-4">
+                                <dt className="text-muted">Subtotal</dt>
+                                <dd className="font-semibold text-charcoal">{formatCurrency(order.subtotalCents / 100)}</dd>
+                            </div>
+                            <div className="flex justify-between gap-4">
+                                <dt className="text-muted">Envio</dt>
+                                <dd className="font-semibold text-charcoal">
+                                    {order.shippingCents === 0 ? "Grátis" : formatCurrency(order.shippingCents / 100)}
+                                </dd>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-4 border-t border-border pt-3">
+                                <dt className="font-semibold text-charcoal">Total</dt>
+                                <dd className="text-2xl font-semibold tracking-tight text-charcoal">
+                                    {formatCurrency(order.totalCents / 100)}
+                                </dd>
+                            </div>
+                            <div className="flex justify-between gap-4 pt-1 text-xs">
+                                <dt className="text-muted">Encomenda feita em</dt>
+                                <dd className="text-muted">{dateFormatter.format(order.createdAt)}</dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <Link
+                        href="/caves"
+                        className="mt-10 inline-flex min-h-11 items-center justify-center rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                    >
+                        Continuar a explorar
+                    </Link>
+                </div>
+            </Container>
+        </main>
+    );
+}
