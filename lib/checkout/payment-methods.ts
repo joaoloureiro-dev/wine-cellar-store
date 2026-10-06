@@ -18,6 +18,16 @@ export const paymentMethods = [
 
 export type PaymentMethodId = (typeof paymentMethods)[number]["id"];
 
-export function getPaymentMethodLabel(id: PaymentMethodId) {
-    return paymentMethods.find((method) => method.id === id)?.label ?? id;
+/** Labels for every stored payment method (including ones offered later). */
+const paymentMethodLabels = {
+    MBWAY: "MB WAY",
+    MULTIBANCO: "Multibanco",
+    BANK_TRANSFER: "Transferência bancária",
+    KLARNA: "Klarna",
+} as const;
+
+export type AnyPaymentMethod = keyof typeof paymentMethodLabels;
+
+export function getPaymentMethodLabel(id: AnyPaymentMethod) {
+    return paymentMethodLabels[id];
 }
