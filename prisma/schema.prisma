@@ -76,6 +76,7 @@ model Product {
   temperatureZones ProductTemperatureZone[]
   images           ProductImage[]
   reservations     Reservation[]
+  orderItems       OrderItem[]
 
   // Homepage featured products.
   @@index([active, featured])
@@ -173,4 +174,101 @@ model ReservationEvent {
   createdAt     DateTime           @default(now())
 
   @@index([reservationId, createdAt])
+}
+
+// ─── Orders ─────────────────────────────────────────────────────────────────
+//
+// Orders snapshot everything needed to honour the purchase (prices, product
+// names, address) so later catalogue changes never alter a placed order.
+// Stock is decremented atomically when the order is created (stock hold) and
+// released if the order is cancelled or expires before payment.
+
+enum OrderStatus {
+  AWAITING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  MBWAY
+  MULTIBANCO
+  BANK_TRANSFER
+}
+
+enum OrderActor {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+}
+
+model Order {
+  id                 String        @id @default(cuid())
+  /// Public, unguessable reference shown to the customer (e.g. ENC-7K3P9QXM).
+  reference          String        @unique
+  /// Client-generated key per checkout attempt: double submits never create
+  /// two orders.
+  idempotencyKey     String        @unique
+  status             OrderStatus   @default(AWAITING_PAYMENT)
+  paymentMethod      PaymentMethod
+  currency           String        @default("EUR")
+  subtotalCents      Int
+  shippingCents      Int
+  totalCents         Int
+  shippingMethod     String
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  /// Portuguese NIF for the invoice (optional).
+  taxId              String?
+  addressLine1       String
+  addressLine2       String?
+  postalCode         String
+  city               String
+  country            String        @default("PT")
+  customerNotes      String?
+  termsAcceptedAt    DateTime
+  /// Unpaid orders past this date expire and release their stock.
+  paymentDueAt       DateTime
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  items              OrderItem[]
+  events             OrderEvent[]
+
+  // Backoffice lists by status, newest first; expiry job (AWAITING_PAYMENT).
+  @@index([status, createdAt])
+  // Customer order history (account stage).
+  @@index([customerEmail, createdAt])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName    String
+  sku            String
+  unitPriceCents Int
+  quantity       Int
+  lineTotalCents Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderEvent {
+  id         String       @id @default(cuid())
+  orderId    String
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  actor      OrderActor
+  note       String?
+  createdAt  DateTime     @default(now())
+
+  @@index([orderId, createdAt])
 }

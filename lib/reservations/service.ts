@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { generateReservationReference, reservationReferencePattern } from "@/lib/reservations/reference";
+import { generateReference, isReference } from "@/lib/references";
 import type { CreateReservationInput } from "@/lib/reservations/schema";
 import {
     canTransition,
@@ -88,7 +88,7 @@ export async function createReservation(input: CreateReservationInput) {
 
                 return tx.reservation.create({
                     data: {
-                        reference: generateReservationReference(),
+                        reference: generateReference("RSV"),
                         productId: product.id,
                         quantity: input.quantity,
                         unitPriceCents: product.priceCents,
@@ -195,7 +195,7 @@ export async function transitionReservationStatus({
 
 /** Public summary for the customer: no personal data is exposed. */
 export async function getPublicReservation(reference: string) {
-    if (!reservationReferencePattern.test(reference)) {
+    if (!isReference(reference, "RSV")) {
         return null;
     }
 
