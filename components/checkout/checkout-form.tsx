@@ -11,6 +11,7 @@ import {
     type ReactNode,
 } from "react";
 
+import { BankTransferDetails, type BankTransferInfo } from "@/components/payments/bank-transfer-details";
 import { errorProps, Field, FieldError, inputClassName } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
 import { placeOrderAction, type CheckoutFormState } from "@/lib/checkout/actions";
@@ -18,6 +19,7 @@ import { getPaymentMethodLabel, paymentMethods, type PaymentMethodId } from "@/l
 import {
     checkoutSchema,
     checkoutSteps,
+    getMbWayPhoneError,
     type CheckoutField,
     type CheckoutStepId,
 } from "@/lib/checkout/schema";
@@ -33,6 +35,9 @@ export type ShippingOption = {
 type CheckoutFormProps = {
     idempotencyKey: string;
     shippingOptions: ShippingOption[];
+    /** Methods whose provider is configured and that accept this amount. */
+    availablePaymentMethods: PaymentMethodId[];
+    bankTransfer: BankTransferInfo | null;
 };
 
 type FieldErrors = Partial<Record<CheckoutField, string>>;
@@ -52,7 +57,7 @@ const stepPillClassName =
  * is validated in the browser with the same Zod schema the server uses. The
  * server always re-validates everything.
  */
-export function CheckoutForm({ idempotencyKey, shippingOptions }: CheckoutFormProps) {
+export function CheckoutForm(props: CheckoutFormProps) {
     const [state, formAction, isPending] = useActionState(placeOrderAction, initialState);
 
     return (
@@ -62,8 +67,7 @@ export function CheckoutForm({ idempotencyKey, shippingOptions }: CheckoutFormPr
             state={state}
             formAction={formAction}
             isPending={isPending}
-            idempotencyKey={idempotencyKey}
-            shippingOptions={shippingOptions}
+            {...props}
         />
     );
 }
@@ -80,6 +84,8 @@ function CheckoutSteps({
     isPending,
     idempotencyKey,
     shippingOptions,
+    availablePaymentMethods,
+    bankTransfer,
 }: CheckoutStepsProps) {
     const isEnhanced = useSyncExternalStore(subscribeNoop, () => true, () => false);
     const toast = useToast();
@@ -130,13 +136,22 @@ function CheckoutSteps({
         const mask = Object.fromEntries(step.fields.map((field) => [field, true])) as {
             [K in CheckoutField]?: true;
         };
-        const result = checkoutSchema.pick(mask).safeParse(readValues());
+        const values = readValues();
+        const result = checkoutSchema.pick(mask).safeParse(values);
         const stepErrors: FieldErrors = {};
 
         if (!result.success) {
             for (const issue of result.error.issues) {
                 const field = issue.path[0] as CheckoutField;
                 stepErrors[field] ??= issue.message;
+            }
+        }
+
+        if (stepId === "payment") {
+            const mbWayError = getMbWayPhoneError(values.paymentMethod, values.phone);
+
+            if (mbWayError) {
+                stepErrors.paymentMethod = mbWayError;
             }
         }
 
@@ -148,7 +163,7 @@ function CheckoutSteps({
             return { ...next, ...stepErrors };
         });
 
-        return result.success;
+        return Object.keys(stepErrors).length === 0;
     }
 
     function goTo(stepId: CheckoutStepId) {
@@ -352,16 +367,23 @@ function CheckoutSteps({
                     <fieldset>
                         <legend className="sr-only">Método de pagamento</legend>
                         <div className="space-y-3">
-                            {paymentMethods.map((method) => (
-                                <OptionCard
-                                    key={method.id}
-                                    name="paymentMethod"
-                                    value={method.id}
-                                    defaultChecked={values.paymentMethod === method.id}
-                                    title={method.label}
-                                    description={method.description}
-                                />
-                            ))}
+                            {paymentMethods
+                                .filter((method) => availablePaymentMethods.includes(method.id))
+                                .map((method) => (
+                                    <OptionCard
+                                        key={method.id}
+                                        name="paymentMethod"
+                                        value={method.id}
+                                        defaultChecked={values.paymentMethod === method.id}
+                                        title={method.label}
+                                        description={method.description}
+                                        details={
+                                            method.id === "BANK_TRANSFER" && bankTransfer ? (
+                                                <BankTransferDetails details={bankTransfer} />
+                                            ) : undefined
+                                        }
+                                    />
+                                ))}
                         </div>
                         <FieldError name="paymentMethod" error={errors.paymentMethod} />
                     </fieldset>
@@ -525,27 +547,36 @@ type OptionCardProps = {
     title: string;
     description: string;
     aside?: string;
+    /** Shown below the option while it is selected (pure CSS, works without JS). */
+    details?: ReactNode;
 };
 
-function OptionCard({ name, value, defaultChecked, title, description, aside }: OptionCardProps) {
+function OptionCard({ name, value, defaultChecked, title, description, aside, details }: OptionCardProps) {
     return (
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-charcoal/40 has-checked:border-wine has-checked:bg-wine-light/30 has-focus-visible:outline-2 has-focus-visible:outline-wine">
-            <input
-                type="radio"
-                name={name}
-                value={value}
-                defaultChecked={defaultChecked}
-                required
-                className="mt-0.5 size-4 shrink-0 cursor-pointer accent-wine"
-            />
-            <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-3">
-                    <span className="text-sm font-semibold text-charcoal">{title}</span>
-                    {aside && <span className="text-sm font-semibold text-charcoal">{aside}</span>}
+        <div className="group">
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-charcoal/40 has-checked:border-wine has-checked:bg-wine-light/30 has-focus-visible:outline-2 has-focus-visible:outline-wine">
+                <input
+                    type="radio"
+                    name={name}
+                    value={value}
+                    defaultChecked={defaultChecked}
+                    required
+                    className="mt-0.5 size-4 shrink-0 cursor-pointer accent-wine"
+                />
+                <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline justify-between gap-3">
+                        <span className="text-sm font-semibold text-charcoal">{title}</span>
+                        {aside && <span className="text-sm font-semibold text-charcoal">{aside}</span>}
+                    </span>
+                    <span className="mt-1 block text-sm leading-5 text-muted">{description}</span>
                 </span>
-                <span className="mt-1 block text-sm leading-5 text-muted">{description}</span>
-            </span>
-        </label>
+            </label>
+            {details && (
+                <div className="mt-2 hidden rounded-lg border border-border bg-background p-4 group-has-checked:block">
+                    {details}
+                </div>
+            )}
+        </div>
     );
 }
 

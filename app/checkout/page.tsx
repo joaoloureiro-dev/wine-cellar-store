@@ -14,6 +14,7 @@ import {
     shippingMethods,
 } from "@/lib/checkout/shipping";
 import { formatCurrency } from "@/lib/format";
+import { getAvailablePaymentMethods, getBankTransferDetails } from "@/lib/payments/config";
 
 export const metadata: Metadata = {
     title: "Checkout",
@@ -41,6 +42,10 @@ export default async function CheckoutPage() {
         cart.subtotalCents,
     );
 
+    const availablePaymentMethods = getAvailablePaymentMethods(
+        cart.subtotalCents + defaultShippingCents,
+    );
+
     const summary = <OrderSummary cart={cart} shippingCents={defaultShippingCents} />;
 
     return (
@@ -63,7 +68,19 @@ export default async function CheckoutPage() {
                 </details>
 
                 <div className="mt-8 grid grid-cols-1 gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
-                    <CheckoutForm idempotencyKey={randomUUID()} shippingOptions={shippingOptions} />
+                    {availablePaymentMethods.length > 0 ? (
+                        <CheckoutForm
+                            idempotencyKey={randomUUID()}
+                            shippingOptions={shippingOptions}
+                            availablePaymentMethods={availablePaymentMethods}
+                            bankTransfer={getBankTransferDetails()}
+                        />
+                    ) : (
+                        <p role="status" className="rounded-xl border border-border bg-surface p-6 text-sm leading-6 text-charcoal">
+                            De momento não é possível concluir encomendas online. Contacte-nos ou
+                            faça uma reserva na página do produto.
+                        </p>
+                    )}
 
                     <aside aria-label="Resumo da encomenda" className="hidden lg:block">
                         <div className="sticky top-6 rounded-xl border border-border bg-surface p-6">

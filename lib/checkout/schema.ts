@@ -61,3 +61,16 @@ export const checkoutSteps = [
 ] as const satisfies readonly { id: string; label: string; fields: readonly CheckoutField[] }[];
 
 export type CheckoutStepId = (typeof checkoutSteps)[number]["id"];
+
+/** MB WAY only works with Portuguese mobile numbers (9XX XXX XXX). */
+export function getMbWayPhoneError(paymentMethod: unknown, phone: unknown) {
+    if (paymentMethod !== "MBWAY") {
+        return null;
+    }
+
+    const normalized = String(phone ?? "").replace(/[\s().-]/g, "");
+
+    return /^(\+?351)?9[0-9]{8}$/.test(normalized)
+        ? null
+        : "O MB WAY requer um telemóvel português (9XX XXX XXX). Corrija o telefone nos seus dados ou escolha outro método.";
+}

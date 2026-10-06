@@ -3,15 +3,20 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getCart } from "@/lib/cart/get-cart";
 import { readCartLines, writeCartLines } from "@/lib/cart/storage";
 import { revalidateProductPages } from "@/lib/catalog/revalidate";
 import {
     checkoutSchema,
     checkoutSteps,
+    getMbWayPhoneError,
     type CheckoutField,
     type CheckoutStepId,
 } from "@/lib/checkout/schema";
+import { calculateShippingCents, getShippingMethod } from "@/lib/checkout/shipping";
 import { OrderError, placeOrder } from "@/lib/orders/service";
+import { getAvailablePaymentMethods } from "@/lib/payments/config";
+import { initiatePayment } from "@/lib/payments/service";
 
 export type CheckoutFormValues = Partial<Record<Exclude<CheckoutField, "termsAccepted">, string>>;
 
@@ -77,7 +82,28 @@ export async function placeOrderAction(
         };
     }
 
+    // Server-side guard: the method must be offered for this order (provider
+    // configured, amount within limits) and MB WAY needs a Portuguese mobile.
+    const cart = await getCart();
+    const shippingMethod = getShippingMethod(parsed.data.shippingMethod);
+    const estimatedTotal =
+        cart.subtotalCents +
+        (shippingMethod ? calculateShippingCents(shippingMethod, cart.subtotalCents) : 0);
+    const mbWayError = getMbWayPhoneError(parsed.data.paymentMethod, parsed.data.phone);
+
+    if (!getAvailablePaymentMethods(estimatedTotal).includes(parsed.data.paymentMethod) || mbWayError) {
+        return {
+            status: "error",
+            message: mbWayError ?? "Este método de pagamento não está disponível para esta encomenda.",
+            fieldErrors: { paymentMethod: mbWayError ?? "Escolha outro método de pagamento." },
+            step: "payment",
+            values,
+            submissionId,
+        };
+    }
+
     let reference: string;
+    let paymentRedirect: string | undefined;
 
     try {
         const lines = await readCartLines();
@@ -85,6 +111,10 @@ export async function placeOrderAction(
         // Stock is now held by the order: the cart has served its purpose.
         await writeCartLines([]);
         await revalidateProductPages(lines.map((line) => line.productId));
+
+        // A provider failure never loses the order: the order page offers a retry.
+        const payment = await initiatePayment(reference);
+        paymentRedirect = payment.ok ? payment.checkoutUrl : undefined;
     } catch (error) {
         if (error instanceof OrderError) {
             return {
@@ -112,5 +142,6 @@ export async function placeOrderAction(
         };
     }
 
-    redirect(`/encomendas/${reference}?nova=1`);
+    // Klarna continues on its hosted page; other methods show instructions.
+    redirect(paymentRedirect ?? `/encomendas/${reference}?nova=1`);
 }
