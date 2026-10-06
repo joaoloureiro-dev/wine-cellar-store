@@ -1,0 +1,22 @@
+# Local development database. Production uses a managed PostgreSQL
+# (primary + replica, automatic failover, backups and PITR).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cellarium
+      POSTGRES_PASSWORD: cellarium
+      POSTGRES_DB: cellarium
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cellarium -d cellarium"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
