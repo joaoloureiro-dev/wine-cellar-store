@@ -240,8 +240,10 @@ model Order {
   events             OrderEvent[]
   payments           Payment[]
 
-  // Backoffice lists by status, newest first; expiry job (AWAITING_PAYMENT).
+  // Backoffice lists by status, newest first.
   @@index([status, createdAt])
+  // Expiry job: unpaid orders past their payment deadline.
+  @@index([status, paymentDueAt])
   // Customer order history (account stage).
   @@index([customerEmail, createdAt])
 }
