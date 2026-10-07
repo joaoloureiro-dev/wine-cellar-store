@@ -43,6 +43,12 @@ const serverEnvSchema = z.object({
     BANK_TRANSFER_HOLDER: optionalString,
     BANK_TRANSFER_BANK: optionalString,
 
+    /** Signs auth cookies and tokens. Generate with: openssl rand -base64 32 */
+    BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
+    /** Optional: enables "Continuar com Google". */
+    GOOGLE_CLIENT_ID: optionalString,
+    GOOGLE_CLIENT_SECRET: optionalString,
+
     /** Shared secret for scheduled jobs (Authorization: Bearer <secret>). */
     CRON_SECRET: optionalString,
 });
