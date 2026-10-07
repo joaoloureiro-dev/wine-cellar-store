@@ -44,6 +44,14 @@ Open [http://localhost:3000](http://localhost:3000).
 | Transferência bancária | — (IBAN from `BANK_TRANSFER_*`)            | Manual reconciliation (backoffice)    |
 
 A method is only offered when its provider is configured (see `.env.example`).
+
+**Failover.** With `PAYMENT_FALLBACK_PROVIDER` set (and both providers
+configured, including webhooks), MB WAY and Multibanco requests move to the
+second provider when the first is unavailable. It only happens when it is
+safe: always if the request never reached the provider (circuit open,
+connection refused); for Multibanco also after timeouts or HTTP errors; never
+for MB WAY after an ambiguous failure, which could send the customer a second
+payment request. Each attempt is kept as its own payment record.
 Payments are never marked as paid from the browser: only verified webhooks
 (or server-side status checks) can confirm them.
 

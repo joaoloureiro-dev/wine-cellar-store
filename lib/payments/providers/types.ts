@@ -1,9 +1,18 @@
+/**
+ * - "unavailable": the provider answered with an HTTP error (it may or may
+ *   not have processed the request).
+ * - "rejected": the provider refused the request (e.g. invalid number).
+ * - "config": not configured locally; nothing was sent.
+ */
+export type PaymentProviderErrorKind = "unavailable" | "rejected" | "config";
+
 /** Error raised by a provider adapter. Messages never contain personal data. */
 export class PaymentProviderError extends Error {
     constructor(
         public readonly provider: string,
         message: string,
         public readonly details?: Record<string, unknown>,
+        public readonly kind: PaymentProviderErrorKind = "unavailable",
     ) {
         super(message);
         this.name = "PaymentProviderError";

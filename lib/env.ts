@@ -23,6 +23,8 @@ const serverEnvSchema = z.object({
 
     /** Provider for MB WAY and Multibanco. */
     PAYMENT_PROVIDER: z.enum(["ifthenpay", "eupago"]).default("ifthenpay"),
+    /** Optional second provider used when the first one is unavailable. */
+    PAYMENT_FALLBACK_PROVIDER: z.enum(["ifthenpay", "eupago"]).optional().catch(undefined),
 
     IFTHENPAY_API_URL: z.url().default("https://api.ifthenpay.com"),
     IFTHENPAY_MBWAY_KEY: optionalString,
