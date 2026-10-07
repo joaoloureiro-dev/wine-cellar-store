@@ -56,8 +56,8 @@ Webhook endpoints to configure in each provider:
   `checkout.session.async_payment_failed` and `checkout.session.expired`
 
 Schedule `GET /api/cron/expire-orders` (e.g. every 15 minutes) with
-`Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and release
-their stock.
+`Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and overdue
+reservations and release their stock.
 
 ## Backoffice
 
