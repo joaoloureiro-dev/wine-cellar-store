@@ -66,7 +66,9 @@ Webhook endpoints to configure in each provider:
 
 Schedule `GET /api/cron/expire-orders` (e.g. every 15 minutes) with
 `Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and overdue
-reservations and release their stock.
+reservations and release their stock. `.github/workflows/scheduled-jobs.yml`
+does this through the public domain once the `APP_URL` and `CRON_SECRET`
+repository secrets are set.
 
 ## Caching
 
@@ -100,6 +102,13 @@ in PostgreSQL.
 
 Locally, `docker compose up -d` also starts Redis; then set
 `REDIS_URL="redis://localhost:6379"` in `.env`.
+
+## Deployment
+
+Production runs on **Neon** (PostgreSQL), with **Vercel** as the primary
+frontend and **Railway** as the fallback behind a failover layer. See
+[docs/deployment.md](docs/deployment.md) for the architecture, setup,
+environment variables and the failover drill.
 
 ## Operations
 
