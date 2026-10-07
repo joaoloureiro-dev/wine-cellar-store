@@ -5,7 +5,7 @@ TypeScript, Tailwind CSS v4, PostgreSQL and Prisma ORM.
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 22.12+
 - PostgreSQL 16 (local via Docker Compose, or any reachable instance)
 - Redis 7, optional (shared cache and rate limits across instances)
 
@@ -119,9 +119,37 @@ action, and each change made in the backoffice is recorded in
 | `npm run db:seed`    | Load the sample catalogue (idempotent)              |
 | `npm run db:studio`  | Open Prisma Studio                                  |
 | `npm run admin:grant -- <email> [--revoke]` | Grant or revoke backoffice access |
+| `npm test`           | Unit tests (see Testing)                            |
 
 Run `npm run db:generate` after changing `prisma/schema.prisma`
 (`prisma migrate dev` does not regenerate the client in Prisma 7).
+
+## Testing
+
+| Command                    | What it runs                                                       |
+| -------------------------- | ------------------------------------------------------------------ |
+| `npm test`                 | Unit tests (Vitest): validation, lifecycles, payments, SEO, …      |
+| `npm run test:integration` | Integration tests against PostgreSQL: concurrency, payments, stock |
+| `npm run test:e2e`         | Playwright end-to-end tests against a production build             |
+
+Integration tests truncate tables, so they only run against a database
+whose name ends in `_test`:
+
+```bash
+createdb cellarium_test   # or via psql / docker
+export DATABASE_URL="postgresql://cellarium:cellarium@localhost:5432/cellarium_test"
+npm run db:test:prepare && npm run test:integration
+```
+
+End-to-end tests need a seeded database and a build:
+
+```bash
+npm run db:seed && npm run build && npm run test:e2e
+```
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests,
+integration tests and the build plus end-to-end tests (with PostgreSQL and
+Redis) on every pull request.
 
 ## Project structure
 
@@ -132,6 +160,7 @@ Run `npm run db:generate` after changing `prisma/schema.prisma`
 | `lib/`        | Application logic, data access, validation and helpers    |
 | `types/`      | Domain types used by the UI                               |
 | `prisma/`     | Schema, migrations and seed data                          |
+| `tests/`      | Unit, integration and end-to-end tests                    |
 
 ## Conventions
 
