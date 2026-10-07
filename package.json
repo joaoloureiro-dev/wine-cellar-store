@@ -18,7 +18,8 @@
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
     "test:integration": "vitest run --project integration",
-    "db:test:prepare": "prisma migrate deploy"
+    "db:test:prepare": "prisma migrate deploy",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
