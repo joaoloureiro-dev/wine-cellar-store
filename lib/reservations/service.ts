@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { releaseStock, reserveStock } from "@/lib/orders/stock";
 import { generateReference, isReference } from "@/lib/references";
 import type { CreateReservationInput } from "@/lib/reservations/schema";
 import {
@@ -140,61 +141,86 @@ export async function createReservation(
     throw new Error("Could not generate a unique reservation reference.");
 }
 
+type ReservationActor = "CUSTOMER" | "ADMIN" | "SYSTEM";
+
 /**
- * Moves a reservation to a new status if the lifecycle allows it.
- * Uses a compare-and-set update (optimistic locking on `status`) so two
- * concurrent transitions can never both succeed.
+ * Applies a status transition inside an existing transaction.
+ *
+ * - Compare-and-set on `status`, so two concurrent transitions can never
+ *   both succeed.
+ * - Confirming tries to hold the units (atomic conditional UPDATE); items
+ *   without stock (pre-order, supplier order) are confirmed without a hold.
+ * - Cancelling or expiring releases a hold if there is one.
+ *
+ * @returns whether the product's stock changed (for page revalidation).
  */
-export async function transitionReservationStatus({
-    reference,
-    to,
-    actor,
-    note,
-}: {
-    reference: string;
-    to: ReservationStatus;
-    actor: "CUSTOMER" | "ADMIN" | "SYSTEM";
-    note?: string;
-}) {
-    return db.$transaction(async (tx) => {
-        const reservation = await tx.reservation.findUnique({
-            where: { reference },
-            select: { id: true, status: true },
-        });
-
-        if (!reservation) {
-            throw new ReservationError("NOT_FOUND", "Reserva não encontrada.");
-        }
-
-        if (!canTransition(reservation.status, to)) {
-            throw new ReservationError(
-                "INVALID_TRANSITION",
-                `Não é possível passar de ${reservation.status} para ${to}.`,
-            );
-        }
-
-        const { count } = await tx.reservation.updateMany({
-            where: { id: reservation.id, status: reservation.status },
-            data: { status: to },
-        });
-
-        if (count === 0) {
-            throw new ReservationError(
-                "CONFLICT",
-                "A reserva foi alterada entretanto. Atualize e tente novamente.",
-            );
-        }
-
-        await tx.reservationEvent.create({
-            data: {
-                reservationId: reservation.id,
-                fromStatus: reservation.status,
-                toStatus: to,
-                actor,
-                note,
-            },
-        });
+export async function applyReservationTransition(
+    tx: Prisma.TransactionClient,
+    {
+        reservationId,
+        to,
+        actor,
+        note,
+        expiresAt,
+    }: {
+        reservationId: string;
+        to: ReservationStatus;
+        actor: ReservationActor;
+        note?: string;
+        expiresAt?: Date;
+    },
+) {
+    const reservation = await tx.reservation.findUnique({
+        where: { id: reservationId },
+        select: { id: true, status: true, productId: true, quantity: true, stockHeld: true },
     });
+
+    if (!reservation) {
+        throw new ReservationError("NOT_FOUND", "Reserva não encontrada.");
+    }
+
+    if (!canTransition(reservation.status, to)) {
+        throw new ReservationError(
+            "INVALID_TRANSITION",
+            `Não é possível passar de ${reservation.status} para ${to}.`,
+        );
+    }
+
+    let stockHeld = reservation.stockHeld;
+    let stockChanged = false;
+
+    if (to === "CONFIRMED" && !stockHeld) {
+        stockHeld = await reserveStock(tx, reservation.productId, reservation.quantity);
+        stockChanged = stockHeld;
+    } else if ((to === "CANCELLED" || to === "EXPIRED") && stockHeld) {
+        await releaseStock(tx, reservation.productId, reservation.quantity);
+        stockHeld = false;
+        stockChanged = true;
+    }
+
+    const { count } = await tx.reservation.updateMany({
+        where: { id: reservation.id, status: reservation.status },
+        data: { status: to, stockHeld, ...(expiresAt ? { expiresAt } : {}) },
+    });
+
+    if (count === 0) {
+        throw new ReservationError(
+            "CONFLICT",
+            "A reserva foi alterada entretanto. Atualize e tente novamente.",
+        );
+    }
+
+    await tx.reservationEvent.create({
+        data: {
+            reservationId: reservation.id,
+            fromStatus: reservation.status,
+            toStatus: to,
+            actor,
+            note,
+        },
+    });
+
+    return { productId: reservation.productId, stockChanged, stockHeld };
 }
 
 /** Public summary for the customer: no personal data is exposed. */

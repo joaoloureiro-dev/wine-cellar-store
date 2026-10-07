@@ -152,6 +152,10 @@ model Reservation {
   privacyConsentAt DateTime
   /// Reservation deadline; set when confirmed (EXPIRED after this date).
   expiresAt        DateTime?
+  /// True while units are held for this reservation (set on confirmation
+  /// when stock is available; out-of-stock or pre-order items are confirmed
+  /// without a hold). Released on cancellation or expiry.
+  stockHeld        Boolean            @default(false)
   /// Set when made while signed in; guest reservations keep it null.
   userId           String?
   user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -161,6 +165,8 @@ model Reservation {
 
   // Backoffice lists by status, newest first.
   @@index([status, createdAt])
+  // Expiry job.
+  @@index([status, expiresAt])
   // Customer lookups and per-email abuse limits.
   @@index([customerEmail, createdAt])
   // Duplicate detection and per-product reservation counts.
