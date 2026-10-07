@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
+import { securityHeaders } from "./lib/security/headers";
+
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders({ isDev: process.env.NODE_ENV === "development" }),
+      },
+    ];
+  },
   // Partial prerendering + 'use cache': static shells with tagged data
   // caches, dynamic parts streamed at request time.
   cacheComponents: true,
