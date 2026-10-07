@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getAdmin } from "@/lib/admin/auth";
 import { productUpdateSchema, type ProductField } from "@/lib/admin/product-schema";
 import { ProductConflictError, updateProduct } from "@/lib/admin/products";
-import { revalidateProductPages } from "@/lib/catalog/revalidate";
+import { invalidateCatalog } from "@/lib/catalog/cache";
 
 export type ProductFormState = {
     status: "idle" | "success" | "error";
@@ -63,7 +63,7 @@ export async function saveProductAction(previousState: ProductFormState, formDat
         throw error;
     }
 
-    await revalidateProductPages([parsed.data.productId]);
+    invalidateCatalog();
     revalidatePath("/admin", "layout");
 
     return { status: "success", message: "Produto atualizado", submissionId };

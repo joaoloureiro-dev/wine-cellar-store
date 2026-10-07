@@ -8,6 +8,9 @@ import { SignUpForm } from "@/components/auth/sign-up-form";
 import { isGoogleSignInEnabled, PASSWORD_MIN_LENGTH } from "@/lib/auth/server";
 import { getSession, safeNextPath } from "@/lib/auth/session";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Criar conta",
     robots: { index: false, follow: false },

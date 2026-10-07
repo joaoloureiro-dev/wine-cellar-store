@@ -23,8 +23,6 @@ import { getBrandHref, getProductHref } from "@/lib/routes";
 type ProductPageProps = PageProps<"/caves/[brand]/[slug]">;
 
 // Time-based revalidation until tag-based invalidation (Cache stage).
-export const revalidate = 300;
-
 export async function generateStaticParams() {
     const products = await getActiveProducts();
 

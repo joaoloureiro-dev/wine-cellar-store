@@ -7,7 +7,7 @@ import { saveAddress } from "@/lib/account/addresses";
 import { getSession } from "@/lib/auth/session";
 import { getCart } from "@/lib/cart/get-cart";
 import { readCartLines, writeCartLines } from "@/lib/cart/storage";
-import { revalidateProductPages } from "@/lib/catalog/revalidate";
+import { invalidateCatalog } from "@/lib/catalog/cache";
 import {
     checkoutSchema,
     checkoutSteps,
@@ -113,7 +113,7 @@ export async function placeOrderAction(
         ({ reference } = await placeOrder(parsed.data, lines, { userId: session?.user.id }));
         // Stock is now held by the order: the cart has served its purpose.
         await writeCartLines([]);
-        await revalidateProductPages(lines.map((line) => line.productId));
+        invalidateCatalog();
 
         if (session && formData.get("saveAddress") === "on") {
             // Convenience only: never fail an order because of it.

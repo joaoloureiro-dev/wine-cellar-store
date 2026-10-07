@@ -1,6 +1,6 @@
 import "server-only";
 
-import { revalidateProductPages } from "@/lib/catalog/revalidate";
+import { invalidateCatalog } from "@/lib/catalog/cache";
 import { db } from "@/lib/db";
 import { createLogger } from "@/lib/logger";
 import { applyOrderTransition, OrderError } from "@/lib/orders/service";
@@ -65,7 +65,7 @@ export async function expireOverdueOrders({ limit = 100 } = {}) {
     }
 
     if (productIds.size > 0) {
-        await revalidateProductPages([...productIds]);
+        invalidateCatalog();
     }
 
     log.info("Expiry run finished", { expired, skipped });

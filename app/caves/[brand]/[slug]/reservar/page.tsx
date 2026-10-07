@@ -16,6 +16,9 @@ import { getBrandHref, getProductHref } from "@/lib/routes";
 
 type ReservePageProps = PageProps<"/caves/[brand]/[slug]/reservar">;
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export async function generateMetadata(props: ReservePageProps): Promise<Metadata> {
     const { slug } = await props.params;
     const product = await getProductBySlug(slug);

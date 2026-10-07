@@ -4,6 +4,13 @@ import type { ReactNode } from "react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { Container } from "@/components/layout/container";
 
+/**
+ * Session-bound pages: no instant static shell to validate. Guests are
+ * redirected (and non-admins get a 404) in proxy.ts, before streaming, so
+ * the HTTP status is real; every page and action checks access again.
+ */
+export const instant = false;
+
 export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };

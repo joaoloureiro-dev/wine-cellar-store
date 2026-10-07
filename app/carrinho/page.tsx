@@ -8,6 +8,9 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
 import { getCart } from "@/lib/cart/get-cart";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Carrinho",
     robots: { index: false, follow: false },
