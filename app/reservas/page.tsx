@@ -4,12 +4,14 @@ import Link from "next/link";
 import { PageIntro } from "@/components/catalog/page-intro";
 import { Container } from "@/components/layout/container";
 import { ReservationSteps } from "@/components/reservations/reservation-steps";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "Reservas",
     description:
         "Reserve a sua cave de vinho sem pagamento imediato. Confirmamos a disponibilidade, o prazo e as condições consigo.",
-};
+    path: "/reservas",
+});
 
 export default function ReservationsPage() {
     return (

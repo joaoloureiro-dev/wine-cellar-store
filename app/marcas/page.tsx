@@ -8,13 +8,15 @@ import { getBrands } from "@/lib/brands";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getProductCountByBrand } from "@/lib/products";
 import { getBrandHref } from "@/lib/routes";
+import { pageMetadata } from "@/lib/seo/metadata";
 
 // Time-based revalidation until tag-based invalidation (Cache stage).
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "Marcas",
     description:
         "Conheça as marcas de caves de vinho disponíveis: La Sommelière, Avintage, Climadiff e outras.",
-};
+    path: "/marcas",
+});
 
 export default async function BrandsPage() {
     const [brands, productCounts] = await Promise.all([

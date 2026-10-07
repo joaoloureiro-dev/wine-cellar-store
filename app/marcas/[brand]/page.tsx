@@ -7,8 +7,9 @@ import { Container } from "@/components/layout/container";
 import { getBrandBySlug, getBrands } from "@/lib/brands";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getProductsByBrand } from "@/lib/products";
+import { getBrandHref } from "@/lib/routes";
+import { pageMetadata } from "@/lib/seo/metadata";
 
-// Time-based revalidation until tag-based invalidation (Cache stage).
 // New brands render on demand; unknown slugs return 404 via notFound().
 export async function generateStaticParams() {
     const brands = await getBrands();
@@ -26,10 +27,11 @@ export async function generateMetadata(
         return {};
     }
 
-    return {
+    return pageMetadata({
         title: `Caves de Vinho ${brand.name}`,
         description: `Caves de vinho ${brand.name}. ${brand.description}`,
-    };
+        path: getBrandHref(brand.slug),
+    });
 }
 
 export default async function BrandPage(props: PageProps<"/marcas/[brand]">) {
