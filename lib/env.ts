@@ -51,6 +51,14 @@ const serverEnvSchema = z.object({
 
     /** Shared secret for scheduled jobs (Authorization: Bearer <secret>). */
     CRON_SECRET: optionalString,
+
+    /**
+     * Optional Redis (e.g. redis://localhost:6379). Shares the 'use cache'
+     * store, tag invalidations and auth rate limits between instances.
+     */
+    REDIS_URL: optionalString.refine((value) => !value || /^rediss?:\/\//.test(value), "REDIS_URL must start with redis:// or rediss://"),
+    /** Key namespace when several apps share one Redis. */
+    REDIS_KEY_PREFIX: optionalString,
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);

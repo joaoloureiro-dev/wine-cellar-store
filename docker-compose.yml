@@ -1,4 +1,4 @@
-# Local development database. Production uses a managed PostgreSQL
+# Local development services. Production uses a managed PostgreSQL
 # (primary + replica, automatic failover, backups and PITR).
 services:
   postgres:
@@ -16,6 +16,18 @@ services:
       test: ["CMD-SHELL", "pg_isready -U cellarium -d cellarium"]
       interval: 5s
       timeout: 5s
+      retries: 10
+
+  # Optional: shared cache and rate limits (set REDIS_URL=redis://localhost:6379).
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 10
 
 volumes:

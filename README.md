@@ -7,6 +7,7 @@ TypeScript, Tailwind CSS v4, PostgreSQL and Prisma ORM.
 
 - Node.js 20+
 - PostgreSQL 16 (local via Docker Compose, or any reachable instance)
+- Redis 7, optional (shared cache and rate limits across instances)
 
 ## Local development
 
@@ -17,7 +18,7 @@ npm install
 # 2. Configure environment variables
 cp .env.example .env
 
-# 3. Start PostgreSQL
+# 3. Start PostgreSQL (and Redis)
 docker compose up -d
 
 # 4. Apply migrations and load the sample catalogue
@@ -58,6 +59,32 @@ Webhook endpoints to configure in each provider:
 Schedule `GET /api/cron/expire-orders` (e.g. every 15 minutes) with
 `Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and overdue
 reservations and release their stock.
+
+## Caching
+
+The app uses Next.js [Cache Components](https://nextjs.org/docs/app/getting-started/caching)
+(`cacheComponents: true`):
+
+- Catalogue reads (`lib/products.ts`, `lib/brands.ts`) run in `'use cache'`
+  scopes tagged `catalog` / `brands` (`lib/catalog/cache.ts`). Product,
+  brand and home pages are prerendered from them.
+- Every change to stock, price or visibility (orders, cancellations, expiry,
+  backoffice edits) expires the `catalog` tag, so the next request renders
+  fresh data. There is no time-based staleness to wait for.
+- `/caves` serves a static shell and streams filters and results.
+  Session-bound pages render per request; `proxy.ts` handles their
+  redirects and 404s before streaming so HTTP status codes stay correct.
+
+### Redis (optional, recommended for more than one instance)
+
+Set `REDIS_URL` to share the `'use cache'` store and tag invalidations
+between instances (`cache-handlers/redis.mjs`). An edit on one instance
+reaches the others within about a second. If Redis becomes unavailable the
+app keeps serving with a per-instance in-memory cache and resynchronises
+when Redis is back.
+
+Locally, `docker compose up -d` also starts Redis; then set
+`REDIS_URL="redis://localhost:6379"` in `.env`.
 
 ## Backoffice
 
