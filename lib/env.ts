@@ -16,7 +16,12 @@ const optionalString = z
     .transform((value) => value || undefined);
 
 const serverEnvSchema = z.object({
+    /** Runtime connection. On Neon use the pooled (-pooler) connection string. */
     DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+    /** Connections per instance: small on serverless (Vercel), larger on long-running servers. */
+    DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
+    /** Covers Neon's cold start when the compute scaled to zero. */
+    DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     /** Public base URL, used for payment redirects and provider callbacks. */
     APP_URL: z.url().default("http://localhost:3000"),
