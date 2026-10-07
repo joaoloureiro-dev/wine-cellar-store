@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
+import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
-import { LegalBar } from "@/components/legal/legal-bar";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { siteUrl } from "@/lib/seo/metadata";
@@ -47,12 +47,12 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="pt-PT">
-      <body className={`${manrope.variable} ${cormorant.variable}`}>
+      <body className={`${manrope.variable} ${cormorant.variable} flex min-h-dvh flex-col`}>
         <ToastProvider>
           <FavoritesProvider>
             <Header />
             {children}
-            <LegalBar />
+            <Footer />
           </FavoritesProvider>
         </ToastProvider>
       </body>
