@@ -10,7 +10,10 @@ const log = createLogger("redis");
 
 type RedisClient = ReturnType<typeof createClient>;
 
-const globalForRedis = globalThis as unknown as { cellariumRedis?: RedisClient };
+const globalForRedis = globalThis as unknown as {
+    cellariumRedis?: RedisClient;
+    cellariumRedisConnecting?: Promise<unknown>;
+};
 
 export const redisKeyPrefix = env.REDIS_KEY_PREFIX ?? "cellarium";
 
@@ -33,7 +36,7 @@ function getClient(): RedisClient | null {
         });
 
         client.on("error", (error: unknown) => log.warn("Redis connection error", { error }));
-        client.connect().catch(() => {});
+        globalForRedis.cellariumRedisConnecting = client.connect().catch(() => {});
         globalForRedis.cellariumRedis = client;
     }
 
@@ -53,6 +56,17 @@ export async function withRedis<T>(operation: (client: RedisClient) => Promise<T
 
     if (!client) {
         throw new Error("Redis is not configured");
+    }
+
+    // Give the very first commands up to 1s for the initial connection.
+    if (!client.isReady && globalForRedis.cellariumRedisConnecting) {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        await Promise.race([
+            globalForRedis.cellariumRedisConnecting,
+            new Promise((resolve) => (timer = setTimeout(resolve, 1_000))),
+        ]);
+        clearTimeout(timer);
+        globalForRedis.cellariumRedisConnecting = undefined;
     }
 
     return breaker.execute(async () => {

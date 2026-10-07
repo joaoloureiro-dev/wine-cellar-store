@@ -93,6 +93,17 @@ in PostgreSQL.
 Locally, `docker compose up -d` also starts Redis; then set
 `REDIS_URL="redis://localhost:6379"` in `.env`.
 
+## Operations
+
+| Endpoint                | Purpose                                                                 |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `GET /api/health`       | Liveness: the process is serving (no dependencies checked)              |
+| `GET /api/health/ready` | Readiness: PostgreSQL required (503 if down); Redis optional ("degraded") |
+| `GET /api/cron/expire-orders` | Scheduled job (see Payments)                                      |
+
+Server errors are logged as structured JSON (`instrumentation.ts`), with
+the route, request method and path, ready for any log collector.
+
 ## Client IP behind a proxy
 
 Sign-in, sign-up and password-change rate limits are counted per client
