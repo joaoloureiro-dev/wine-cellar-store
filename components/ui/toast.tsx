@@ -169,7 +169,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
                     setIsPaused(false);
                 }
             }}
-            className="toast-enter pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border border-border bg-surface p-4 shadow-lg"
+            className="animate-toast-in motion-reduce:animate-none pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border border-border bg-surface p-4 shadow-lg"
         >
             <Icon
                 size={20}
