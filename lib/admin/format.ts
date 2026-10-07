@@ -38,3 +38,32 @@ export const auditActionLabels: Record<string, string> = {
     "reservation.notes": "Notas internas atualizadas",
     "product.update": "Produto atualizado",
 };
+
+export function stockStatusTone(status: string) {
+    switch (status) {
+        case "IN_STOCK":
+            return "success" as const;
+        case "LOW_STOCK":
+            return "warning" as const;
+        case "PREORDER":
+            return "info" as const;
+        default:
+            return "neutral" as const;
+    }
+}
+
+const productFieldLabels: Record<string, string> = {
+    priceCents: "preço",
+    compareAtPriceCents: "preço anterior",
+    stockQuantity: "stock",
+    stockStatus: "disponibilidade",
+    active: "visibilidade",
+    featured: "destaque",
+};
+
+/** "preço, stock" from a product.update audit entry. */
+export function describeProductChanges(data: unknown) {
+    if (!data || typeof data !== "object") return "sem alterações";
+    const keys = Object.keys(data);
+    return keys.length > 0 ? keys.map((key) => productFieldLabels[key] ?? key).join(", ") : "sem alterações";
+}
