@@ -7,9 +7,18 @@ import { ifthenpay } from "@/lib/payments/providers/ifthenpay";
 import { isKlarnaConfigured, KLARNA_MAX_TOTAL_CENTS } from "@/lib/payments/providers/klarna";
 import type { LocalPaymentProvider } from "@/lib/payments/providers/types";
 
-/** Provider used for MB WAY and Multibanco (PAYMENT_PROVIDER). */
-export function getLocalProvider(): LocalPaymentProvider {
-    return env.PAYMENT_PROVIDER === "eupago" ? eupago : ifthenpay;
+const providersById = { ifthenpay, eupago } as const;
+
+/**
+ * Providers to try for a method, in order: PAYMENT_PROVIDER, then
+ * PAYMENT_FALLBACK_PROVIDER (when set, different and configured).
+ */
+export function getLocalProviders(method: "MBWAY" | "MULTIBANCO"): LocalPaymentProvider[] {
+    const ids = [env.PAYMENT_PROVIDER, env.PAYMENT_FALLBACK_PROVIDER].filter(
+        (id, index, all): id is "ifthenpay" | "eupago" => Boolean(id) && all.indexOf(id) === index,
+    );
+
+    return ids.map((id) => providersById[id]).filter((provider) => provider.isConfigured(method));
 }
 
 export type BankTransferDetails = {
@@ -37,14 +46,13 @@ export function getBankTransferDetails(): BankTransferDetails | null {
  * hidden when its provider is not configured or the amount is out of range.
  */
 export function getAvailablePaymentMethods(totalCents: number): AnyPaymentMethod[] {
-    const local = getLocalProvider();
     const methods: AnyPaymentMethod[] = [];
 
-    if (local.isConfigured("MBWAY")) {
+    if (getLocalProviders("MBWAY").length > 0) {
         methods.push("MBWAY");
     }
 
-    if (local.isConfigured("MULTIBANCO")) {
+    if (getLocalProviders("MULTIBANCO").length > 0) {
         methods.push("MULTIBANCO");
     }
 

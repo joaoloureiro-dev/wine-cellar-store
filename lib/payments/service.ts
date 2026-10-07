@@ -4,7 +4,8 @@ import { Prisma, type PaymentProvider } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { createLogger } from "@/lib/logger";
 import { applyOrderTransition } from "@/lib/orders/service";
-import { getBankTransferDetails, getLocalProvider } from "@/lib/payments/config";
+import { getBankTransferDetails, getLocalProviders } from "@/lib/payments/config";
+import { isSafeToFailOver } from "@/lib/payments/failover";
 import { createKlarnaCheckout } from "@/lib/payments/providers/klarna";
 import { PaymentProviderError } from "@/lib/payments/providers/types";
 
@@ -61,12 +62,63 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
     }
 
     const method = order.paymentMethod;
-    const local = getLocalProvider();
-    const provider: PaymentProvider =
-        method === "KLARNA" ? "STRIPE" : method === "BANK_TRANSFER" ? "MANUAL" : local.id;
     const description = `Encomenda ${order.reference}`;
 
-    const payment = await db.payment.create({
+    if (method === "MBWAY" || method === "MULTIBANCO") {
+        return requestLocalPayment(order, method, description);
+    }
+
+    const provider: PaymentProvider = method === "KLARNA" ? "STRIPE" : "MANUAL";
+    const payment = await createAttempt(order, provider, method);
+
+    try {
+        let update: Prisma.PaymentUpdateInput;
+
+        if (method === "BANK_TRANSFER") {
+            if (!getBankTransferDetails()) {
+                throw new PaymentProviderError("manual", "Bank transfer is not configured", undefined, "config");
+            }
+            update = { expiresAt: order.paymentDueAt };
+        } else {
+            const result = await createKlarnaCheckout({
+                paymentId: payment.id,
+                orderReference: order.reference,
+                email: order.customerEmail,
+                items: order.items.map((item) => ({
+                    name: item.productName,
+                    unitPriceCents: item.unitPriceCents,
+                    quantity: item.quantity,
+                })),
+                shippingCents: order.shippingCents,
+            });
+            update = {
+                providerReference: result.providerReference,
+                checkoutUrl: result.checkoutUrl,
+                expiresAt: result.expiresAt,
+            };
+        }
+
+        const saved = await markRequested(payment.id, update, { orderReference: order.reference, provider, method });
+        return { ok: true, checkoutUrl: saved.checkoutUrl ?? undefined };
+    } catch (error) {
+        await markRequestFailed(payment.id, error, { orderReference: order.reference, provider, method });
+        return { ok: false, message: GENERIC_PAYMENT_ERROR };
+    }
+}
+
+const GENERIC_PAYMENT_ERROR =
+    "Não foi possível gerar o pagamento neste momento. Tente novamente dentro de instantes.";
+
+type PayableOrder = {
+    id: string;
+    reference: string;
+    totalCents: number;
+    customerPhone: string;
+    paymentDueAt: Date;
+};
+
+async function createAttempt(order: PayableOrder, provider: PaymentProvider, method: Prisma.PaymentCreateInput["method"]) {
+    return db.payment.create({
         data: {
             orderId: order.id,
             provider,
@@ -75,27 +127,74 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
             events: { create: { type: "CREATED" } },
         },
     });
+}
 
-    try {
-        let update: Prisma.PaymentUpdateInput;
+async function markRequested(
+    paymentId: string,
+    update: Prisma.PaymentUpdateInput,
+    context: Record<string, unknown>,
+) {
+    const saved = await db.payment.update({
+        where: { id: paymentId },
+        data: { ...update, events: { create: { type: "REQUESTED" } } },
+    });
 
-        switch (method) {
-            case "MBWAY": {
-                const result = await local.createMbWayPayment({
+    log.info("Payment requested", { paymentId, ...context });
+
+    return saved;
+}
+
+async function markRequestFailed(paymentId: string, error: unknown, context: Record<string, unknown>) {
+    const reason = error instanceof PaymentProviderError ? error.message : error instanceof Error ? error.name : "Unexpected provider error";
+
+    await db.payment.update({
+        where: { id: paymentId },
+        data: {
+            status: "FAILED",
+            failureReason: reason,
+            events: {
+                create: {
+                    type: "REQUEST_FAILED",
+                    message: reason,
+                    data: error instanceof PaymentProviderError ? sanitizeForAudit(error.details) : undefined,
+                },
+            },
+        },
+    });
+
+    log.error("Payment request failed", { paymentId, ...context, error });
+}
+
+/**
+ * MB WAY and Multibanco: tries PAYMENT_PROVIDER, then the fallback provider
+ * when the failure makes that safe (see isSafeToFailOver). Every attempt is
+ * its own Payment row, so the audit trail shows exactly what happened.
+ */
+async function requestLocalPayment(
+    order: PayableOrder,
+    method: "MBWAY" | "MULTIBANCO",
+    description: string,
+): Promise<InitiatePaymentResult> {
+    const providers = getLocalProviders(method);
+
+    for (const [index, provider] of providers.entries()) {
+        const context = { orderReference: order.reference, provider: provider.id, method, attempt: index + 1 };
+        const payment = await createAttempt(order, provider.id, method);
+
+        try {
+            let update: Prisma.PaymentUpdateInput;
+
+            if (method === "MBWAY") {
+                const result = await provider.createMbWayPayment({
                     orderReference: order.reference,
                     amountCents: order.totalCents,
                     phone: order.customerPhone,
                     description,
                 });
                 update = { providerReference: result.providerReference, expiresAt: result.expiresAt };
-                break;
-            }
-            case "MULTIBANCO": {
-                const expiryDays = Math.max(
-                    1,
-                    Math.ceil((order.paymentDueAt.getTime() - Date.now()) / DAY_MS),
-                );
-                const result = await local.createMultibancoReference({
+            } else {
+                const expiryDays = Math.max(1, Math.ceil((order.paymentDueAt.getTime() - Date.now()) / DAY_MS));
+                const result = await provider.createMultibancoReference({
                     orderReference: order.reference,
                     amountCents: order.totalCents,
                     description,
@@ -107,84 +206,30 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
                     mbReference: result.reference,
                     expiresAt: result.expiresAt ?? order.paymentDueAt,
                 };
-                break;
             }
-            case "BANK_TRANSFER": {
-                if (!getBankTransferDetails()) {
-                    throw new PaymentProviderError("manual", "Bank transfer is not configured");
-                }
-                update = { expiresAt: order.paymentDueAt };
-                break;
+
+            await markRequested(payment.id, update, context);
+            return { ok: true };
+        } catch (error) {
+            await markRequestFailed(payment.id, error, context);
+            const next = providers[index + 1];
+
+            if (next && isSafeToFailOver(method, error)) {
+                log.warn("Payment provider failover", { ...context, to: next.id });
+                continue;
             }
-            case "KLARNA": {
-                const result = await createKlarnaCheckout({
-                    paymentId: payment.id,
-                    orderReference: order.reference,
-                    email: order.customerEmail,
-                    items: order.items.map((item) => ({
-                        name: item.productName,
-                        unitPriceCents: item.unitPriceCents,
-                        quantity: item.quantity,
-                    })),
-                    shippingCents: order.shippingCents,
-                });
-                update = {
-                    providerReference: result.providerReference,
-                    checkoutUrl: result.checkoutUrl,
-                    expiresAt: result.expiresAt,
-                };
-                break;
-            }
+
+            return {
+                ok: false,
+                message:
+                    method === "MBWAY"
+                        ? "Não foi possível enviar o pedido MB WAY. Verifique o número e tente novamente."
+                        : GENERIC_PAYMENT_ERROR,
+            };
         }
-
-        const saved = await db.payment.update({
-            where: { id: payment.id },
-            data: { ...update, events: { create: { type: "REQUESTED" } } },
-        });
-
-        log.info("Payment requested", {
-            paymentId: payment.id,
-            orderReference: order.reference,
-            provider,
-            method,
-        });
-
-        return { ok: true, checkoutUrl: saved.checkoutUrl ?? undefined };
-    } catch (error) {
-        const reason =
-            error instanceof PaymentProviderError ? error.message : "Unexpected provider error";
-
-        await db.payment.update({
-            where: { id: payment.id },
-            data: {
-                status: "FAILED",
-                failureReason: reason,
-                events: {
-                    create: {
-                        type: "REQUEST_FAILED",
-                        message: reason,
-                        data: error instanceof PaymentProviderError ? sanitizeForAudit(error.details) : undefined,
-                    },
-                },
-            },
-        });
-
-        log.error("Payment request failed", {
-            paymentId: payment.id,
-            orderReference: order.reference,
-            provider,
-            method,
-            error,
-        });
-
-        return {
-            ok: false,
-            message:
-                method === "MBWAY"
-                    ? "Não foi possível enviar o pedido MB WAY. Verifique o número e tente novamente."
-                    : "Não foi possível gerar o pagamento neste momento. Tente novamente dentro de instantes.",
-        };
     }
+
+    return { ok: false, message: GENERIC_PAYMENT_ERROR };
 }
 
 export type WebhookOutcome =

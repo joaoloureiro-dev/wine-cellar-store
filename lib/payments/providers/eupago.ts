@@ -35,7 +35,7 @@ async function post(path: string, body: Record<string, unknown>, headers: Record
     const data = (await response.json().catch(() => null)) as EupagoResponse | null;
 
     if (!response.ok || !data) {
-        throw new PaymentProviderError("eupago", `HTTP ${response.status}`, { path });
+        throw new PaymentProviderError("eupago", `HTTP ${response.status}`, { path, status: response.status });
     }
 
     return data;
@@ -43,7 +43,7 @@ async function post(path: string, body: Record<string, unknown>, headers: Record
 
 function requireApiKey() {
     if (!env.EUPAGO_API_KEY) {
-        throw new PaymentProviderError("eupago", "EUPAGO_API_KEY is not configured");
+        throw new PaymentProviderError("eupago", "EUPAGO_API_KEY is not configured", undefined, "config");
     }
 
     return env.EUPAGO_API_KEY;
@@ -81,7 +81,7 @@ export const eupago: LocalPaymentProvider = {
             throw new PaymentProviderError("eupago", "MB WAY request rejected", {
                 status: data.transactionStatus,
                 code: data.code,
-            });
+            }, "rejected");
         }
 
         return {
@@ -110,7 +110,7 @@ export const eupago: LocalPaymentProvider = {
         if (data.estado !== 0 || data.entidade == null || data.referencia == null) {
             throw new PaymentProviderError("eupago", "Multibanco reference rejected", {
                 estado: data.estado,
-            });
+            }, "rejected");
         }
 
         return {

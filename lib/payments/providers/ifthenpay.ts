@@ -36,7 +36,7 @@ async function post(path: string, body: Record<string, unknown>) {
     const data = (await response.json().catch(() => null)) as IfthenpayResponse | null;
 
     if (!response.ok || !data) {
-        throw new PaymentProviderError("ifthenpay", `HTTP ${response.status}`, { path });
+        throw new PaymentProviderError("ifthenpay", `HTTP ${response.status}`, { path, status: response.status });
     }
 
     return data;
@@ -44,7 +44,7 @@ async function post(path: string, body: Record<string, unknown>) {
 
 function requireKey(key: string | undefined, name: string) {
     if (!key) {
-        throw new PaymentProviderError("ifthenpay", `${name} is not configured`);
+        throw new PaymentProviderError("ifthenpay", `${name} is not configured`, undefined, "config");
     }
 
     return key;
@@ -79,7 +79,7 @@ export const ifthenpay: LocalPaymentProvider & {
             throw new PaymentProviderError("ifthenpay", "MB WAY request rejected", {
                 status: data.Status,
                 message: data.Message,
-            });
+            }, "rejected");
         }
 
         return {
@@ -113,7 +113,7 @@ export const ifthenpay: LocalPaymentProvider & {
         ) {
             throw new PaymentProviderError("ifthenpay", "Multibanco reference rejected", {
                 status: data.Status,
-            });
+            }, "rejected");
         }
 
         const expiresAt = new Date();
