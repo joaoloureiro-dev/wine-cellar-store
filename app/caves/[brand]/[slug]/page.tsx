@@ -9,6 +9,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { ProductServices } from "@/components/product/product-services";
 import { ProductSpecs } from "@/components/product/product-specs";
+import { JsonLd } from "@/components/seo/json-ld";
 import {
     getProductHighlights,
     getProductImageAlt,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/products";
 import { getBrandHref, getProductHref } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbNode, jsonLdGraph, organizationNode, productNode } from "@/lib/seo/structured-data";
 
 type ProductPageProps = PageProps<"/caves/[brand]/[slug]">;
 
@@ -63,18 +65,24 @@ export default async function ProductPage(props: ProductPageProps) {
 
     const relatedProducts = await getRelatedProducts(product);
     const highlights = getProductHighlights(product);
+    const breadcrumbs = [
+        { label: "Início", href: "/" },
+        { label: "Caves de Vinho", href: "/caves" },
+        { label: product.brand, href: getBrandHref(product.brandSlug) },
+        { label: product.name },
+    ];
 
     return (
         <main>
+            <JsonLd
+                data={jsonLdGraph(
+                    productNode(product),
+                    organizationNode(),
+                    breadcrumbNode(breadcrumbs, getProductHref(product)),
+                )}
+            />
             <Container className="pt-6 sm:pt-8 lg:pt-10">
-                <Breadcrumbs
-                    items={[
-                        { label: "Início", href: "/" },
-                        { label: "Caves de Vinho", href: "/caves" },
-                        { label: product.brand, href: getBrandHref(product.brandSlug) },
-                        { label: product.name },
-                    ]}
-                />
+                <Breadcrumbs items={breadcrumbs} />
             </Container>
 
             <Container className="py-6 sm:py-8 lg:py-12">

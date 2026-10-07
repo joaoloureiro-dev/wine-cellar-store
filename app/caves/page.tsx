@@ -8,6 +8,7 @@ import { PageIntro } from "@/components/catalog/page-intro";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SortSelect } from "@/components/catalog/sort-select";
 import { Container } from "@/components/layout/container";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getBrands } from "@/lib/brands";
 import {
     clearCatalogFilters,
@@ -19,8 +20,13 @@ import {
 import { getProductCountLabel } from "@/lib/product-display";
 import { getAvailableEnergyClasses, getCatalogProducts } from "@/lib/products";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbNode, jsonLdGraph } from "@/lib/seo/structured-data";
 
 const title = "Caves de Vinho";
+const breadcrumbs = [
+        { label: "Início", href: "/" },
+        { label: title },
+];
 const description =
     "Catálogo de caves de vinho de livre instalação, encastre e sob bancada, com uma, duas ou três zonas de temperatura.";
 
@@ -53,11 +59,9 @@ export async function generateMetadata(
 export default function CatalogPage(props: PageProps<"/caves">) {
     return (
         <main>
+            <JsonLd data={jsonLdGraph(breadcrumbNode(breadcrumbs, "/caves"))} />
             <PageIntro
-                breadcrumbs={[
-                    { label: "Início", href: "/" },
-                    { label: title },
-                ]}
+                breadcrumbs={breadcrumbs}
                 eyebrow="Catálogo"
                 title={title}
                 description="Compare capacidades, zonas de temperatura e tipos de instalação para encontrar a cave certa para a sua coleção."

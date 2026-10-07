@@ -4,11 +4,13 @@ import { ArrowRight } from "lucide-react";
 
 import { PageIntro } from "@/components/catalog/page-intro";
 import { Container } from "@/components/layout/container";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getBrands } from "@/lib/brands";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getProductCountByBrand } from "@/lib/products";
 import { getBrandHref } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbNode, jsonLdGraph } from "@/lib/seo/structured-data";
 
 // Time-based revalidation until tag-based invalidation (Cache stage).
 export const metadata: Metadata = pageMetadata({
@@ -18,6 +20,8 @@ export const metadata: Metadata = pageMetadata({
     path: "/marcas",
 });
 
+const breadcrumbs = [{ label: "Início", href: "/" }, { label: "Marcas" }];
+
 export default async function BrandsPage() {
     const [brands, productCounts] = await Promise.all([
         getBrands(),
@@ -26,8 +30,9 @@ export default async function BrandsPage() {
 
     return (
         <main>
+            <JsonLd data={jsonLdGraph(breadcrumbNode(breadcrumbs, "/marcas"))} />
             <PageIntro
-                breadcrumbs={[{ label: "Início", href: "/" }, { label: "Marcas" }]}
+                breadcrumbs={breadcrumbs}
                 eyebrow="Marcas"
                 title="Marcas selecionadas"
                 description="Trabalhamos com fabricantes especializados em conservação de vinho, escolhidos pela fiabilidade e qualidade de construção."
