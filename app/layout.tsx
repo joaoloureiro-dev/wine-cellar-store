@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { Header } from "@/components/layout/header";
+import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { siteConfig } from "@/lib/site";
 
@@ -35,8 +36,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="pt-PT">
       <body className={`${manrope.variable} ${cormorant.variable}`}>
         <ToastProvider>
-          <Header />
-          {children}
+          <FavoritesProvider>
+            <Header />
+            {children}
+          </FavoritesProvider>
         </ToastProvider>
       </body>
     </html>

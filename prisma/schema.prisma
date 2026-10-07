@@ -77,6 +77,7 @@ model Product {
   images           ProductImage[]
   reservations     Reservation[]
   orderItems       OrderItem[]
+  favorites        Favorite[]
 
   // Homepage featured products.
   @@index([active, featured])
@@ -384,6 +385,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   addresses     Address[]
+  favorites     Favorite[]
   orders        Order[]
   reservations  Reservation[]
 
@@ -470,4 +472,16 @@ model Address {
   updatedAt     DateTime @updatedAt
 
   @@index([userId, createdAt])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  // One row per customer and product; also serves "my favourites" lookups.
+  @@unique([userId, productId])
 }

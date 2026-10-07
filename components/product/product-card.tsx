@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Layers, Thermometer, Wine } from "lucide-react";
 
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductImage } from "@/components/product/product-image";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
@@ -63,6 +64,10 @@ export function ProductCard({
                     sizes={imageSizes}
                     className="transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
+
+                <div className="absolute right-3 top-3">
+                    <FavoriteButton productId={product.id} productName={product.name} />
+                </div>
 
                 {discount !== null && (
                     <span className="absolute left-4 top-4 rounded-sm bg-wine px-2.5 py-1 text-xs font-bold text-white">
