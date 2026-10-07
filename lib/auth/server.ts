@@ -4,6 +4,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 
+import { createRateLimitStorage } from "@/lib/auth/rate-limit-storage";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { sanitizeText } from "@/lib/validation/fields";
@@ -20,8 +21,8 @@ export const AUTH_COOKIE_PREFIX = "cellarium";
  * - Passwords are hashed with scrypt; sessions are stored in PostgreSQL and
  *   can be revoked. Cookies are httpOnly, SameSite=Lax and Secure on HTTPS.
  * - Rate limiting and the origin (CSRF) check run on every HTTP request to
- *   /api/auth/*, with counters in the database so they hold across
- *   instances. Sign-in, sign-up and password changes therefore always go
+ *   /api/auth/*. Counters live in Redis when REDIS_URL is set (atomic,
+ *   shared by all instances), otherwise in PostgreSQL. Sign-in, sign-up and password changes therefore always go
  *   through that HTTP API (auth client), never through direct server calls.
  * - Email verification, password reset and magic links need email sending
  *   and are enabled in the emails stage.
@@ -54,6 +55,7 @@ export const auth = betterAuth({
     rateLimit: {
         enabled: true,
         storage: "database",
+        customStorage: createRateLimitStorage(),
         window: 60,
         max: 100,
         customRules: {

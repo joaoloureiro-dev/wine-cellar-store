@@ -77,11 +77,18 @@ The app uses Next.js [Cache Components](https://nextjs.org/docs/app/getting-star
 
 ### Redis (optional, recommended for more than one instance)
 
-Set `REDIS_URL` to share the `'use cache'` store and tag invalidations
-between instances (`cache-handlers/redis.mjs`). An edit on one instance
-reaches the others within about a second. If Redis becomes unavailable the
-app keeps serving with a per-instance in-memory cache and resynchronises
-when Redis is back.
+Set `REDIS_URL` to share, between instances:
+
+- the `'use cache'` store and tag invalidations (`cache-handlers/redis.mjs`):
+  an edit on one instance reaches the others within about a second;
+- sign-in, sign-up and password-change rate limits
+  (`lib/auth/rate-limit-storage.ts`), counted atomically. Without Redis
+  they are stored in PostgreSQL.
+
+If Redis becomes unavailable the app keeps serving: caching falls back to
+per-instance memory, rate limits are enforced per instance, and pending
+invalidations are resynchronised when Redis is back. Sessions always stay
+in PostgreSQL.
 
 Locally, `docker compose up -d` also starts Redis; then set
 `REDIS_URL="redis://localhost:6379"` in `.env`.
