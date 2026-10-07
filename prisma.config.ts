@@ -10,6 +10,8 @@ export default defineConfig({
     datasource: {
         // Read directly (not via `env()`) so `prisma generate` also works
         // where no database is configured, e.g. during `npm install`.
-        url: process.env.DATABASE_URL,
+        // Migrations use the direct (non-pooled) connection when provided:
+        // Neon's pooler (PgBouncer) is meant for the app, not for DDL.
+        url: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
     },
 });
