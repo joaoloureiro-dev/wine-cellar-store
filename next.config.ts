@@ -4,6 +4,13 @@ import { securityHeaders } from "./lib/security/headers";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Version-skew protection when traffic moves between deployments (e.g.
+  // Vercel → Railway failover): a client from another build hard-reloads
+  // instead of mixing assets and server actions. Vercel sets its own ID;
+  // elsewhere NEXT_DEPLOYMENT_ID or Railway's deployment ID is used.
+  deploymentId:
+    process.env.NEXT_DEPLOYMENT_ID ??
+    (process.env.RAILWAY_DEPLOYMENT_ID ? `railway-${process.env.RAILWAY_DEPLOYMENT_ID}` : undefined),
   async headers() {
     return [
       {
