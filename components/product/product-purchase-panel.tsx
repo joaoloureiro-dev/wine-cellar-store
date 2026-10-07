@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarClock, Layers, Thermometer, Wine } from "lucide-react";
 
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
 import { getMaxPurchasableQuantity } from "@/lib/cart/availability";
@@ -39,9 +40,12 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                 {product.brand}
             </Link>
 
-            <h1 className="mt-3 font-display text-4xl font-medium leading-none tracking-[-0.035em] text-charcoal sm:text-5xl lg:text-6xl">
-                {product.name}
-            </h1>
+            <div className="mt-3 flex items-start justify-between gap-4">
+                <h1 className="font-display text-4xl font-medium leading-none tracking-[-0.035em] text-charcoal sm:text-5xl lg:text-6xl">
+                    {product.name}
+                </h1>
+                <FavoriteButton productId={product.id} productName={product.name} variant="inline" />
+            </div>
 
             <p className="mt-3 text-xs font-medium text-muted">
                 Ref. {product.sku} · {installationTypeLabels[product.installationType]}
