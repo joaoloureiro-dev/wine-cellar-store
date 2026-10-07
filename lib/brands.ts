@@ -1,7 +1,6 @@
 import "server-only";
 
-import { cache } from "react";
-
+import { cacheBrandData } from "@/lib/catalog/cache";
 import { db } from "@/lib/db";
 import type { Brand } from "@/types/brand";
 
@@ -18,9 +17,15 @@ const brandSelect = {
 } as const;
 
 export async function getBrands(): Promise<Brand[]> {
+    "use cache";
+    cacheBrandData();
+
     return db.brand.findMany({ select: brandSelect, orderBy: { name: "asc" } });
 }
 
-export const getBrandBySlug = cache(async (slug: string): Promise<Brand | null> => {
+export async function getBrandBySlug(slug: string): Promise<Brand | null> {
+    "use cache";
+    cacheBrandData();
+
     return db.brand.findUnique({ where: { slug }, select: brandSelect });
-});
+}

@@ -8,6 +8,13 @@ import { getAdmin } from "@/lib/admin/auth";
  * Navigation only. Every account page checks the session itself
  * (requireUser), so access control never depends on the layout.
  */
+/**
+ * Session-bound pages: no instant static shell to validate. Guests are
+ * redirected (and non-admins get a 404) in proxy.ts, before streaming, so
+ * the HTTP status is real; every page and action checks access again.
+ */
+export const instant = false;
+
 export default async function AccountLayout({ children }: { children: ReactNode }) {
     const admin = await getAdmin();
 

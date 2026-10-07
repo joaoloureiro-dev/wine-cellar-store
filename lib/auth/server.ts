@@ -10,6 +10,9 @@ import { sanitizeText } from "@/lib/validation/fields";
 
 export const PASSWORD_MIN_LENGTH = 10;
 
+/** Session cookie: `cellarium.session_token`. */
+export const AUTH_COOKIE_PREFIX = "cellarium";
+
 /**
  * Better Auth configuration.
  *
@@ -69,7 +72,7 @@ export const auth = betterAuth({
         },
     },
     advanced: {
-        cookiePrefix: "cellarium",
+        cookiePrefix: AUTH_COOKIE_PREFIX,
     },
     telemetry: { enabled: false },
     plugins: [nextCookies()],

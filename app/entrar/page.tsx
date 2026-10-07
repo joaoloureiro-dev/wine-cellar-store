@@ -8,6 +8,9 @@ import { SignInForm } from "@/components/auth/sign-in-form";
 import { isGoogleSignInEnabled } from "@/lib/auth/server";
 import { getSession, safeNextPath } from "@/lib/auth/session";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Entrar",
     robots: { index: false, follow: false },

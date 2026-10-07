@@ -10,8 +10,6 @@ import { getProductsByBrand } from "@/lib/products";
 
 // Time-based revalidation until tag-based invalidation (Cache stage).
 // New brands render on demand; unknown slugs return 404 via notFound().
-export const revalidate = 300;
-
 export async function generateStaticParams() {
     const brands = await getBrands();
 

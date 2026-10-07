@@ -13,6 +13,9 @@ import { getBankTransferDetails } from "@/lib/payments/config";
 import { getOrderPaymentView } from "@/lib/payments/service";
 import { getProductHref } from "@/lib/routes";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Encomenda",
     robots: { index: false, follow: false },

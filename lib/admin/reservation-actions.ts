@@ -10,7 +10,7 @@ import {
     adminTransitionReservation,
     updateReservationNotes,
 } from "@/lib/admin/reservation-operations";
-import { revalidateProductPages } from "@/lib/catalog/revalidate";
+import { invalidateCatalog } from "@/lib/catalog/cache";
 import { isReference } from "@/lib/references";
 import { ReservationError } from "@/lib/reservations/service";
 import { sanitizeText } from "@/lib/validation/fields";
@@ -69,7 +69,7 @@ export async function transitionReservationAction(input: {
         const result = await adminTransitionReservation(admin, parsed.data);
 
         if (result.stockChanged) {
-            await revalidateProductPages([result.productId]);
+            invalidateCatalog();
         }
 
         message = {

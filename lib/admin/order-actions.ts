@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { getAdmin } from "@/lib/admin/auth";
 import { adminOrderTargets, adminTransitionOrder, confirmBankTransfer } from "@/lib/admin/order-operations";
-import { revalidateProductPages } from "@/lib/catalog/revalidate";
+import { invalidateCatalog } from "@/lib/catalog/cache";
 import { OrderError } from "@/lib/orders/service";
 import { isReference } from "@/lib/references";
 import { sanitizeText } from "@/lib/validation/fields";
@@ -63,7 +63,7 @@ export async function transitionOrderAction(input: {
         const changedProducts = await adminTransitionOrder(admin, parsed.data);
 
         if (changedProducts.length > 0) {
-            await revalidateProductPages(changedProducts);
+            invalidateCatalog();
         }
     } catch (error) {
         return toResult(error);

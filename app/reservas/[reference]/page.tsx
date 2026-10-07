@@ -12,6 +12,9 @@ import { getPublicReservation } from "@/lib/reservations/service";
 import { reservationStatusLabels } from "@/lib/reservations/status";
 import { getProductHref } from "@/lib/routes";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Reserva",
     robots: { index: false, follow: false },

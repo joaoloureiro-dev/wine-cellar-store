@@ -18,6 +18,9 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { getAvailablePaymentMethods, getBankTransferDetails } from "@/lib/payments/config";
 
+/** Per-request page (session, cookies or private data): rendered on demand. */
+export const instant = false;
+
 export const metadata: Metadata = {
     title: "Checkout",
     robots: { index: false, follow: false },

@@ -13,6 +13,7 @@ import {
     defaultProductOrder,
 } from "@/lib/catalog/prisma-query";
 import type { CatalogQuery } from "@/lib/catalog/query";
+import { cacheCatalogData } from "@/lib/catalog/cache";
 import { db } from "@/lib/db";
 import type {
     InstallationType as DomainInstallationType,
@@ -26,6 +27,10 @@ import type {
  *
  * UI components only receive the WineCellarProduct domain type; database
  * details (cents, millimetres, enums, relations) never leak past this file.
+ *
+ * Every read goes through a 'use cache' scope tagged "catalog" (see
+ * lib/catalog/cache.ts): results are shared across requests and refreshed
+ * whenever stock, price or visibility changes.
  */
 
 const productInclude = {
@@ -106,6 +111,9 @@ async function findProducts(
         take?: number;
     } = {},
 ) {
+    "use cache";
+    cacheCatalogData();
+
     const rows = await db.product.findMany({
         where: { AND: [{ active: true }, where] },
         include: productInclude,
@@ -131,6 +139,9 @@ export async function getProductsByBrand(
 }
 
 export async function getProductCountByBrand(): Promise<Map<string, number>> {
+    "use cache";
+    cacheCatalogData();
+
     const brands = await db.brand.findMany({
         select: {
             slug: true,
@@ -151,6 +162,9 @@ export async function getCatalogProducts(
 
 /** Energy classes present in the active catalogue, best first. */
 export async function getAvailableEnergyClasses(): Promise<string[]> {
+    "use cache";
+    cacheCatalogData();
+
     const rows = await db.product.findMany({
         where: { active: true, energyClass: { not: null } },
         select: { energyClass: true },

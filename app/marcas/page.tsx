@@ -10,8 +10,6 @@ import { getProductCountByBrand } from "@/lib/products";
 import { getBrandHref } from "@/lib/routes";
 
 // Time-based revalidation until tag-based invalidation (Cache stage).
-export const revalidate = 300;
-
 export const metadata: Metadata = {
     title: "Marcas",
     description:
