@@ -19,10 +19,10 @@ import {
     getRelatedProducts,
 } from "@/lib/products";
 import { getBrandHref, getProductHref } from "@/lib/routes";
+import { pageMetadata } from "@/lib/seo/metadata";
 
 type ProductPageProps = PageProps<"/caves/[brand]/[slug]">;
 
-// Time-based revalidation until tag-based invalidation (Cache stage).
 export async function generateStaticParams() {
     const products = await getActiveProducts();
 
@@ -40,10 +40,11 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
         return {};
     }
 
-    return {
+    return pageMetadata({
         title: product.seo.title,
         description: product.seo.description,
-    };
+        path: getProductHref(product),
+    });
 }
 
 export default async function ProductPage(props: ProductPageProps) {

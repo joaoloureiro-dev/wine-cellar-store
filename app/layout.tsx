@@ -4,6 +4,7 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Header } from "@/components/layout/header";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { ToastProvider } from "@/components/ui/toast";
+import { siteUrl } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -20,11 +21,22 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: {
     default: `${siteConfig.name} | ${siteConfig.tagline}`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  applicationName: siteConfig.name,
+  // Defaults for pages without their own (indexable pages use pageMetadata).
+  openGraph: {
+    type: "website",
+    locale: "pt_PT",
+    siteName: siteConfig.name,
+    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    description: siteConfig.description,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 type RootLayoutProps = Readonly<{

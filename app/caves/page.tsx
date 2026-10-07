@@ -18,6 +18,7 @@ import {
 } from "@/lib/catalog/query";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getAvailableEnergyClasses, getCatalogProducts } from "@/lib/products";
+import { pageMetadata } from "@/lib/seo/metadata";
 
 const title = "Caves de Vinho";
 const description =
@@ -38,8 +39,7 @@ export async function generateMetadata(
     const isRefined = toCatalogSearchParams(query).size > 0;
 
     return {
-        title,
-        description,
+        ...pageMetadata({ title, description, path: "/caves" }),
         // Filtered/sorted variants are useful for users but would create
         // near-duplicate pages for search engines.
         robots: isRefined ? { index: false, follow: true } : undefined,
