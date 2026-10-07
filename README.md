@@ -93,6 +93,23 @@ in PostgreSQL.
 Locally, `docker compose up -d` also starts Redis; then set
 `REDIS_URL="redis://localhost:6379"` in `.env`.
 
+## Client IP behind a proxy
+
+Sign-in, sign-up and password-change rate limits are counted per client
+IP. In production, tell the app which header carries the real IP, using a
+header that only your proxy sets (a client can send any header to a server
+that is reached directly):
+
+| Hosting                     | Setting                                                               |
+| --------------------------- | --------------------------------------------------------------------- |
+| nginx / Caddy reverse proxy | `TRUSTED_IP_HEADER=x-real-ip` (nginx: `proxy_set_header X-Real-IP $remote_addr;`) |
+| Cloudflare                  | `TRUSTED_IP_HEADER=cf-connecting-ip`                                  |
+| Load balancer appending `X-Forwarded-For` | `TRUSTED_PROXIES=<proxy IPs or CIDRs>` (the chain is read right to left) |
+
+Without either, a warning is logged at startup: requests with a forwarded
+chain would share one rate-limit bucket, so one client could lock everyone
+out of signing in.
+
 ## Backoffice
 
 The backoffice lives at `/admin`. Access is granted from the command line to

@@ -59,6 +59,20 @@ const serverEnvSchema = z.object({
     REDIS_URL: optionalString.refine((value) => !value || /^rediss?:\/\//.test(value), "REDIS_URL must start with redis:// or rediss://"),
     /** Key namespace when several apps share one Redis. */
     REDIS_KEY_PREFIX: optionalString,
+
+    /**
+     * Client IP for auth rate limits (see README, "Client IP behind a proxy").
+     * TRUSTED_IP_HEADER: a header only your proxy sets (x-real-ip,
+     * cf-connecting-ip, …). TRUSTED_PROXIES: comma-separated proxy IPs or
+     * CIDRs, so X-Forwarded-For chains are read from the right.
+     */
+    TRUSTED_IP_HEADER: optionalString.refine(
+        (value) => !value || /^[a-z0-9-]{1,64}$/i.test(value),
+        "TRUSTED_IP_HEADER must be a header name, e.g. x-real-ip",
+    ),
+    TRUSTED_PROXIES: optionalString.transform((value) =>
+        value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : undefined,
+    ),
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);
