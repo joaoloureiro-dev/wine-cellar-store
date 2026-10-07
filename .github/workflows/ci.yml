@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  BETTER_AUTH_SECRET: ci-secret-not-used-in-production-0000000
+  CRON_SECRET: ci-cron-secret
+
+jobs:
+  quality:
+    name: Lint, typecheck and unit tests
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://cellarium:cellarium@localhost:5432/cellarium
+      APP_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  integration:
+    name: Integration tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cellarium
+          POSTGRES_PASSWORD: cellarium
+          POSTGRES_DB: cellarium_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cellarium -d cellarium_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://cellarium:cellarium@localhost:5432/cellarium_test
+      APP_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run db:test:prepare
+      - run: npm run test:integration
+
+  e2e:
+    name: Build and end-to-end tests (PostgreSQL + Redis)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cellarium
+          POSTGRES_PASSWORD: cellarium
+          POSTGRES_DB: cellarium
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cellarium -d cellarium"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://cellarium:cellarium@localhost:5432/cellarium
+      REDIS_URL: redis://localhost:6379
+      APP_URL: http://localhost:3100
+      BANK_TRANSFER_IBAN: PT50000201231234567890154
+      BANK_TRANSFER_HOLDER: Cellarium Teste, Lda.
+      BANK_TRANSFER_BANK: Banco de Teste
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run db:deploy
+      - run: npm run db:seed
+      # Catalogue pages are prerendered from the database at build time.
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
