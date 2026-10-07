@@ -15,6 +15,29 @@ export const PASSWORD_MIN_LENGTH = 10;
 export const AUTH_COOKIE_PREFIX = "cellarium";
 
 /**
+ * Which request header identifies the client for rate limiting. Behind a
+ * proxy this must be a header the proxy controls; otherwise clients could
+ * spoof it, or every client would share one bucket (one attacker could
+ * then lock everybody out of signing in).
+ */
+function clientIpOptions() {
+    if (!env.TRUSTED_IP_HEADER && !env.TRUSTED_PROXIES && env.NODE_ENV === "production") {
+        console.warn(
+            JSON.stringify({
+                level: "warn",
+                scope: "auth",
+                message: "Set TRUSTED_IP_HEADER or TRUSTED_PROXIES so rate limits use the real client IP",
+            }),
+        );
+    }
+
+    return {
+        ...(env.TRUSTED_IP_HEADER ? { ipAddressHeaders: [env.TRUSTED_IP_HEADER.toLowerCase()] } : {}),
+        ...(env.TRUSTED_PROXIES ? { trustedProxies: env.TRUSTED_PROXIES } : {}),
+    };
+}
+
+/**
  * Better Auth configuration.
  *
  * Security notes:
@@ -75,6 +98,7 @@ export const auth = betterAuth({
     },
     advanced: {
         cookiePrefix: AUTH_COOKIE_PREFIX,
+        ipAddress: clientIpOptions(),
     },
     telemetry: { enabled: false },
     plugins: [nextCookies()],
