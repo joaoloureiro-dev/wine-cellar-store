@@ -8,6 +8,8 @@ import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
 import { ReservationForm } from "@/components/reservations/reservation-form";
 import { ReservationSteps } from "@/components/reservations/reservation-steps";
+import { getDefaultAddress } from "@/lib/account/queries";
+import { getSession } from "@/lib/auth/session";
 import { getProductImageAlt, getZonesLabel } from "@/lib/product-display";
 import { getProductBySlug } from "@/lib/products";
 import { getBrandHref, getProductHref } from "@/lib/routes";
@@ -37,6 +39,8 @@ export default async function ReserveProductPage(props: ReservePageProps) {
     }
 
     const productHref = getProductHref(product);
+    const session = await getSession();
+    const address = session ? await getDefaultAddress(session.user.id) : null;
 
     return (
         <main>
@@ -103,7 +107,14 @@ export default async function ReserveProductPage(props: ReservePageProps) {
                         </p>
 
                         <div className="mt-8">
-                            <ReservationForm productId={product.id} />
+                            <ReservationForm
+                                productId={product.id}
+                                defaults={
+                                    session
+                                        ? { name: session.user.name, email: session.user.email, phone: address?.phone }
+                                        : undefined
+                                }
+                            />
                         </div>
                     </section>
 

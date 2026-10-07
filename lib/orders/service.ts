@@ -49,7 +49,11 @@ async function findOrderByIdempotencyKey(idempotencyKey: string) {
  * that does not exist. Re-submitting the same idempotency key returns the
  * existing order instead of creating a second one.
  */
-export async function placeOrder(input: CheckoutInput, lines: CartLine[]) {
+export async function placeOrder(
+    input: CheckoutInput,
+    lines: CartLine[],
+    { userId }: { userId?: string } = {},
+) {
     const existing = await findOrderByIdempotencyKey(input.idempotencyKey);
 
     if (existing) {
@@ -132,6 +136,7 @@ export async function placeOrder(input: CheckoutInput, lines: CartLine[]) {
                         city: input.city,
                         customerNotes: input.customerNotes,
                         termsAcceptedAt: new Date(),
+                        userId,
                         paymentDueAt: new Date(Date.now() + PAYMENT_WINDOW_HOURS * 60 * 60 * 1000),
                         items: { create: items },
                         events: { create: { toStatus: "AWAITING_PAYMENT", actor: "CUSTOMER" } },

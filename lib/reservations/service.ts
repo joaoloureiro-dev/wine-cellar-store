@@ -40,7 +40,10 @@ function isUniqueViolation(error: unknown) {
  * Creates a PENDING reservation and its first audit event atomically.
  * Stock is not decremented here: units are held when the store confirms.
  */
-export async function createReservation(input: CreateReservationInput) {
+export async function createReservation(
+    input: CreateReservationInput,
+    { userId }: { userId?: string } = {},
+) {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     for (let attempt = 1; attempt <= REFERENCE_ATTEMPTS; attempt += 1) {
@@ -97,6 +100,7 @@ export async function createReservation(input: CreateReservationInput) {
                         customerPhone: input.phone,
                         customerNotes: input.notes,
                         privacyConsentAt: new Date(),
+                        userId,
                         events: {
                             create: { toStatus: "PENDING", actor: "CUSTOMER" },
                         },

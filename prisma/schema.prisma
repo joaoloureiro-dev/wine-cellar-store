@@ -151,6 +151,9 @@ model Reservation {
   privacyConsentAt DateTime
   /// Reservation deadline; set when confirmed (EXPIRED after this date).
   expiresAt        DateTime?
+  /// Set when made while signed in; guest reservations keep it null.
+  userId           String?
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   events           ReservationEvent[]
@@ -161,6 +164,8 @@ model Reservation {
   @@index([customerEmail, createdAt])
   // Duplicate detection and per-product reservation counts.
   @@index([productId, status])
+  // Customer account: "as minhas reservas".
+  @@index([userId, createdAt])
 }
 
 model ReservationEvent {
@@ -234,6 +239,9 @@ model Order {
   termsAcceptedAt    DateTime
   /// Unpaid orders past this date expire and release their stock.
   paymentDueAt       DateTime
+  /// Set when placed while signed in; guest orders keep it null.
+  userId             String?
+  user               User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   items              OrderItem[]
@@ -244,8 +252,9 @@ model Order {
   @@index([status, createdAt])
   // Expiry job: unpaid orders past their payment deadline.
   @@index([status, paymentDueAt])
-  // Customer order history (account stage).
   @@index([customerEmail, createdAt])
+  // Customer account: "as minhas encomendas".
+  @@index([userId, createdAt])
 }
 
 model OrderItem {
@@ -374,6 +383,9 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  addresses     Address[]
+  orders        Order[]
+  reservations  Reservation[]
 
   @@unique([email])
   @@map("user")
@@ -436,4 +448,26 @@ model RateLimit {
 
   @@unique([key])
   @@map("rateLimit")
+}
+
+// ─── Customer account ───────────────────────────────────────────────────────
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Optional nickname, e.g. "Casa" or "Escritório".
+  label         String?
+  recipientName String
+  phone         String
+  addressLine1  String
+  addressLine2  String?
+  postalCode    String
+  city          String
+  country       String   @default("PT")
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }
