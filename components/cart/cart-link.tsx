@@ -39,9 +39,12 @@ export function CartLink({ className = "" }: CartLinkProps) {
             <ShoppingBag size={20} strokeWidth={1.8} aria-hidden="true" />
 
             {count > 0 && (
+                // Keyed by the count so the badge re-mounts and bumps
+                // whenever an item is added or removed.
                 <span
+                    key={count}
                     aria-hidden="true"
-                    className="absolute right-0.5 top-0.5 flex min-w-4 items-center justify-center rounded-full bg-wine px-1 text-[10px] font-bold leading-4 text-white"
+                    className="absolute right-0.5 top-0.5 flex min-w-[1.125rem] animate-bump items-center justify-center rounded-full bg-wine px-1 text-[10px] font-bold leading-[1.125rem] text-white ring-2 ring-background motion-reduce:animate-none"
                 >
                     {count > 99 ? "99+" : count}
                 </span>

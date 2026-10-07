@@ -269,3 +269,59 @@ html:has(dialog[open]:modal) {
     }
   }
 }
+
+/*
+  Slide-in panel for a native modal <dialog> (mobile menu, filters).
+  @starting-style and allow-discrete animate both opening and closing
+  without JavaScript; Escape, focus trapping and focus return stay native.
+*/
+.drawer {
+  transform: translateX(100%);
+  transition:
+    transform 400ms var(--ease-cellar),
+    overlay 400ms allow-discrete,
+    display 400ms allow-discrete;
+}
+
+.drawer.drawer-left {
+  transform: translateX(-100%);
+}
+
+.drawer[open] {
+  transform: none;
+}
+
+@starting-style {
+  .drawer[open] {
+    transform: translateX(100%);
+  }
+
+  .drawer.drawer-left[open] {
+    transform: translateX(-100%);
+  }
+}
+
+.drawer::backdrop {
+  background: rgb(20 16 14 / 0);
+  transition:
+    background-color 400ms var(--ease-cellar),
+    overlay 400ms allow-discrete,
+    display 400ms allow-discrete;
+}
+
+.drawer[open]::backdrop {
+  background: rgb(20 16 14 / 0.5);
+}
+
+@starting-style {
+  .drawer[open]::backdrop {
+    background: rgb(20 16 14 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer::backdrop {
+    transition: none;
+  }
+}
