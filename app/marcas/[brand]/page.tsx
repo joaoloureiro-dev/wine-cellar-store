@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { PageIntro } from "@/components/catalog/page-intro";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Container } from "@/components/layout/container";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getBrandBySlug, getBrands } from "@/lib/brands";
 import { getProductCountLabel } from "@/lib/product-display";
 import { getProductsByBrand } from "@/lib/products";
 import { getBrandHref } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { breadcrumbNode, jsonLdGraph } from "@/lib/seo/structured-data";
 
 // New brands render on demand; unknown slugs return 404 via notFound().
 export async function generateStaticParams() {
@@ -43,15 +45,17 @@ export default async function BrandPage(props: PageProps<"/marcas/[brand]">) {
     }
 
     const products = await getProductsByBrand(brand.slug);
+    const breadcrumbs = [
+            { label: "Início", href: "/" },
+            { label: "Marcas", href: "/marcas" },
+            { label: brand.name },
+    ];
 
     return (
         <main>
+            <JsonLd data={jsonLdGraph(breadcrumbNode(breadcrumbs, getBrandHref(brand.slug)))} />
             <PageIntro
-                breadcrumbs={[
-                    { label: "Início", href: "/" },
-                    { label: "Marcas", href: "/marcas" },
-                    { label: brand.name },
-                ]}
+                breadcrumbs={breadcrumbs}
                 eyebrow={`Marca · ${brand.country}`}
                 title={brand.name}
                 description={brand.description}
