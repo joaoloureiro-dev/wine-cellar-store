@@ -213,41 +213,41 @@ enum OrderActor {
 }
 
 model Order {
-  id                 String        @id @default(cuid())
+  id              String        @id @default(cuid())
   /// Public, unguessable reference shown to the customer (e.g. ENC-7K3P9QXM).
-  reference          String        @unique
+  reference       String        @unique
   /// Client-generated key per checkout attempt: double submits never create
   /// two orders.
-  idempotencyKey     String        @unique
-  status             OrderStatus   @default(AWAITING_PAYMENT)
-  paymentMethod      PaymentMethod
-  currency           String        @default("EUR")
-  subtotalCents      Int
-  shippingCents      Int
-  totalCents         Int
-  shippingMethod     String
-  customerName       String
-  customerEmail      String
-  customerPhone      String
+  idempotencyKey  String        @unique
+  status          OrderStatus   @default(AWAITING_PAYMENT)
+  paymentMethod   PaymentMethod
+  currency        String        @default("EUR")
+  subtotalCents   Int
+  shippingCents   Int
+  totalCents      Int
+  shippingMethod  String
+  customerName    String
+  customerEmail   String
+  customerPhone   String
   /// Portuguese NIF for the invoice (optional).
-  taxId              String?
-  addressLine1       String
-  addressLine2       String?
-  postalCode         String
-  city               String
-  country            String        @default("PT")
-  customerNotes      String?
-  termsAcceptedAt    DateTime
+  taxId           String?
+  addressLine1    String
+  addressLine2    String?
+  postalCode      String
+  city            String
+  country         String        @default("PT")
+  customerNotes   String?
+  termsAcceptedAt DateTime
   /// Unpaid orders past this date expire and release their stock.
-  paymentDueAt       DateTime
+  paymentDueAt    DateTime
   /// Set when placed while signed in; guest orders keep it null.
-  userId             String?
-  user               User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  items              OrderItem[]
-  events             OrderEvent[]
-  payments           Payment[]
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  items           OrderItem[]
+  events          OrderEvent[]
+  payments        Payment[]
 
   // Backoffice lists by status, newest first.
   @@index([status, createdAt])
@@ -374,20 +374,29 @@ model WebhookDelivery {
 // Prisma adapter can read and write them. Passwords live hashed (scrypt) in
 // Account.password; sessions are database-backed and revocable.
 
+/// Backoffice access. Not exposed to Better Auth, so it can never be set
+/// through the sign-up or profile endpoints; granted with `npm run admin:grant`.
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
 model User {
-  id            String    @id
+  id            String          @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean         @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          UserRole        @default(CUSTOMER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   sessions      Session[]
   accounts      Account[]
   addresses     Address[]
   favorites     Favorite[]
   orders        Order[]
   reservations  Reservation[]
+  auditLogs     AdminAuditLog[]
 
   @@unique([email])
   @@map("user")
@@ -484,4 +493,24 @@ model Favorite {
 
   // One row per customer and product; also serves "my favourites" lookups.
   @@unique([userId, productId])
+}
+
+// ─── Backoffice ─────────────────────────────────────────────────────────────
+
+/// Append-only record of every change made in the backoffice.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  /// Snapshot, so the entry stays readable if the account is deleted.
+  actorEmail String
+  /// e.g. "order.transition", "payment.confirm_manual", "product.update".
+  action     String
+  entityType String
+  entityId   String
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
 }

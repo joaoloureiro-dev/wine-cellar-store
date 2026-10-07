@@ -59,6 +59,19 @@ Schedule `GET /api/cron/expire-orders` (e.g. every 15 minutes) with
 `Authorization: Bearer <CRON_SECRET>` to expire unpaid orders and release
 their stock.
 
+## Backoffice
+
+The backoffice lives at `/admin`. Access is granted from the command line to
+an account that already exists (sign up at `/registar` first):
+
+```bash
+npm run admin:grant -- ana@example.pt
+```
+
+The role is checked against the database on every request and every server
+action, and each change made in the backoffice is recorded in
+`AdminAuditLog`.
+
 ## Scripts
 
 | Script               | Description                                         |
@@ -71,6 +84,7 @@ their stock.
 | `npm run db:deploy`  | Apply pending migrations (CI / production)          |
 | `npm run db:seed`    | Load the sample catalogue (idempotent)              |
 | `npm run db:studio`  | Open Prisma Studio                                  |
+| `npm run admin:grant -- <email> [--revoke]` | Grant or revoke backoffice access |
 
 Run `npm run db:generate` after changing `prisma/schema.prisma`
 (`prisma migrate dev` does not regenerate the client in Prisma 7).
