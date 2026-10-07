@@ -8,11 +8,14 @@ import { useToast } from "@/components/ui/toast";
 import {
     createReservationAction,
     type ReservationFormState,
+    type ReservationFormValues,
 } from "@/lib/reservations/actions";
 import { MAX_RESERVATION_QUANTITY } from "@/lib/reservations/schema";
 
 type ReservationFormProps = {
     productId: string;
+    /** Prefilled from the customer's account. */
+    defaults?: { name?: string; email?: string; phone?: string };
 };
 
 const initialState: ReservationFormState = { status: "idle", submissionId: 0 };
@@ -21,7 +24,7 @@ const initialState: ReservationFormState = { status: "idle", submissionId: 0 };
  * Progressive enhancement: the form posts to a Server Action and works
  * without JavaScript. With JS, errors render inline and as a toast.
  */
-export function ReservationForm({ productId }: ReservationFormProps) {
+export function ReservationForm({ productId, defaults }: ReservationFormProps) {
     const [state, formAction, isPending] = useActionState(
         createReservationAction,
         initialState,
@@ -29,7 +32,7 @@ export function ReservationForm({ productId }: ReservationFormProps) {
     const toast = useToast();
     const errorToastId = useRef<number | null>(null);
     const errors = state.fieldErrors ?? {};
-    const values = state.values ?? {};
+    const values: ReservationFormValues = state.values ?? defaults ?? {};
 
     useEffect(() => {
         if (state.status === "error" && state.message) {

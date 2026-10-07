@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { saveAddress } from "@/lib/account/addresses";
+import { getSession } from "@/lib/auth/session";
 import { getCart } from "@/lib/cart/get-cart";
 import { readCartLines, writeCartLines } from "@/lib/cart/storage";
 import { revalidateProductPages } from "@/lib/catalog/revalidate";
@@ -107,10 +109,25 @@ export async function placeOrderAction(
 
     try {
         const lines = await readCartLines();
-        ({ reference } = await placeOrder(parsed.data, lines));
+        const session = await getSession();
+        ({ reference } = await placeOrder(parsed.data, lines, { userId: session?.user.id }));
         // Stock is now held by the order: the cart has served its purpose.
         await writeCartLines([]);
         await revalidateProductPages(lines.map((line) => line.productId));
+
+        if (session && formData.get("saveAddress") === "on") {
+            // Convenience only: never fail an order because of it.
+            await saveAddress(session.user.id, {
+                label: undefined,
+                recipientName: parsed.data.name,
+                phone: parsed.data.phone,
+                addressLine1: parsed.data.addressLine1,
+                addressLine2: parsed.data.addressLine2,
+                postalCode: parsed.data.postalCode,
+                city: parsed.data.city,
+                isDefault: false,
+            }).catch(() => undefined);
+        }
 
         // A provider failure never loses the order: the order page offers a retry.
         const payment = await initiatePayment(reference);

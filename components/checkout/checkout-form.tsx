@@ -14,7 +14,7 @@ import {
 import { BankTransferDetails, type BankTransferInfo } from "@/components/payments/bank-transfer-details";
 import { errorProps, Field, FieldError, inputClassName } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
-import { placeOrderAction, type CheckoutFormState } from "@/lib/checkout/actions";
+import { placeOrderAction, type CheckoutFormState, type CheckoutFormValues } from "@/lib/checkout/actions";
 import { getPaymentMethodLabel, paymentMethods, type PaymentMethodId } from "@/lib/checkout/payment-methods";
 import {
     checkoutSchema,
@@ -38,6 +38,9 @@ type CheckoutFormProps = {
     /** Methods whose provider is configured and that accept this amount. */
     availablePaymentMethods: PaymentMethodId[];
     bankTransfer: BankTransferInfo | null;
+    /** Prefilled from the customer's account and default address. */
+    defaults?: CheckoutFormValues;
+    isSignedIn: boolean;
 };
 
 type FieldErrors = Partial<Record<CheckoutField, string>>;
@@ -86,6 +89,8 @@ function CheckoutSteps({
     shippingOptions,
     availablePaymentMethods,
     bankTransfer,
+    defaults,
+    isSignedIn,
 }: CheckoutStepsProps) {
     const isEnhanced = useSyncExternalStore(subscribeNoop, () => true, () => false);
     const toast = useToast();
@@ -95,7 +100,7 @@ function CheckoutSteps({
 
     const [currentStep, setCurrentStep] = useState<CheckoutStepId>(state.step ?? "customer");
     const [errors, setErrors] = useState<FieldErrors>(state.fieldErrors ?? {});
-    const values = state.values ?? {};
+    const values = state.values ?? defaults ?? {};
     const [review, setReview] = useState<Record<string, string | undefined>>(values);
     const currentIndex = checkoutSteps.findIndex((step) => step.id === currentStep);
 
@@ -291,6 +296,15 @@ function CheckoutSteps({
                     visible={isStepVisible("customer")}
                     headingRef={(element) => (headingRefs.current.customer = element)}
                 >
+                    {!isSignedIn && (
+                        <p className="text-sm text-muted">
+                            Já tem conta?{" "}
+                            <Link href="/entrar?next=%2Fcheckout" className="font-semibold text-wine underline underline-offset-4">
+                                Entrar
+                            </Link>{" "}
+                            para preencher os seus dados. Também pode continuar sem conta.
+                        </p>
+                    )}
                     <Field label="Nome completo" name="name" error={errors.name}>
                         <input id="name" name="name" type="text" autoComplete="name" required maxLength={100} defaultValue={values.name} {...errorProps("name", errors.name)} className={inputClassName} />
                     </Field>
@@ -328,6 +342,12 @@ function CheckoutSteps({
                             <input id="city" name="city" type="text" autoComplete="address-level2" required maxLength={60} defaultValue={values.city} {...errorProps("city", errors.city)} className={inputClassName} />
                         </Field>
                     </div>
+                    {isSignedIn && (
+                        <label className="flex cursor-pointer items-center gap-3 text-sm text-charcoal">
+                            <input type="checkbox" name="saveAddress" className="size-4 cursor-pointer accent-wine" />
+                            Guardar esta morada na minha conta
+                        </label>
+                    )}
                 </Step>
 
                 <Step

@@ -7,6 +7,7 @@ import {
     createReservationSchema,
     type ReservationField,
 } from "@/lib/reservations/schema";
+import { getSession } from "@/lib/auth/session";
 import { createReservation, ReservationError } from "@/lib/reservations/service";
 
 export type ReservationFormValues = Partial<
@@ -80,7 +81,8 @@ export async function createReservationAction(
     let reference: string;
 
     try {
-        ({ reference } = await createReservation(parsed.data));
+        const session = await getSession();
+        ({ reference } = await createReservation(parsed.data, { userId: session?.user.id }));
     } catch (error) {
         if (error instanceof ReservationError) {
             return { status: "error", message: error.message, values, submissionId };

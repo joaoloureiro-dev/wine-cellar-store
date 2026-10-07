@@ -6,6 +6,8 @@ import { ShieldCheck } from "lucide-react";
 import { CheckoutForm, type ShippingOption } from "@/components/checkout/checkout-form";
 import { OrderSummary } from "@/components/checkout/order-summary";
 import { Container } from "@/components/layout/container";
+import { getDefaultAddress } from "@/lib/account/queries";
+import { getSession } from "@/lib/auth/session";
 import { getCart } from "@/lib/cart/get-cart";
 import {
     calculateShippingCents,
@@ -46,6 +48,20 @@ export default async function CheckoutPage() {
         cart.subtotalCents + defaultShippingCents,
     );
 
+    const session = await getSession();
+    const address = session ? await getDefaultAddress(session.user.id) : null;
+    const defaults = session
+        ? {
+              name: address?.recipientName ?? session.user.name,
+              email: session.user.email,
+              phone: address?.phone,
+              addressLine1: address?.addressLine1,
+              addressLine2: address?.addressLine2 ?? undefined,
+              postalCode: address?.postalCode,
+              city: address?.city,
+          }
+        : undefined;
+
     const summary = <OrderSummary cart={cart} shippingCents={defaultShippingCents} />;
 
     return (
@@ -74,6 +90,8 @@ export default async function CheckoutPage() {
                             shippingOptions={shippingOptions}
                             availablePaymentMethods={availablePaymentMethods}
                             bankTransfer={getBankTransferDetails()}
+                            defaults={defaults}
+                            isSignedIn={Boolean(session)}
                         />
                     ) : (
                         <p role="status" className="rounded-xl border border-border bg-surface p-6 text-sm leading-6 text-charcoal">
