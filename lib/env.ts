@@ -82,6 +82,20 @@ const serverEnvSchema = z.object({
     ),
 
     /**
+     * Transactional email. "console" (default) only logs, for development;
+     * "resend" sends through the Resend API. EMAIL_FROM must be on a domain
+     * verified with the provider.
+     */
+    EMAIL_PROVIDER: z.enum(["console", "resend"]).default("console"),
+    EMAIL_FROM: z.string().trim().default("Cellarium <encomendas@cellarium.pt>"),
+    EMAIL_REPLY_TO: optionalString,
+    RESEND_API_KEY: optionalString,
+    /** Only for tests against a mock server. */
+    RESEND_API_URL: z.url().default("https://api.resend.com"),
+    /** Receives new order and reservation alerts (optional). */
+    ADMIN_NOTIFICATION_EMAIL: optionalString,
+
+    /**
      * Seller identification shown on the legal pages (DL 7/2004, DL 24/2014).
      * Missing values appear as visible "a preencher" markers.
      */

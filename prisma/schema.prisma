@@ -520,3 +520,39 @@ model AdminAuditLog {
   @@index([entityType, entityId, createdAt])
   @@index([createdAt])
 }
+
+// ─── Transactional email ────────────────────────────────────────────────────
+//
+// Outbox: emails are recorded in the same transaction as the change that
+// causes them (order placed, payment confirmed…) and delivered afterwards,
+// with retries. A provider outage delays emails; it never loses them or
+// blocks a sale. The content is rendered at send time from current data.
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model EmailOutbox {
+  id                String      @id @default(cuid())
+  /// Template, e.g. "order.received".
+  type              String
+  recipient         String
+  /// Ids the template loads at send time (never the rendered content).
+  payload           Json
+  /// One email per event, e.g. "order:<id>:PAID".
+  dedupeKey         String      @unique
+  status            EmailStatus @default(PENDING)
+  attempts          Int         @default(0)
+  nextAttemptAt     DateTime    @default(now())
+  /// Claimed by a sender until this time (several instances send in parallel).
+  lockedUntil       DateTime?
+  lastError         String?
+  providerMessageId String?
+  sentAt            DateTime?
+  createdAt         DateTime    @default(now())
+
+  // Sender: due pending emails, oldest first.
+  @@index([status, nextAttemptAt])
+}
