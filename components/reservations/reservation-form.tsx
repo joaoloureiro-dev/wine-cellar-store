@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarClock, LoaderCircle } from "lucide-react";
 import { useActionState, useEffect, useRef } from "react";
 
@@ -173,7 +174,11 @@ export function ReservationForm({ productId, defaults }: ReservationFormProps) {
                     />
                     <span>
                         Aceito que os meus dados (nome, email e telefone) sejam usados
-                        exclusivamente para gerir este pedido de reserva.
+                        exclusivamente para gerir este pedido de reserva (
+                        <Link href="/privacidade" target="_blank" className="font-semibold text-wine underline underline-offset-4">
+                            Política de Privacidade
+                        </Link>
+                        ).
                     </span>
                 </label>
                 <FieldError name="privacyConsent" error={errors.privacyConsent} />

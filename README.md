@@ -138,6 +138,21 @@ Without either, a warning is logged at startup: requests with a forwarded
 chain would share one rate-limit bucket, so one client could lock everyone
 out of signing in.
 
+## Legal pages
+
+`/termos`, `/devolucoes` (14-day withdrawal and model form), `/privacidade`
+and `/cookies`, linked on every page together with the Livro de
+Reclamações Eletrónico. Checkout and reservation consents link to them.
+
+- Seller details come from the `LEGAL_*` variables (`.env.example`); missing
+  values and business decisions still to be made (delivery time, return
+  pickup cost, reservation retention) appear as visible highlighted
+  markers. The pages are static, so set the variables at build time.
+- The texts are a draft based on Portuguese consumer and data-protection
+  law (DL 24/2014, DL 84/2021, DL 7/2004, Lei 144/2015, RGPD). **Have them
+  reviewed by a lawyer before launch.**
+- Update `LEGAL_LAST_UPDATED` (`lib/legal/company.ts`) when the text changes.
+
 ## Customer data (RGPD)
 
 From `/conta/perfil` a signed-in customer can:

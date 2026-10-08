@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getBrands } from "@/lib/brands";
+import { legalLinks } from "@/lib/legal/links";
 import { getActiveProducts } from "@/lib/products";
 import { getBrandHref, getProductHref } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/metadata";
@@ -22,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: absoluteUrl("/caves"), lastModified: latestProductUpdate, changeFrequency: "daily", priority: 0.9 },
         { url: absoluteUrl("/marcas"), changeFrequency: "monthly", priority: 0.6 },
         { url: absoluteUrl("/reservas"), changeFrequency: "yearly", priority: 0.4 },
+        ...legalLinks.map((link) => ({ url: absoluteUrl(link.href), changeFrequency: "yearly" as const, priority: 0.2 })),
         ...brands.map((brand) => ({
             url: absoluteUrl(getBrandHref(brand.slug)),
             changeFrequency: "monthly" as const,
