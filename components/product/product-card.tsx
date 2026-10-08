@@ -56,13 +56,13 @@ export function ProductCard({
     ];
 
     return (
-        <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition-shadow duration-300 focus-within:shadow-lg hover:shadow-lg">
-            <div className="relative aspect-4/5 overflow-hidden bg-surface-muted">
+        <article className="group relative flex h-full flex-col rounded-3xl border border-charcoal/8 bg-surface p-2 shadow-card transition-[transform,box-shadow,border-color] duration-500 ease-cellar focus-within:-translate-y-1 focus-within:shadow-lift hover:-translate-y-1 hover:border-champagne/40 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0">
+            <div className="relative aspect-4/5 overflow-hidden rounded-[1.25rem] bg-surface-muted">
                 <ProductImage
                     src={product.images[0]}
                     alt={getProductImageAlt(product)}
                     sizes={imageSizes}
-                    className="transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                    className="transition-transform duration-700 ease-cellar group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
 
                 <div className="absolute right-3 top-3">
@@ -70,21 +70,30 @@ export function ProductCard({
                 </div>
 
                 {discount !== null && (
-                    <span className="absolute left-4 top-4 rounded-sm bg-wine px-2.5 py-1 text-xs font-bold text-white">
+                    <span className="absolute left-3 top-3 rounded-full bg-wine px-3 py-1 text-xs font-bold text-white">
                         <span className="sr-only">Desconto de </span>-{discount}%
                     </span>
                 )}
+
+                {/* Hover hint only: the whole card is already the link. */}
+                <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-3 bottom-3 hidden items-center justify-center gap-2 rounded-full bg-cellar/85 py-3 text-sm font-semibold text-cellar-ink opacity-0 backdrop-blur-md transition-[opacity,transform] duration-300 ease-cellar translate-y-2 group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:flex"
+                >
+                    Ver detalhes
+                    <ArrowRight size={16} strokeWidth={1.8} />
+                </span>
             </div>
 
-            <div className="flex flex-1 flex-col p-5 sm:p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-wine">
+            <div className="flex flex-1 flex-col px-3 pb-3 pt-5 sm:px-4 sm:pb-4">
+                <p className="text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-champagne-ink">
                     {product.brand}
                 </p>
 
-                <Heading className="mt-2 font-display text-2xl font-semibold leading-tight tracking-[-0.02em] text-charcoal sm:text-[1.7rem]">
+                <Heading className="mt-1.5 font-display text-[1.75rem] font-medium leading-tight tracking-[-0.02em] text-charcoal">
                     <Link
                         href={href}
-                        className="rounded-sm after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-wine focus-visible:after:ring-offset-2"
+                        className="rounded-sm after:absolute after:inset-0 after:rounded-3xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-wine focus-visible:after:ring-offset-2"
                     >
                         {product.name}
                     </Link>
@@ -94,32 +103,32 @@ export function ProductCard({
                     {product.shortDescription}
                 </p>
 
-                <dl className="mt-5 grid grid-cols-3 gap-2 border-y border-border py-4">
+                <dl className="mt-4 grid grid-cols-3 gap-2">
                     {specs.map(({ label, value, icon: Icon }) => (
-                        <div key={label} className="min-w-0">
-                            <dt className="flex flex-col gap-1.5 text-xs text-muted">
+                        <div key={label} className="min-w-0 rounded-2xl bg-background px-3 py-2.5">
+                            <dt className="flex items-center gap-1.5 text-[0.6875rem] text-muted">
                                 <Icon
-                                    size={16}
-                                    strokeWidth={1.6}
+                                    size={13}
+                                    strokeWidth={1.8}
                                     aria-hidden="true"
                                     className="shrink-0 text-wine"
                                 />
                                 {label}
                             </dt>
 
-                            <dd className="mt-1.5 text-sm font-semibold text-charcoal">
+                            <dd className="mt-1 truncate text-sm font-semibold text-charcoal">
                                 {value}
                             </dd>
                         </div>
                     ))}
                 </dl>
 
-                <p className="mt-4 text-xs font-medium text-muted">
+                <p className="mt-3 text-xs font-medium text-muted">
                     {installationTypeLabels[product.installationType]}
                 </p>
 
-                <div className="mt-auto flex items-end justify-between gap-4 pt-5">
-                    <div className="space-y-2">
+                <div className="mt-auto flex items-end justify-between gap-4 border-t border-border pt-4">
+                    <div className="space-y-1.5">
                         <ProductPrice
                             price={product.price}
                             compareAtPrice={product.compareAtPrice}
