@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { dispatchPendingEmails, purgeSentEmails } from "@/lib/email/dispatcher";
 import { env } from "@/lib/env";
 import { expireOverdueOrders } from "@/lib/orders/expiry";
 import { safeEqual } from "@/lib/payments/webhooks/verify";
@@ -10,7 +11,8 @@ import { expireOverdueReservations } from "@/lib/reservations/expiry";
  *   GET /api/cron/expire-orders   Authorization: Bearer <CRON_SECRET>
  *
  * Expires unpaid orders and overdue confirmed reservations, releasing
- * their stock.
+ * their stock, then sends due emails (retries included) and purges old
+ * sent ones.
  */
 export async function GET(request: Request) {
     if (!env.CRON_SECRET) {
@@ -25,6 +27,8 @@ export async function GET(request: Request) {
 
     const orders = await expireOverdueOrders();
     const reservations = await expireOverdueReservations();
+    const emails = await dispatchPendingEmails();
+    const purgedEmails = await purgeSentEmails();
 
-    return NextResponse.json({ ...orders, reservations }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ...orders, reservations, emails: { ...emails, purged: purgedEmails } }, { headers: { "Cache-Control": "no-store" } });
 }
