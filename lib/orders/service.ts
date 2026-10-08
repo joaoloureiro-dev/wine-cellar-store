@@ -5,6 +5,7 @@ import { calculateShippingCents, getShippingMethod } from "@/lib/checkout/shippi
 import type { CheckoutInput } from "@/lib/checkout/schema";
 import type { CartLine } from "@/lib/cart/schema";
 import { db } from "@/lib/db";
+import { queueOrderPlacedEmails, queueOrderStatusEmail } from "@/lib/email/order-notifications";
 import { canTransitionOrder, releasesStock, type OrderStatus } from "@/lib/orders/status";
 import { releaseStock, reserveStock } from "@/lib/orders/stock";
 import { generateReference, isReference } from "@/lib/references";
@@ -117,7 +118,7 @@ export async function placeOrder(
                 const subtotalCents = items.reduce((sum, item) => sum + item.lineTotalCents, 0);
                 const shippingCents = calculateShippingCents(shippingMethod, subtotalCents);
 
-                return tx.order.create({
+                const order = await tx.order.create({
                     data: {
                         reference: generateReference("ENC"),
                         idempotencyKey: input.idempotencyKey,
@@ -141,8 +142,12 @@ export async function placeOrder(
                         items: { create: items },
                         events: { create: { toStatus: "AWAITING_PAYMENT", actor: "CUSTOMER" } },
                     },
-                    select: { reference: true },
+                    select: { id: true, reference: true, customerEmail: true },
                 });
+
+                await queueOrderPlacedEmails(tx, order);
+
+                return { reference: order.reference };
             });
         } catch (error) {
             if (!isUniqueViolation(error)) {
@@ -188,6 +193,7 @@ export async function applyOrderTransition(
         select: {
             id: true,
             status: true,
+            customerEmail: true,
             items: { select: { productId: true, quantity: true } },
         },
     });
@@ -224,6 +230,8 @@ export async function applyOrderTransition(
     await tx.orderEvent.create({
         data: { orderId: order.id, fromStatus: order.status, toStatus: to, actor, note },
     });
+
+    await queueOrderStatusEmail(tx, order, to);
 }
 
 /** Moves an order to a new status in its own transaction. */
