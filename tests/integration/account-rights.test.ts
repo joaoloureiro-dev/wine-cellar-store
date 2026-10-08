@@ -126,7 +126,7 @@ describe("data export", () => {
         expect(data.account).toMatchObject({ name: "Rita Costa", email: "rita@example.pt", signInMethods: [{ method: "password" }] });
         expect(data.orders).toHaveLength(1);
         expect(data.orders[0].items[0]).toMatchObject({ quantity: 2 });
-        expect(data.favorites[0].url).toMatch(/^https:\/\/.+\/caves\//);
+        expect(data.favorites[0].url).toMatch(new RegExp(`^${origin}/caves/`));
         const { password: hash } = await db.account.findFirstOrThrow({ where: { userId: user.id } });
         const json = JSON.stringify(data);
         expect(json).not.toContain(hash!);
