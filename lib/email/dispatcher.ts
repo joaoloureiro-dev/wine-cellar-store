@@ -19,16 +19,19 @@ const SENT_RETENTION_DAYS = 30;
  * without sending an email twice; a crashed sender's lease simply expires.
  */
 async function claimDueEmails(limit: number) {
-    return db.$queryRaw<EmailOutbox[]>`
+    const claimed = await db.$queryRaw<EmailOutbox[]>`
         UPDATE "EmailOutbox" SET "lockedUntil" = now() + make_interval(secs => ${CLAIM_SECONDS}), "attempts" = "attempts" + 1
         WHERE id IN (
             SELECT id FROM "EmailOutbox"
             WHERE status = 'PENDING' AND "nextAttemptAt" <= now() AND ("lockedUntil" IS NULL OR "lockedUntil" < now())
-            ORDER BY "nextAttemptAt"
+            ORDER BY "nextAttemptAt", "createdAt"
             LIMIT ${limit}
             FOR UPDATE SKIP LOCKED
         )
         RETURNING *`;
+
+    // RETURNING has no order: send in creation order ("paid" before "shipped").
+    return claimed.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
 }
 
 async function deliver(email: EmailOutbox, provider: EmailProvider, templates: EmailTemplates) {
