@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-for (const path of ["/", "/caves", "/caves/la-sommeliere/classic-24", "/marcas", "/reservas", "/carrinho", "/entrar"]) {
+for (const path of ["/", "/caves", "/caves/la-sommeliere/classic-24", "/marcas", "/guia", "/reservas", "/carrinho", "/entrar"]) {
     test(`no horizontal overflow on ${path}`, async ({ page }) => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
