@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { queueReservationCreatedEmails, queueReservationStatusEmail } from "@/lib/email/reservation-notifications";
 import { releaseStock, reserveStock } from "@/lib/orders/stock";
 import { generateReference, isReference } from "@/lib/references";
 import type { CreateReservationInput } from "@/lib/reservations/schema";
@@ -90,7 +91,7 @@ export async function createReservation(
                     );
                 }
 
-                return tx.reservation.create({
+                const reservation = await tx.reservation.create({
                     data: {
                         reference: generateReference("RSV"),
                         productId: product.id,
@@ -106,8 +107,12 @@ export async function createReservation(
                             create: { toStatus: "PENDING", actor: "CUSTOMER" },
                         },
                     },
-                    select: { reference: true },
+                    select: { id: true, reference: true, customerEmail: true },
                 });
+
+                await queueReservationCreatedEmails(tx, reservation);
+
+                return { reference: reservation.reference };
             });
         } catch (error) {
             if (!isUniqueViolation(error)) {
@@ -172,7 +177,7 @@ export async function applyReservationTransition(
 ) {
     const reservation = await tx.reservation.findUnique({
         where: { id: reservationId },
-        select: { id: true, status: true, productId: true, quantity: true, stockHeld: true },
+        select: { id: true, status: true, productId: true, quantity: true, stockHeld: true, customerEmail: true },
     });
 
     if (!reservation) {
@@ -219,6 +224,8 @@ export async function applyReservationTransition(
             note,
         },
     });
+
+    await queueReservationStatusEmail(tx, reservation, to);
 
     return { productId: reservation.productId, stockChanged, stockHeld };
 }
