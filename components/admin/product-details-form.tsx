@@ -353,10 +353,10 @@ export function ProductDetailsForm({ brands, product }: Props) {
 
             <fieldset className="space-y-5">
                 <legend className={legendClass}>SEO (opcional)</legend>
-                <Field label="Título" name="seoTitle" error={errors.seoTitle} hint="Até 70 caracteres. Vazio: «Nome | Cave de Vinho N Garrafas».">
+                <Field label="Título SEO" name="seoTitle" error={errors.seoTitle} hint="Até 70 caracteres. Vazio: «Nome | Cave de Vinho N Garrafas».">
                     {input("seoTitle", { maxLength: 70 })}
                 </Field>
-                <Field label="Descrição" name="seoDescription" error={errors.seoDescription} hint="Até 160 caracteres. Vazio: usa o resumo.">
+                <Field label="Descrição SEO" name="seoDescription" error={errors.seoDescription} hint="Até 160 caracteres. Vazio: usa o resumo.">
                     <textarea
                         id="seoDescription"
                         name="seoDescription"

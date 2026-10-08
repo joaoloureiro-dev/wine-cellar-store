@@ -151,6 +151,21 @@ The role is checked against the database on every request and every server
 action, and each change made in the backoffice is recorded in
 `AdminAuditLog`.
 
+Catalogue management:
+
+- **Brands** (`/admin/marcas`) and **products** (`/admin/produtos/novo`):
+  specifications, temperature zones, dimensions, energy and SEO. The URL
+  (slug) is fixed after creation. New products start hidden.
+- **Photos**: JPEG, PNG, WebP or AVIF up to 4 MB, checked by file content.
+  The first photo is the main one. A product needs at least one photo to be
+  visible, and a visible product keeps at least one.
+- Edits use optimistic locking: a change made elsewhere since the form was
+  opened (another admin, a sale) is never overwritten silently.
+
+Photos are stored according to `MEDIA_STORAGE`: in `MEDIA_LOCAL_DIR` for
+development, or in an S3-compatible bucket in production (see
+[docs/deployment.md](docs/deployment.md), "Photo storage").
+
 ## Scripts
 
 | Script               | Description                                         |

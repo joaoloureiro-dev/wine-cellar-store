@@ -65,6 +65,10 @@ const productFieldLabels: Record<string, string> = {
 export function describeProductAudit(action: string, data: unknown) {
     if (action === "product.create") return "produto criado";
     if (action === "product.details_update") return "detalhes e especificações";
+    if (action === "product.image_add") return "fotografia adicionada";
+    if (action === "product.image_update") return "descrição de fotografia";
+    if (action === "product.image_move") return "ordem das fotografias";
+    if (action === "product.image_delete") return "fotografia removida";
     return describeProductChanges(data);
 }
 

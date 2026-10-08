@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+
 import { vi } from "vitest";
 
 const databaseUrl = process.env.DATABASE_URL ?? "";
@@ -12,6 +14,9 @@ if (!/\/[\w-]+_test(\?|$)/.test(databaseUrl)) {
 
 process.env.BETTER_AUTH_SECRET ??= "integration-test-secret-0000000000000";
 process.env.APP_URL ??= "https://cellarium.test";
+// Uploaded photos go to a throwaway folder.
+process.env.MEDIA_STORAGE = "local";
+process.env.MEDIA_LOCAL_DIR = `${tmpdir()}/cellarium-media-test-${process.pid}`;
 
 // No Next.js request context in tests: cache APIs become no-ops.
 vi.mock("next/cache", () => ({
