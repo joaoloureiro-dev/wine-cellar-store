@@ -33,3 +33,8 @@ export function cacheBrandData() {
 export function invalidateCatalog() {
     revalidateTag(CATALOG_TAG, { expire: 0 });
 }
+
+/** Expires brand caches (name, country or description changed, brand added). */
+export function invalidateBrands() {
+    revalidateTag(BRANDS_TAG, { expire: 0 });
+}
