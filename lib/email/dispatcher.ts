@@ -56,7 +56,15 @@ async function deliver(email: EmailOutbox, provider: EmailProvider, templates: E
 
         await db.emailOutbox.update({
             where: { id: email.id },
-            data: { status: "SENT", sentAt: new Date(), providerMessageId: id, lastError: null, lockedUntil: null },
+            data: {
+                status: "SENT",
+                sentAt: new Date(),
+                providerMessageId: id,
+                lastError: null,
+                lockedUntil: null,
+                // Account emails carry one-time links: do not keep them once sent.
+                ...(email.type.startsWith("account.") ? { payload: {} } : {}),
+            },
         });
         logger.info("Email sent", { emailId: email.id, type: email.type, provider: provider.name, attempt: email.attempts });
         return "sent" as const;

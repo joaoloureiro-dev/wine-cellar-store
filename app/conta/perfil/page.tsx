@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AccountHeading } from "@/components/account/account-heading";
 import { ChangePasswordForm, DeleteAccountForm, ProfileForm } from "@/components/account/profile-forms";
+import { EmailVerificationStatus } from "@/components/auth/password-reset-forms";
 import { getDeletionBlocker } from "@/lib/account/deletion";
 import { hasPasswordAccount } from "@/lib/account/queries";
 import { PASSWORD_MIN_LENGTH } from "@/lib/auth/server";
@@ -20,6 +21,9 @@ export default async function AccountProfilePage() {
                 <section aria-labelledby="profile-heading" className="rounded-xl border border-border bg-surface p-5 sm:p-6">
                     <h2 id="profile-heading" className="mb-4 font-display text-2xl font-semibold text-charcoal">Dados pessoais</h2>
                     <ProfileForm name={user.name} email={user.email} />
+                    <div className="mt-4">
+                        <EmailVerificationStatus email={user.email} verified={user.emailVerified} />
+                    </div>
                 </section>
                 <section aria-labelledby="password-heading" className="rounded-xl border border-border bg-surface p-5 sm:p-6">
                     <h2 id="password-heading" className="mb-4 font-display text-2xl font-semibold text-charcoal">Password</h2>

@@ -38,6 +38,11 @@ export default async function SignInPage(props: PageProps<"/entrar">) {
         >
             {isGoogleSignInEnabled() && <GoogleButton next={next} />}
             <SignInForm next={next} />
+            <p className="mt-4 text-center text-sm">
+                <Link href="/recuperar-password" className="font-semibold text-wine underline underline-offset-4">
+                    Esqueceu-se da password?
+                </Link>
+            </p>
         </AuthShell>
     );
 }

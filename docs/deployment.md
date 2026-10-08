@@ -43,6 +43,7 @@ keep their session and cart when traffic moves to Railway.
 | Neon (prolonged outage) | Readiness 503 on both frontends; site down                                           | **Single point of failure** — use a paid Neon plan (99.95% SLA), PITR backups |
 | Redis                 | Caches per instance, rate limits per instance; site keeps working                      | Circuit breaker + in-memory fallback, resync on recovery |
 | ifthenpay or eupago   | MB WAY/Multibanco move to the other provider when safe                                 | `PAYMENT_FALLBACK_PROVIDER` (`lib/payments/failover.ts`) |
+| Resend (email)        | Emails wait in the outbox and are retried for ~8 hours; checkout and payments unaffected | Outbox + retries (`lib/email`) |
 | Stripe                | Klarna unavailable; other methods unaffected                                           | Circuit breaker, clear message |
 | Cloudflare R2         | New uploads fail with a clear message; existing photos keep loading from the image cache | Upload errors handled; files removed if the record fails |
 | GitHub Actions cron   | Unpaid orders expire later than planned (stock held longer)                            | Idempotent job; can be run manually |
@@ -88,14 +89,26 @@ read-only, so uploads go to a bucket:
 Any S3-compatible service works the same way (set `S3_REGION` when it is not
 `auto`). Photos uploaded with `MEDIA_STORAGE=local` stay on that machine.
 
-### 4. Vercel (primary)
+### 4. Email (Resend)
+
+1. Create a Resend account and add the sending domain (e.g. `cellarium.pt`).
+   Add the DNS records it shows (SPF, DKIM; DMARC recommended) and wait for
+   "Verified". Choose the EU region if offered.
+2. Create an API key with "Sending access" only → `RESEND_API_KEY`.
+3. Set on both platforms: `EMAIL_PROVIDER=resend`, `EMAIL_FROM` (an address
+   on the verified domain), `EMAIL_REPLY_TO` (a mailbox you read) and,
+   optionally, `ADMIN_NOTIFICATION_EMAIL`.
+4. Make sure the scheduled job runs (step 8, `CRON_SECRET`): it retries
+   emails that could not be sent immediately.
+
+### 5. Vercel (primary)
 
 1. Import the repository; framework preset **Next.js**. `vercel.json` pins the
    region (`fra1`) and runs `npm run build:deploy` (migrations, then build).
 2. Set the environment variables (table below), with `DATABASE_POOL_MAX=5`.
 3. Add the production domain.
 
-### 5. Railway (fallback)
+### 6. Railway (fallback)
 
 1. New service → deploy from the GitHub repository. `railway.json` sets the
    build (`npm run build:deploy`), start command and the health check
@@ -109,7 +122,7 @@ and applies each migration once. Keep migrations backwards compatible
 (expand, deploy, then contract), since both platforms briefly run different
 versions during a deploy.
 
-### 6. Failover layer
+### 7. Failover layer
 
 **Recommended: Cloudflare Load Balancing** (paid add-on), with the domain's
 DNS on Cloudflare:
@@ -132,7 +145,7 @@ Vercel supports running behind another proxy, but recommends against it
 because its own firewall then sees the proxy's IPs; the DNS-only mode avoids
 that trade-off.
 
-### 7. Providers and jobs
+### 8. Providers and jobs
 
 - Point the payment webhooks (README → Payments) at the **public domain**, so
   they reach whichever frontend is active. Configure both ifthenpay and
@@ -155,6 +168,7 @@ Identical on Vercel and Railway unless noted.
 | `TRUSTED_IP_HEADER` / `TRUSTED_PROXIES` | See README → Client IP behind a proxy |
 | Payment and bank-transfer variables | See `.env.example` |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Railway with several replicas |
+| `EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `RESEND_API_KEY`, `ADMIN_NOTIFICATION_EMAIL` | Email (step 4); `EMAIL_PROVIDER=resend` |
 | `LEGAL_*` | Seller details on the legal pages; also needed at build time |
 | `MEDIA_STORAGE`, `S3_*`, `MEDIA_PUBLIC_URL` | Photo storage (step 3); `MEDIA_STORAGE=s3` |
 

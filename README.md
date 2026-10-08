@@ -138,6 +138,33 @@ Without either, a warning is logged at startup: requests with a forwarded
 chain would share one rate-limit bucket, so one client could lock everyone
 out of signing in.
 
+## Transactional email
+
+| Email | When |
+| ----- | ---- |
+| Encomenda recebida (with payment details) | Order placed |
+| Pagamento confirmado · enviada · entregue · cancelada · expirada | Order status changes (preparation is internal) |
+| Pedido de reserva recebido; reserva confirmada · paga · cancelada · expirada | Reservations |
+| Confirme o seu email | Sign-up (signing in does not require it) |
+| Redefinir password · password alterada | `/recuperar-password` → `/nova-password` |
+| Nova encomenda · novo pedido de reserva | To `ADMIN_NOTIFICATION_EMAIL`, if set |
+
+How it works (`lib/email`):
+
+- **Outbox.** Emails are written to `EmailOutbox` in the same transaction
+  as the change that causes them, so a rolled-back checkout sends nothing,
+  and a provider outage delays emails without losing them or blocking a
+  sale. One row per event (`dedupeKey`).
+- **Delivery.** Right after the response (`after()`), and from the
+  scheduled job every 15 minutes, which retries failures with backoff (1 min
+  up to 6 h, then `FAILED`). Several instances can send at once (rows are
+  claimed with `FOR UPDATE SKIP LOCKED`); the outbox id is the provider's
+  idempotency key.
+- **Content** is rendered at send time from current data (HTML with inline
+  styles and escaped values, plus plain text). Links in account emails are
+  removed from the outbox once sent; sent rows are purged after 30 days.
+- `EMAIL_PROVIDER=console` (default) logs emails instead of sending them.
+
 ## Legal pages
 
 `/termos`, `/devolucoes` (14-day withdrawal and model form), `/privacidade`

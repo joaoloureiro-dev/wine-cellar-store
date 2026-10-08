@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { RenderedEmail } from "@/lib/email/layout";
+import { renderPasswordChanged, renderPasswordReset, renderVerifyEmail } from "@/lib/email/templates/account";
 import { renderAdminNewOrder, renderOrderReceived, renderOrderStatus } from "@/lib/email/templates/orders";
 import { renderAdminNewReservation, renderReservationReceived, renderReservationStatus } from "@/lib/email/templates/reservations";
 
@@ -15,4 +16,7 @@ export const emailTemplates: EmailTemplates = {
     "reservation.received": renderReservationReceived,
     "reservation.status": renderReservationStatus,
     "admin.reservation": renderAdminNewReservation,
+    "account.password-reset": renderPasswordReset,
+    "account.password-changed": renderPasswordChanged,
+    "account.verify-email": renderVerifyEmail,
 };

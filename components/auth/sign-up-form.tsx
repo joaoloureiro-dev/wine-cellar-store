@@ -56,7 +56,8 @@ export function SignUpForm({ next, minPasswordLength }: SignUpFormProps) {
         setIsPending(true);
 
         const { name, email, password } = parsed.data;
-        const { error } = await authClient.signUp.email({ name, email, password });
+        // The confirmation email links back to the profile.
+        const { error } = await authClient.signUp.email({ name, email, password, callbackURL: "/conta/perfil" });
 
         if (error) {
             setIsPending(false);

@@ -60,3 +60,24 @@ test("a customer downloads their data and deletes their account", async ({ page 
     await page.goto("/conta");
     await expect(page).toHaveURL(/\/entrar/);
 });
+
+test("password recovery never reveals whether an account exists", async ({ page }) => {
+    await page.goto("/entrar");
+    await page.getByRole("link", { name: "Esqueceu-se da password?" }).click();
+    await expect(page).toHaveURL(/\/recuperar-password$/);
+
+    await page.getByLabel("Email").fill("ninguem@e2e.test");
+    await page.getByRole("button", { name: "Enviar link" }).click();
+    await expect(page.locator("main [role=status]")).toContainText("Se existir uma conta com ninguem@e2e.test");
+});
+
+test("a reset link without a valid token explains what to do", async ({ page }) => {
+    await page.goto("/nova-password");
+    await expect(page.locator("main [role=alert]")).toContainText("já não é válido");
+
+    await page.goto("/nova-password?token=abcdefghijklmnop");
+    await page.locator("#newPassword").fill("garrafeira-nova-2027");
+    await page.locator("#confirmPassword").fill("garrafeira-nova-2027");
+    await page.getByRole("button", { name: "Guardar nova password" }).click();
+    await expect(page.locator("main [role=alert]")).toContainText("Peça um novo");
+});
