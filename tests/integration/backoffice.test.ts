@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { adminTransitionReservation } from "@/lib/admin/reservation-operations";
-import { ProductConflictError, updateProduct } from "@/lib/admin/products";
+import { productCreateSchema, productDetailsSchema } from "@/lib/admin/product-details-schema";
+import { createProduct as adminCreateProduct, ProductConflictError, ProductWithoutImagesError, updateProduct, updateProductDetails } from "@/lib/admin/products";
+import { uniqueViolationField } from "@/lib/admin/unique-violation";
 import { db } from "@/lib/db";
 import { expireOverdueReservations } from "@/lib/reservations/expiry";
 import { createProduct, resetDatabase, stockOf } from "../support/db";
@@ -93,5 +95,84 @@ describe("updateProduct", () => {
 
         await expect(updateProduct(admin, input(product.id, staleVersion))).rejects.toBeInstanceOf(ProductConflictError);
         expect((await stockOf(product.id)).stockQuantity).toBe(1);
+    });
+});
+
+describe("catalogue editing", () => {
+    const form = (brandId: string, changes: Record<string, string> = {}) => ({
+        name: "Vinocave Duo 60",
+        brandId,
+        sku: "VC-DUO-60",
+        shortDescription: "Cave de duas zonas para 60 garrafas.",
+        description: "Cave de vinho de duas zonas, silenciosa, com prateleiras de madeira.",
+        capacity: "60",
+        zones: "2",
+        installationType: "BUILT_IN",
+        zone1Min: "5",
+        zone1Max: "12",
+        zone2Min: "14",
+        zone2Max: "18",
+        widthCm: "59,5",
+        heightCm: "177",
+        depthCm: "56",
+        price: "1299",
+        stockQuantity: "4",
+        ...changes,
+    });
+
+    const zonesOf = (productId: string) =>
+        db.productTemperatureZone.findMany({ where: { productId }, orderBy: { position: "asc" }, select: { position: true, minCelsius: true, maxCelsius: true } });
+
+    it("creates a hidden product with its zones, then edits its details", async () => {
+        const { brandId } = await createProduct({ stock: 1 });
+        const created = await adminCreateProduct(admin, productCreateSchema.parse(form(brandId)));
+
+        const product = await db.product.findUniqueOrThrow({ where: { id: created.id } });
+        expect(product).toMatchObject({ slug: "vinocave-duo-60", active: false, priceCents: 129_900, widthMm: 595 });
+        expect(await zonesOf(created.id)).toHaveLength(2);
+
+        const edit = productDetailsSchema.parse({ ...form(brandId, { zones: "1", name: "Vinocave Solo 60" }), productId: created.id, version: String(product.updatedAt.getTime()) });
+        expect(await updateProductDetails(admin, edit)).toBe(true);
+
+        expect(await zonesOf(created.id)).toEqual([{ position: 1, minCelsius: 5, maxCelsius: 12 }]);
+        expect((await db.product.findUniqueOrThrow({ where: { id: created.id } })).slug).toBe("vinocave-duo-60");
+
+        const actions = await db.adminAuditLog.findMany({ where: { entityId: created.id }, orderBy: { createdAt: "asc" }, select: { action: true } });
+        expect(actions.map((entry) => entry.action)).toEqual(["product.create", "product.details_update"]);
+    });
+
+    it("keeps the zones when the details were changed elsewhere", async () => {
+        const { brandId } = await createProduct({ stock: 1 });
+        const created = await adminCreateProduct(admin, productCreateSchema.parse(form(brandId)));
+        const { updatedAt } = await db.product.findUniqueOrThrow({ where: { id: created.id } });
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        await db.product.update({ where: { id: created.id }, data: { stockQuantity: 3 } });
+
+        const edit = productDetailsSchema.parse({ ...form(brandId, { zones: "1" }), productId: created.id, version: String(updatedAt.getTime()) });
+
+        await expect(updateProductDetails(admin, edit)).rejects.toBeInstanceOf(ProductConflictError);
+        expect(await zonesOf(created.id)).toHaveLength(2);
+    });
+
+    it("publishes a new product only once it has a photo", async () => {
+        const { brandId } = await createProduct({ stock: 1 });
+        const created = await adminCreateProduct(admin, productCreateSchema.parse(form(brandId)));
+        const publish = async () => {
+            const { updatedAt } = await db.product.findUniqueOrThrow({ where: { id: created.id } });
+            return updateProduct(admin, { productId: created.id, version: updatedAt.getTime(), price: 129_900, compareAtPrice: null, stockQuantity: 4, availability: "auto", active: true, featured: false });
+        };
+
+        await expect(publish()).rejects.toBeInstanceOf(ProductWithoutImagesError);
+        await db.productImage.create({ data: { productId: created.id, url: "/images/products/test.webp", alt: "Cave", position: 0 } });
+        expect(await publish()).toBe(true);
+        expect((await db.product.findUniqueOrThrow({ where: { id: created.id } })).active).toBe(true);
+    });
+
+    it("reports which unique field clashed", async () => {
+        const existing = await createProduct({ stock: 1 });
+        const error = await adminCreateProduct(admin, productCreateSchema.parse(form(existing.brandId, { sku: existing.sku }))).catch((caught) => caught);
+
+        expect(uniqueViolationField(error)).toBe("sku");
+        expect(await db.product.count()).toBe(1);
     });
 });

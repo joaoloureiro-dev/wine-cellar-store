@@ -5,10 +5,11 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { StatusBadge } from "@/components/account/status-badge";
 import { Panel } from "@/components/admin/panel";
+import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductForm } from "@/components/admin/product-form";
 import { requireAdmin } from "@/lib/admin/auth";
-import { dateTime, describeProductChanges, stockStatusTone } from "@/lib/admin/format";
-import { getAdminProduct, getCommittedUnits, getProductAuditLog } from "@/lib/admin/products";
+import { dateTime, describeProductAudit, stockStatusTone } from "@/lib/admin/format";
+import { getAdminProduct, getBrandOptions, getCommittedUnits, getProductAuditLog, getProductDetails } from "@/lib/admin/products";
 import { stockStatusLabels } from "@/lib/product-display";
 import { getProductHref } from "@/lib/routes";
 import type { StockStatus } from "@/types/product";
@@ -24,7 +25,16 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
         notFound();
     }
 
-    const [auditLog, committed] = await Promise.all([getProductAuditLog(product.id), getCommittedUnits(product.id)]);
+    const [auditLog, committed, details, brands] = await Promise.all([
+        getProductAuditLog(product.id),
+        getCommittedUnits(product.id),
+        getProductDetails(product.id),
+        getBrandOptions(),
+    ]);
+
+    if (!details) {
+        notFound();
+    }
 
     return (
         <>
@@ -52,20 +62,25 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-                <Panel title="Preço, stock e visibilidade" className="min-w-0">
-                    <ProductForm
-                        product={{
-                            id: product.id,
-                            priceCents: product.priceCents,
-                            compareAtPriceCents: product.compareAtPriceCents,
-                            stockQuantity: product.stockQuantity,
-                            stockStatus: product.stockStatus,
-                            active: product.active,
-                            featured: product.featured,
-                            version: product.updatedAt.getTime(),
-                        }}
-                    />
-                </Panel>
+                <div className="min-w-0 space-y-6">
+                    <Panel title="Preço, stock e visibilidade">
+                        <ProductForm
+                            product={{
+                                id: product.id,
+                                priceCents: product.priceCents,
+                                compareAtPriceCents: product.compareAtPriceCents,
+                                stockQuantity: product.stockQuantity,
+                                stockStatus: product.stockStatus,
+                                active: product.active,
+                                featured: product.featured,
+                                version: product.updatedAt.getTime(),
+                            }}
+                        />
+                    </Panel>
+                    <Panel title="Detalhes do produto">
+                        <ProductDetailsForm brands={brands} product={{ ...details, version: details.updatedAt.getTime() }} />
+                    </Panel>
+                </div>
 
                 <div className="min-w-0 space-y-6">
                     <Panel title="Unidades comprometidas">
@@ -86,7 +101,7 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
                             <ul className="space-y-2 text-xs text-muted">
                                 {auditLog.map((entry) => (
                                     <li key={entry.id}>
-                                        <span className="font-semibold text-charcoal">{describeProductChanges(entry.data)}</span> · {entry.actorEmail} · {dateTime.format(entry.createdAt)}
+                                        <span className="font-semibold text-charcoal">{describeProductAudit(entry.action, entry.data)}</span> · {entry.actorEmail} · {dateTime.format(entry.createdAt)}
                                     </li>
                                 ))}
                             </ul>

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, EyeOff } from "lucide-react";
+import { ChevronRight, EyeOff, Plus } from "lucide-react";
 
 import { AccountHeading } from "@/components/account/account-heading";
 import { StatusBadge } from "@/components/account/status-badge";
 import { ListToolbar } from "@/components/admin/list-toolbar";
 import { Pagination } from "@/components/admin/pagination";
+import { primaryLinkClass } from "@/components/admin/styles";
 import { requireAdmin } from "@/lib/admin/auth";
 import { stockStatusTone } from "@/lib/admin/format";
 import { parseListParams } from "@/lib/admin/list-params";
@@ -27,7 +28,14 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
 
     return (
         <>
-            <AccountHeading title="Produtos" />
+            <AccountHeading
+                title="Produtos"
+                action={
+                    <Link href={`${pathname}/novo`} className={primaryLinkClass}>
+                        <Plus size={16} aria-hidden="true" /> Novo produto
+                    </Link>
+                }
+            />
             <ListToolbar pathname={pathname} statuses={statusOptions} status={status} q={q} searchPlaceholder="Nome, SKU ou marca" />
 
             {products.length > 0 ? (

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { Prisma } from "@/generated/prisma/client";
 import type { Admin } from "@/lib/admin/auth";
 import { recordAudit } from "@/lib/admin/audit";
 import type { BrandInput } from "@/lib/admin/brand-schema";
@@ -20,16 +19,6 @@ export async function getAdminBrand(id: string) {
         where: { id },
         select: { id: true, slug: true, name: true, country: true, description: true },
     });
-}
-
-/** Unique-constraint violation → the field that clashed ("slug", "name", …). */
-export function uniqueViolationField(error: unknown) {
-    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
-        return null;
-    }
-
-    const target = JSON.stringify(error.meta ?? {});
-    return ["slug", "name", "sku", "ean"].find((field) => target.includes(field)) ?? "_form";
 }
 
 export async function createBrand(admin: Admin, input: BrandInput) {

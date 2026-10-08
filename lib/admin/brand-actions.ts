@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { getAdmin } from "@/lib/admin/auth";
 import { brandSchema } from "@/lib/admin/brand-schema";
-import { createBrand, uniqueViolationField, updateBrand } from "@/lib/admin/brands";
+import { createBrand, updateBrand } from "@/lib/admin/brands";
+import { uniqueViolationField } from "@/lib/admin/unique-violation";
 import { fieldErrorsFrom, formValues, type AdminFormState } from "@/lib/admin/form-state";
 import { invalidateBrands, invalidateCatalog } from "@/lib/catalog/cache";
 
