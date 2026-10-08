@@ -5,7 +5,7 @@ import { z } from "zod";
 import { LOW_STOCK_THRESHOLD } from "@/lib/orders/stock";
 
 /** "1 299,90" | "1299.9" | "899" → cents. */
-const euros = (label: string) =>
+export const euros = (label: string) =>
     z
         .string()
         .transform((value) => value.replace(/[\s €]/g, "").replace(",", "."))

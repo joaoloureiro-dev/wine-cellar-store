@@ -61,6 +61,13 @@ const productFieldLabels: Record<string, string> = {
     featured: "destaque",
 };
 
+/** "Produto criado", "Detalhes", or "preço, stock" for a product audit entry. */
+export function describeProductAudit(action: string, data: unknown) {
+    if (action === "product.create") return "produto criado";
+    if (action === "product.details_update") return "detalhes e especificações";
+    return describeProductChanges(data);
+}
+
 /** "preço, stock" from a product.update audit entry. */
 export function describeProductChanges(data: unknown) {
     if (!data || typeof data !== "object") return "sem alterações";

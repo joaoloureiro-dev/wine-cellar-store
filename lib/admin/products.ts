@@ -4,6 +4,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { Admin } from "@/lib/admin/auth";
 import { recordAudit } from "@/lib/admin/audit";
 import { ADMIN_PAGE_SIZE } from "@/lib/admin/list-params";
+import type { ProductCreateInput, ProductDetailsInput } from "@/lib/admin/product-details-schema";
 import { deriveStockStatus, type ProductUpdateInput } from "@/lib/admin/product-schema";
 import { db } from "@/lib/db";
 
@@ -101,6 +102,14 @@ export class ProductConflictError extends Error {
     }
 }
 
+/** Publishing needs a photo: the storefront shows every product with one. */
+export class ProductWithoutImagesError extends Error {
+    constructor() {
+        super("Adicione pelo menos uma fotografia antes de tornar o produto visível.");
+        this.name = "ProductWithoutImagesError";
+    }
+}
+
 /**
  * Saves price, stock and visibility. Optimistic locking on `updatedAt`:
  * if anything changed the product since the form was loaded (an admin or
@@ -125,6 +134,10 @@ export async function updateProduct(admin: Admin, input: ProductUpdateInput) {
 
         if (!before) {
             return false;
+        }
+
+        if (input.active && !before.active && (await tx.productImage.count({ where: { productId: input.productId } })) === 0) {
+            throw new ProductWithoutImagesError();
         }
 
         const after = {
@@ -167,6 +180,99 @@ export async function getProductAuditLog(productId: string) {
         where: { entityType: "product", entityId: productId },
         orderBy: { createdAt: "desc" },
         take: 10,
-        select: { id: true, actorEmail: true, createdAt: true, data: true },
+        select: { id: true, action: true, actorEmail: true, createdAt: true, data: true },
+    });
+}
+
+/** Everything the details form edits, plus brand options. */
+export async function getProductDetails(id: string) {
+    if (!/^[a-z0-9-]{1,64}$/i.test(id)) return null;
+
+    return db.product.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            slug: true,
+            name: true,
+            brandId: true,
+            sku: true,
+            ean: true,
+            shortDescription: true,
+            description: true,
+            capacity: true,
+            zones: true,
+            installationType: true,
+            widthMm: true,
+            heightMm: true,
+            depthMm: true,
+            weightGrams: true,
+            energyClass: true,
+            annualEnergyKwh: true,
+            noiseDb: true,
+            reversibleDoor: true,
+            uvProtectedGlass: true,
+            ledLighting: true,
+            lock: true,
+            seoTitle: true,
+            seoDescription: true,
+            updatedAt: true,
+            temperatureZones: { orderBy: { position: "asc" }, select: { position: true, minCelsius: true, maxCelsius: true } },
+        },
+    });
+}
+
+export async function getBrandOptions() {
+    return db.brand.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } });
+}
+
+export async function createProduct(admin: Admin, input: ProductCreateInput) {
+    return db.$transaction(async (tx) => {
+        const product = await tx.product.create({
+            data: { ...input.data, temperatureZones: { create: input.zones } },
+            select: { id: true, slug: true },
+        });
+
+        await recordAudit(tx, admin, {
+            action: "product.create",
+            entityType: "product",
+            entityId: product.id,
+            data: { slug: product.slug, sku: input.data.sku },
+        });
+
+        return product;
+    });
+}
+
+/**
+ * Saves the product's content and specifications. Same optimistic locking
+ * as price/stock edits: a change made since the form was opened is never
+ * overwritten.
+ */
+export async function updateProductDetails(admin: Admin, input: ProductDetailsInput) {
+    return db.$transaction(async (tx) => {
+        const exists = await tx.product.findUnique({ where: { id: input.productId }, select: { id: true } });
+
+        if (!exists) return false;
+
+        const { count } = await tx.product.updateMany({
+            where: { id: input.productId, updatedAt: new Date(input.version) },
+            data: input.data,
+        });
+
+        if (count === 0) throw new ProductConflictError();
+
+        await tx.productTemperatureZone.deleteMany({ where: { productId: input.productId } });
+        await tx.productTemperatureZone.createMany({
+            data: input.zones.map((zone) => ({ ...zone, productId: input.productId })),
+        });
+
+        await recordAudit(tx, admin, {
+            action: "product.details_update",
+            entityType: "product",
+            entityId: input.productId,
+            data: { fields: Object.keys(input.data) },
+        });
+
+        return true;
     });
 }

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { getAdmin } from "@/lib/admin/auth";
 import { productUpdateSchema, type ProductField } from "@/lib/admin/product-schema";
-import { ProductConflictError, updateProduct } from "@/lib/admin/products";
+import { ProductConflictError, ProductWithoutImagesError, updateProduct } from "@/lib/admin/products";
 import { invalidateCatalog } from "@/lib/catalog/cache";
 
 export type ProductFormState = {
@@ -58,6 +58,10 @@ export async function saveProductAction(previousState: ProductFormState, formDat
             // Re-render with fresh data from the database.
             revalidatePath(`/admin/produtos/${parsed.data.productId}`);
             return { status: "error", message: error.message, submissionId };
+        }
+
+        if (error instanceof ProductWithoutImagesError) {
+            return { status: "error", message: error.message, values, submissionId };
         }
 
         throw error;
