@@ -39,10 +39,11 @@ describe("order emails", () => {
     it("confirms the order with the payment details known at send time", async () => {
         const order = await multibancoOrder();
 
-        const [email, ...others] = await sendAll();
+        const emails = await sendAll();
+        const email = emails.find((sent) => sent.to === "rita@example.pt")!;
 
-        expect(others).toHaveLength(0);
-        expect(email.to).toBe("rita@example.pt");
+        expect(emails.map((sent) => sent.to).sort()).toEqual(["loja@cellarium.test", "rita@example.pt"]);
+        expect(emails.find((sent) => sent.to === "loja@cellarium.test")?.text).toContain(`/admin/encomendas/${order.reference}`);
         expect(email.subject).toBe(`Encomenda ${order.reference} recebida`);
         expect(email.text).toContain("Entidade: 12345");
         expect(email.text).toContain("Referência: 123 456 789");
