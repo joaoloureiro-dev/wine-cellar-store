@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Heart, Menu, ShoppingBag, Truck, UserRound, X } from "lucide-react";
+import { ArrowRight, Heart, Menu, Search, ShoppingBag, Truck, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { CartLink } from "@/components/cart/cart-link";
@@ -29,6 +29,7 @@ const navigation = [
 ];
 
 const menuShortcuts = [
+    { label: "Pesquisar", href: "/pesquisa", icon: Search },
     { label: "Conta", href: "/conta", icon: UserRound },
     { label: "Favoritos", href: "/favoritos", icon: Heart },
     { label: "Carrinho", href: "/carrinho", icon: ShoppingBag },
@@ -122,6 +123,14 @@ export function Header() {
 
                         <div className="flex items-center">
                             <Link
+                                href="/pesquisa"
+                                aria-label="Pesquisar"
+                                className={iconButton}
+                            >
+                                <Search size={20} strokeWidth={1.8} aria-hidden="true" />
+                            </Link>
+
+                            <Link
                                 href="/favoritos"
                                 aria-label="Favoritos"
                                 className={`${iconButton} hidden md:inline-flex`}
@@ -208,7 +217,7 @@ export function Header() {
                                 ))}
                             </ul>
 
-                            <ul role="list" className="mt-8 grid grid-cols-3 gap-3">
+                            <ul role="list" className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
                                 {menuShortcuts.map(({ label, href, icon: Icon }) => (
                                     <li key={href}>
                                         <Link
