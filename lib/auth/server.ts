@@ -2,12 +2,17 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 
+import { anonymiseBeforeDeletion, getDeletionBlocker } from "@/lib/account/deletion";
 import { createRateLimitStorage } from "@/lib/auth/rate-limit-storage";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { createLogger } from "@/lib/logger";
 import { sanitizeText } from "@/lib/validation/fields";
+
+const logger = createLogger("auth");
 
 export const PASSWORD_MIN_LENGTH = 10;
 
@@ -85,7 +90,40 @@ export const auth = betterAuth({
             "/sign-in/email": { window: 60, max: 5 },
             "/sign-up/email": { window: 60, max: 3 },
             "/change-password": { window: 60, max: 5 },
+            "/delete-user": { window: 60, max: 5 },
         },
+    },
+    user: {
+        // Account deletion (RGPD art. 17), from /conta/perfil.
+        deleteUser: {
+            enabled: true,
+            beforeDelete: async (user) => {
+                const blocker = await getDeletionBlocker(user.id);
+
+                if (blocker) {
+                    throw new APIError("BAD_REQUEST", { code: blocker, message: "Account cannot be deleted yet" });
+                }
+
+                await anonymiseBeforeDeletion(user.id);
+            },
+            afterDelete: async (user) => {
+                logger.info("Account deleted", { userId: user.id });
+            },
+        },
+    },
+    hooks: {
+        // Better Auth accepts a recent session instead of the password; for
+        // accounts that have a password, always ask for it.
+        before: createAuthMiddleware(async (ctx) => {
+            if (ctx.path !== "/delete-user" || ctx.body?.password) return;
+
+            const session = await getSessionFromCtx(ctx);
+            const hasPassword = session ? await db.account.count({ where: { userId: session.user.id, providerId: "credential" } }) : 0;
+
+            if (hasPassword > 0) {
+                throw new APIError("BAD_REQUEST", { code: "PASSWORD_REQUIRED", message: "Password required" });
+            }
+        }),
     },
     databaseHooks: {
         user: {

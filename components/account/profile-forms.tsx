@@ -1,9 +1,10 @@
 "use client";
 
 import { LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 
-import { errorProps, Field, inputClassName } from "@/components/ui/form-field";
+import { errorProps, Field, FieldError, inputClassName } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
 import { updateProfileAction, type ProfileFormState } from "@/lib/account/actions";
 import { authClient } from "@/lib/auth/client";
@@ -99,6 +100,76 @@ export function ChangePasswordForm({ minPasswordLength }: { minPasswordLength: n
             <button type="submit" disabled={isPending} className={buttonClass}>
                 {isPending && <LoaderCircle size={16} strokeWidth={1.8} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
                 Alterar password
+            </button>
+        </form>
+    );
+}
+
+/**
+ * Deletes the account through Better Auth (/delete-user: rate limited,
+ * origin-checked). The server re-checks every rule; `blocker` only
+ * explains up front why it is not possible yet.
+ */
+export function DeleteAccountForm({ hasPassword, blocker }: { hasPassword: boolean; blocker: string | null }) {
+    const toast = useToast();
+    const router = useRouter();
+    const [errors, setErrors] = useState<Partial<Record<"deletePassword" | "confirmDeletion", string>>>({});
+    const [isPending, setIsPending] = useState(false);
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const password = String(data.get("deletePassword") ?? "");
+        const nextErrors: typeof errors = {};
+
+        if (hasPassword && !password) nextErrors.deletePassword = "Indique a sua password.";
+        if (data.get("confirmDeletion") !== "on") nextErrors.confirmDeletion = "Confirme que quer eliminar a conta.";
+
+        setErrors(nextErrors);
+
+        if (Object.keys(nextErrors).length > 0) {
+            return;
+        }
+
+        setIsPending(true);
+        const { error } = await authClient.deleteUser(hasPassword ? { password } : {});
+        setIsPending(false);
+
+        if (error) {
+            toast.error("Não foi possível eliminar a conta", { description: getAuthErrorMessage(error) });
+            return;
+        }
+
+        toast.success("Conta eliminada", { description: "Os seus dados pessoais foram removidos." });
+        router.replace("/");
+        router.refresh();
+    }
+
+    if (blocker) {
+        return <p className="rounded-md border border-border bg-surface-muted p-4 text-sm text-charcoal">{getAuthErrorMessage({ code: blocker })}</p>;
+    }
+
+    return (
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {hasPassword && (
+                <Field label="Password" name="deletePassword" error={errors.deletePassword}>
+                    <input id="deletePassword" name="deletePassword" type="password" autoComplete="current-password" {...errorProps("deletePassword", errors.deletePassword)} className={inputClassName} />
+                </Field>
+            )}
+            <div>
+                <label className="flex items-start gap-3 text-sm text-charcoal">
+                    <input type="checkbox" id="confirmDeletion" name="confirmDeletion" {...errorProps("confirmDeletion", errors.confirmDeletion)} className="mt-0.5 size-4 accent-wine" />
+                    <span>Compreendo que a conta, as moradas e os favoritos são eliminados definitivamente.</span>
+                </label>
+                <FieldError name="confirmDeletion" error={errors.confirmDeletion} />
+            </div>
+            <button
+                type="submit"
+                disabled={isPending}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-danger px-5 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger disabled:opacity-60"
+            >
+                {isPending && <LoaderCircle size={16} strokeWidth={1.8} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
+                Eliminar conta
             </button>
         </form>
     );

@@ -138,6 +138,22 @@ Without either, a warning is logged at startup: requests with a forwarded
 chain would share one rate-limit bucket, so one client could lock everyone
 out of signing in.
 
+## Customer data (RGPD)
+
+From `/conta/perfil` a signed-in customer can:
+
+- **Download their data** (`/api/account/export`): profile, sign-in methods,
+  addresses, favourites, orders and reservations linked to the account, as
+  JSON. Guest orders placed with the same email are not included, because
+  the email address is not verified.
+- **Delete their account** (Better Auth `/delete-user`, rate limited). The
+  password is always required for accounts that have one; Google-only
+  accounts need a session younger than a day. Deletion is refused while an
+  order is in progress, a reservation is active, or the account has
+  backoffice access. Addresses, favourites and sessions are deleted; orders
+  are kept, unlinked, for the legal invoice retention period; finished
+  reservations lose their contact details.
+
 ## Backoffice
 
 The backoffice lives at `/admin`. Access is granted from the command line to

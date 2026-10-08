@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 import { AccountHeading } from "@/components/account/account-heading";
-import { ChangePasswordForm, ProfileForm } from "@/components/account/profile-forms";
+import { ChangePasswordForm, DeleteAccountForm, ProfileForm } from "@/components/account/profile-forms";
+import { getDeletionBlocker } from "@/lib/account/deletion";
 import { hasPasswordAccount } from "@/lib/account/queries";
 import { PASSWORD_MIN_LENGTH } from "@/lib/auth/server";
 import { requireUser } from "@/lib/auth/session";
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Perfil", robots: { index: false, fol
 
 export default async function AccountProfilePage() {
     const user = await requireUser("/conta/perfil");
-    const canChangePassword = await hasPasswordAccount(user.id);
+    const [canChangePassword, deletionBlocker] = await Promise.all([hasPasswordAccount(user.id), getDeletionBlocker(user.id)]);
 
     return (
         <>
@@ -27,6 +28,27 @@ export default async function AccountProfilePage() {
                     ) : (
                         <p className="text-sm text-muted">A sua conta usa o login com Google.</p>
                     )}
+                </section>
+                <section aria-labelledby="data-heading" className="rounded-xl border border-border bg-surface p-5 sm:p-6">
+                    <h2 id="data-heading" className="mb-2 font-display text-2xl font-semibold text-charcoal">Os seus dados</h2>
+                    <p className="mb-4 text-sm text-muted">
+                        Descarregue uma cópia dos dados da sua conta: perfil, moradas, favoritos, encomendas e reservas.
+                    </p>
+                    <a
+                        href="/api/account/export"
+                        download
+                        className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                    >
+                        Descarregar os meus dados (JSON)
+                    </a>
+                </section>
+                <section aria-labelledby="delete-heading" className="rounded-xl border border-border bg-surface p-5 sm:p-6">
+                    <h2 id="delete-heading" className="mb-2 font-display text-2xl font-semibold text-charcoal">Eliminar conta</h2>
+                    <p className="mb-4 text-sm text-muted">
+                        A conta, as moradas e os favoritos são apagados. As encomendas são guardadas sem ligação à conta, pelo prazo que a lei fiscal
+                        exige para as faturas; nas reservas concluídas, os contactos são apagados.
+                    </p>
+                    <DeleteAccountForm hasPassword={canChangePassword} blocker={deletionBlocker} />
                 </section>
             </div>
         </>
