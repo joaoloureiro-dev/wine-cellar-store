@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+
 import { expect, test } from "@playwright/test";
 
 import { signIn, signUp, uniqueEmail } from "./helpers";
@@ -35,4 +37,26 @@ test("customers cannot open the backoffice", async ({ page }) => {
 
     const response = await page.goto("/admin");
     expect(response?.status()).toBe(404);
+});
+
+test("a customer downloads their data and deletes their account", async ({ page }) => {
+    const email = uniqueEmail("apagar");
+    await signUp(page, { name: "Duarte Lopes", email });
+    await page.goto("/conta/perfil");
+
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /Descarregar os meus dados/ }).click()]);
+    const data = JSON.parse(await readFile((await download.path())!, "utf8"));
+    expect(data.account).toMatchObject({ name: "Duarte Lopes", email });
+
+    await page.getByRole("checkbox", { name: /Compreendo/ }).check();
+    await page.getByRole("button", { name: "Eliminar conta" }).click();
+    await expect(page.locator("#deletePassword-error")).toContainText("Indique a sua password");
+
+    await page.locator("#deletePassword").fill("garrafeira-2026");
+    await page.getByRole("button", { name: "Eliminar conta" }).click();
+    await expect(page.getByRole("status")).toContainText("Conta eliminada");
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.goto("/conta");
+    await expect(page).toHaveURL(/\/entrar/);
 });
