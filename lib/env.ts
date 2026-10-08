@@ -82,6 +82,17 @@ const serverEnvSchema = z.object({
     ),
 
     /**
+     * Seller identification shown on the legal pages (DL 7/2004, DL 24/2014).
+     * Missing values appear as visible "a preencher" markers.
+     */
+    LEGAL_COMPANY_NAME: optionalString,
+    LEGAL_TAX_ID: optionalString,
+    LEGAL_ADDRESS: optionalString,
+    LEGAL_REGISTRY: optionalString,
+    LEGAL_EMAIL: optionalString,
+    LEGAL_PHONE: optionalString,
+
+    /**
      * Product photos. "s3": any S3-compatible bucket (Cloudflare R2, …),
      * shared by every instance; required in production. "local": a folder
      * on this machine (MEDIA_LOCAL_DIR), for development only.

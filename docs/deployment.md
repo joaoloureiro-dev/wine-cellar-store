@@ -155,6 +155,7 @@ Identical on Vercel and Railway unless noted.
 | `TRUSTED_IP_HEADER` / `TRUSTED_PROXIES` | See README → Client IP behind a proxy |
 | Payment and bank-transfer variables | See `.env.example` |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Railway with several replicas |
+| `LEGAL_*` | Seller details on the legal pages; also needed at build time |
 | `MEDIA_STORAGE`, `S3_*`, `MEDIA_PUBLIC_URL` | Photo storage (step 3); `MEDIA_STORAGE=s3` |
 
 ## Failover drill (do this before launch)

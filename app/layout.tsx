@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { Header } from "@/components/layout/header";
+import { LegalBar } from "@/components/legal/legal-bar";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { siteUrl } from "@/lib/seo/metadata";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <FavoritesProvider>
             <Header />
             {children}
+            <LegalBar />
           </FavoritesProvider>
         </ToastProvider>
       </body>

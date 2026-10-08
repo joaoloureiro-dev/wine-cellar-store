@@ -464,8 +464,15 @@ function CheckoutSteps({
                                 className="mt-1 size-4 shrink-0 cursor-pointer accent-wine"
                             />
                             <span>
-                                Confirmo que os dados estão corretos e aceito que sejam usados para
-                                processar e entregar esta encomenda.
+                                Confirmo que os dados estão corretos e aceito os{" "}
+                                <Link href="/termos" target="_blank" className="font-semibold text-wine underline underline-offset-4">
+                                    Termos e Condições
+                                </Link>
+                                . Os dados são tratados conforme a{" "}
+                                <Link href="/privacidade" target="_blank" className="font-semibold text-wine underline underline-offset-4">
+                                    Política de Privacidade
+                                </Link>
+                                .
                             </span>
                         </label>
                         <FieldError name="termsAccepted" error={errors.termsAccepted} />
