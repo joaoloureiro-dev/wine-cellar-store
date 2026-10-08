@@ -1,6 +1,6 @@
 import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
 
-const services = [
+export const services = [
     {
         icon: Truck,
         title: "Entrega especializada",

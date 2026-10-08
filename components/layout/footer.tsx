@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, ShieldCheck, Truck } from "lucide-react";
+import { CalendarCheck, ShieldCheck, Truck } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
-import { buttonArrowStyles, buttonStyles } from "@/components/ui/button-styles";
 import { getBrands } from "@/lib/brands";
 import { capacitySegments, catalogParams } from "@/lib/catalog/options";
 import { paymentMethods } from "@/lib/checkout/payment-methods";
@@ -75,31 +74,9 @@ export async function Footer() {
             </h2>
 
             <Container>
-                <div className="grid gap-8 border-b border-cellar-ink/10 py-12 lg:grid-cols-[1.2fr_1fr] lg:items-end lg:gap-16 lg:py-16">
-                    <div>
-                        <p className="font-display text-[2.25rem] font-medium leading-[1.02] tracking-[-0.03em] text-cellar-ink sm:text-5xl">
-                            Reserve hoje. Pague depois de confirmarmos.
-                        </p>
-                        <p className="mt-4 max-w-lg text-base leading-7 text-cellar-muted">
-                            Garanta a cave que procura sem pagamento imediato. Confirmamos a
-                            disponibilidade, o prazo e as condições consigo.
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-                        <Link href="/reservas" className={buttonStyles({ variant: "light" })}>
-                            Como funcionam as reservas
-                            <ArrowRight size={18} strokeWidth={1.8} aria-hidden="true" className={buttonArrowStyles} />
-                        </Link>
-                        <Link href="/caves" className={buttonStyles({ variant: "ghost-dark" })}>
-                            Ver caves
-                        </Link>
-                    </div>
-                </div>
-
                 <ul
                     role="list"
-                    className="grid gap-4 border-b border-cellar-ink/10 py-8 sm:grid-cols-3"
+                    className="grid gap-4 border-b border-cellar-ink/10 py-10 sm:grid-cols-3"
                 >
                     {assurances.map(({ icon: Icon, label, detail }) => (
                         <li key={label} className="flex items-center gap-4">
