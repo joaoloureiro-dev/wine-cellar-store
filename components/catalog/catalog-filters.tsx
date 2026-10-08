@@ -21,6 +21,7 @@ import {
     getCatalogHref,
     type CatalogQuery,
 } from "@/lib/catalog/query";
+import { buttonStyles } from "@/components/ui/button-styles";
 import { useCloseDialogAtBreakpoint } from "@/lib/hooks/use-close-dialog-at-breakpoint";
 import { getZonesLabel } from "@/lib/product-display";
 
@@ -88,12 +89,12 @@ export function CatalogFilters({
                 onClick={openFilters}
                 aria-haspopup="dialog"
                 aria-controls="catalog-filters-dialog"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine lg:hidden"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-surface px-5 text-sm font-semibold text-charcoal shadow-card transition-colors hover:border-champagne focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine lg:hidden"
             >
                 <SlidersHorizontal size={18} strokeWidth={1.8} aria-hidden="true" />
                 Filtros
                 {activeFilterCount > 0 && (
-                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-wine px-1.5 text-[11px] font-bold text-white">
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-wine px-1.5 text-[11px] font-bold leading-5 text-white">
                         <span className="sr-only">(</span>
                         {activeFilterCount}
                         <span className="sr-only"> ativos)</span>
@@ -105,7 +106,7 @@ export function CatalogFilters({
                 ref={dialogRef}
                 id="catalog-filters-dialog"
                 aria-labelledby="catalog-filters-heading"
-                className="fixed inset-0 m-0 size-full max-h-none max-w-none overflow-y-auto bg-surface p-0 text-foreground lg:static lg:block lg:size-auto lg:overflow-visible lg:bg-transparent"
+                className="drawer drawer-left fixed inset-y-0 left-0 right-auto m-0 h-dvh max-h-none w-full max-w-md overflow-y-auto bg-background p-0 text-foreground shadow-lift sm:rounded-r-3xl lg:static lg:block lg:h-auto lg:w-auto lg:max-w-none lg:overflow-visible lg:rounded-none lg:bg-transparent lg:shadow-none"
             >
                 <Form
                     id={CATALOG_FILTERS_FORM_ID}
@@ -114,10 +115,10 @@ export function CatalogFilters({
                     onSubmit={closeFilters}
                     className="flex min-h-full flex-col lg:min-h-0"
                 >
-                    <div className="flex h-16 items-center justify-between border-b border-border px-5 sm:px-6 lg:h-auto lg:border-0 lg:px-0 lg:pb-2">
+                    <div className="flex h-16 items-center justify-between border-b border-border px-5 sm:px-6 lg:h-auto lg:border-0 lg:px-0 lg:pb-1">
                         <h2
                             id="catalog-filters-heading"
-                            className="font-display text-2xl font-semibold text-charcoal"
+                            className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal"
                         >
                             Filtros
                         </h2>
@@ -127,9 +128,9 @@ export function CatalogFilters({
                             type="button"
                             aria-label="Fechar filtros"
                             onClick={closeFilters}
-                            className="rounded-md p-2.5 text-charcoal transition-colors hover:bg-surface-muted lg:hidden"
+                            className="-mr-2 inline-flex size-11 items-center justify-center rounded-full text-charcoal transition-colors hover:bg-charcoal/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine lg:hidden"
                         >
-                            <X size={22} strokeWidth={1.8} />
+                            <X size={22} strokeWidth={1.8} aria-hidden="true" />
                         </button>
                     </div>
 
@@ -271,10 +272,10 @@ export function CatalogFilters({
                         </FilterGroup>
                     </div>
 
-                    <div className="sticky bottom-0 grid grid-cols-2 gap-3 border-t border-border bg-surface px-5 py-4 sm:px-6 lg:static lg:grid-cols-1 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-6">
+                    <div className="sticky bottom-0 grid grid-cols-2 gap-3 border-t border-border bg-background/90 px-5 py-4 backdrop-blur-md sm:px-6 lg:static lg:grid-cols-1 lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:backdrop-blur-none">
                         <button
                             type="submit"
-                            className="order-last inline-flex min-h-11 items-center justify-center rounded-md bg-wine px-4 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine lg:order-first"
+                            className={buttonStyles({ className: "order-last px-4 lg:order-first" })}
                         >
                             Aplicar filtros
                         </button>
@@ -283,7 +284,7 @@ export function CatalogFilters({
                             href={clearHref}
                             scroll={false}
                             onClick={closeFilters}
-                            className="inline-flex min-h-11 items-center justify-center rounded-md border border-border px-4 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                            className={buttonStyles({ variant: "secondary", className: "px-4" })}
                         >
                             Limpar filtros
                         </Link>
@@ -296,12 +297,12 @@ export function CatalogFilters({
 
 function FilterGroup({ legend, children }: { legend: string; children: ReactNode }) {
     return (
-        <fieldset className="py-5 first:pt-4 lg:first:pt-2">
-            <legend className="float-left mb-3 w-full text-xs font-bold uppercase tracking-[0.16em] text-charcoal">
+        <fieldset className="py-5 first:pt-4 lg:first:pt-3">
+            <legend className="float-left mb-2 w-full text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-champagne-ink">
                 {legend}
             </legend>
 
-            <div className="clear-both space-y-1">{children}</div>
+            <div className="clear-both space-y-0.5">{children}</div>
         </fieldset>
     );
 }
@@ -315,13 +316,13 @@ type CheckboxProps = {
 
 function Checkbox({ name, value, defaultChecked, children }: CheckboxProps) {
     return (
-        <label className="flex min-h-9 cursor-pointer items-center gap-3 text-sm text-charcoal">
+        <label className="-mx-2 flex min-h-10 cursor-pointer items-center gap-3 rounded-xl px-2 text-sm text-charcoal transition-colors hover:bg-surface-muted/70">
             <input
                 type="checkbox"
                 name={name}
                 value={value}
                 defaultChecked={defaultChecked}
-                className="size-4 shrink-0 cursor-pointer accent-wine"
+                className="checkbox-cellar"
             />
             {children}
         </label>
@@ -336,7 +337,7 @@ type FieldProps = {
 };
 
 const fieldClassName =
-    "mt-1.5 block h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-charcoal focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30";
+    "mt-1.5 block h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-charcoal transition-colors hover:border-charcoal/30 focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30";
 
 function NumberField({ label, name, value, onChange }: FieldProps) {
     return (

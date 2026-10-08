@@ -22,14 +22,14 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                             {item.href && !isLast ? (
                                 <Link
                                     href={item.href}
-                                    className="rounded-sm transition-colors hover:text-wine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                                    className="rounded-sm underline-offset-4 transition-colors hover:text-wine hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                                 >
                                     {item.label}
                                 </Link>
                             ) : (
                                 <span
                                     aria-current={isLast ? "page" : undefined}
-                                    className={isLast ? "text-charcoal" : undefined}
+                                    className={isLast ? "font-semibold text-charcoal" : undefined}
                                 >
                                     {item.label}
                                 </span>
@@ -40,6 +40,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                                     size={14}
                                     strokeWidth={1.6}
                                     aria-hidden="true"
+                                    className="text-champagne"
                                 />
                             )}
                         </li>
