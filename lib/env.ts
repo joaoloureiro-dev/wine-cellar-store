@@ -80,6 +80,22 @@ const serverEnvSchema = z.object({
     TRUSTED_PROXIES: optionalString.transform((value) =>
         value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : undefined,
     ),
+
+    /**
+     * Product photos. "s3": any S3-compatible bucket (Cloudflare R2, …),
+     * shared by every instance; required in production. "local": a folder
+     * on this machine (MEDIA_LOCAL_DIR), for development only.
+     */
+    MEDIA_STORAGE: z.enum(["local", "s3"]).default("local"),
+    MEDIA_LOCAL_DIR: z.string().trim().default(".data/media"),
+    /** e.g. https://<account-id>.r2.cloudflarestorage.com */
+    S3_ENDPOINT: optionalString.pipe(z.url({ protocol: /^https?$/ }).optional()),
+    S3_REGION: z.string().trim().default("auto"),
+    S3_BUCKET: optionalString,
+    S3_ACCESS_KEY_ID: optionalString,
+    S3_SECRET_ACCESS_KEY: optionalString,
+    /** Public base URL of the bucket (custom domain or r2.dev), no trailing slash. */
+    MEDIA_PUBLIC_URL: optionalString.pipe(z.url({ protocol: /^https?$/ }).optional()).transform((value) => value?.replace(/\/+$/, "")),
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);

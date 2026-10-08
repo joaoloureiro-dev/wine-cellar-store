@@ -7,9 +7,11 @@ import { StatusBadge } from "@/components/account/status-badge";
 import { Panel } from "@/components/admin/panel";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductForm } from "@/components/admin/product-form";
+import { ProductImages } from "@/components/admin/product-images";
 import { requireAdmin } from "@/lib/admin/auth";
 import { dateTime, describeProductAudit, stockStatusTone } from "@/lib/admin/format";
 import { getAdminProduct, getBrandOptions, getCommittedUnits, getProductAuditLog, getProductDetails } from "@/lib/admin/products";
+import { listProductImages } from "@/lib/admin/product-images";
 import { stockStatusLabels } from "@/lib/product-display";
 import { getProductHref } from "@/lib/routes";
 import type { StockStatus } from "@/types/product";
@@ -25,11 +27,12 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
         notFound();
     }
 
-    const [auditLog, committed, details, brands] = await Promise.all([
+    const [auditLog, committed, details, brands, images] = await Promise.all([
         getProductAuditLog(product.id),
         getCommittedUnits(product.id),
         getProductDetails(product.id),
         getBrandOptions(),
+        listProductImages(product.id),
     ]);
 
     if (!details) {
@@ -76,6 +79,9 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
                                 version: product.updatedAt.getTime(),
                             }}
                         />
+                    </Panel>
+                    <Panel title="Fotografias">
+                        <ProductImages productId={product.id} productName={product.name} images={images} />
                     </Panel>
                     <Panel title="Detalhes do produto">
                         <ProductDetailsForm brands={brands} product={{ ...details, version: details.updatedAt.getTime() }} />

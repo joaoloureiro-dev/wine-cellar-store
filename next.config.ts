@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 import { securityHeaders } from "./lib/security/headers";
 
+// Product photos uploaded in the backoffice (lib/media/storage.ts): the
+// bucket's public URL in production, /media/** with local storage.
+const mediaPublicUrl = process.env.MEDIA_PUBLIC_URL?.trim().replace(/\/+$/, "");
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Version-skew protection when traffic moves between deployments (e.g.
@@ -36,7 +40,19 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
         search: "",
       },
+      {
+        pathname: "/media/**",
+        search: "",
+      },
     ],
+    remotePatterns: mediaPublicUrl ? [new URL(`${mediaPublicUrl}/products/**`)] : [],
+  },
+  experimental: {
+    serverActions: {
+      // Photo uploads: 4 MB per file plus multipart overhead, under
+      // Vercel's 4.5 MB request limit.
+      bodySizeLimit: "4.4mb",
+    },
   },
 };
 

@@ -21,6 +21,7 @@ it is affordable and degrading gracefully where it is not.
           │                    ▼                   ▼                    │
           │   Neon PostgreSQL (single source of truth, HA storage)     │
           │   Redis (Upstash, optional: shared cache + rate limits)    │
+          │   Cloudflare R2 (product photos, public bucket domain)     │
           │   Payments: ifthenpay ⇄ eupago failover, Stripe (Klarna)   │
           └────────────────────────────────────────────────────────────┘
 
@@ -43,6 +44,7 @@ keep their session and cart when traffic moves to Railway.
 | Redis                 | Caches per instance, rate limits per instance; site keeps working                      | Circuit breaker + in-memory fallback, resync on recovery |
 | ifthenpay or eupago   | MB WAY/Multibanco move to the other provider when safe                                 | `PAYMENT_FALLBACK_PROVIDER` (`lib/payments/failover.ts`) |
 | Stripe                | Klarna unavailable; other methods unaffected                                           | Circuit breaker, clear message |
+| Cloudflare R2         | New uploads fail with a clear message; existing photos keep loading from the image cache | Upload errors handled; files removed if the record fails |
 | GitHub Actions cron   | Unpaid orders expire later than planned (stock held longer)                            | Idempotent job; can be run manually |
 
 The remaining single point of failure is the database, which is expected
@@ -67,14 +69,33 @@ Create an **Upstash Redis** database in an EU region and use its TLS URL
 (`rediss://…`) as `REDIS_URL` on both platforms. Without Redis the site still
 works, but each instance has its own cache and rate limits.
 
-### 3. Vercel (primary)
+### 3. Photo storage (Cloudflare R2)
+
+Both frontends must see the same photos, and Vercel's file system is
+read-only, so uploads go to a bucket:
+
+1. Cloudflare → R2 → create bucket `cellarium-media` (location hint: EU).
+2. Bucket → Settings → **Custom domain** (e.g. `media.cellarium.pt`), or
+   enable the `r2.dev` public URL for testing. This is `MEDIA_PUBLIC_URL`.
+3. R2 → Manage API tokens → **Object Read & Write**, limited to this
+   bucket. Copy the access key ID, secret and the S3 endpoint
+   (`https://<account-id>.r2.cloudflarestorage.com`).
+4. Set on both platforms (and their build environments):
+   `MEDIA_STORAGE=s3`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
+   `S3_SECRET_ACCESS_KEY`, `MEDIA_PUBLIC_URL`. `MEDIA_PUBLIC_URL` is read at
+   build time to allow the domain in `next/image`; redeploy after changing it.
+
+Any S3-compatible service works the same way (set `S3_REGION` when it is not
+`auto`). Photos uploaded with `MEDIA_STORAGE=local` stay on that machine.
+
+### 4. Vercel (primary)
 
 1. Import the repository; framework preset **Next.js**. `vercel.json` pins the
    region (`fra1`) and runs `npm run build:deploy` (migrations, then build).
 2. Set the environment variables (table below), with `DATABASE_POOL_MAX=5`.
 3. Add the production domain.
 
-### 4. Railway (fallback)
+### 5. Railway (fallback)
 
 1. New service → deploy from the GitHub repository. `railway.json` sets the
    build (`npm run build:deploy`), start command and the health check
@@ -88,7 +109,7 @@ and applies each migration once. Keep migrations backwards compatible
 (expand, deploy, then contract), since both platforms briefly run different
 versions during a deploy.
 
-### 5. Failover layer
+### 6. Failover layer
 
 **Recommended: Cloudflare Load Balancing** (paid add-on), with the domain's
 DNS on Cloudflare:
@@ -111,7 +132,7 @@ Vercel supports running behind another proxy, but recommends against it
 because its own firewall then sees the proxy's IPs; the DNS-only mode avoids
 that trade-off.
 
-### 6. Providers and jobs
+### 7. Providers and jobs
 
 - Point the payment webhooks (README → Payments) at the **public domain**, so
   they reach whichever frontend is active. Configure both ifthenpay and
@@ -134,6 +155,7 @@ Identical on Vercel and Railway unless noted.
 | `TRUSTED_IP_HEADER` / `TRUSTED_PROXIES` | See README → Client IP behind a proxy |
 | Payment and bank-transfer variables | See `.env.example` |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Railway with several replicas |
+| `MEDIA_STORAGE`, `S3_*`, `MEDIA_PUBLIC_URL` | Photo storage (step 3); `MEDIA_STORAGE=s3` |
 
 ## Failover drill (do this before launch)
 
@@ -155,5 +177,7 @@ from the repository:
   through Redis; confirm a price change appears on both frontends.
 - Railway's build settings in `railway.json` (builder name, health check)
   against its current schema.
+- Upload a photo through each frontend and confirm it shows on both
+  (bucket permissions and `MEDIA_PUBLIC_URL` in `next/image`).
 - That `RAILWAY_DEPLOYMENT_ID` is available at build time (used for the
   deployment ID); otherwise set `NEXT_DEPLOYMENT_ID` on Railway.

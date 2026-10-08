@@ -136,10 +136,6 @@ export async function updateProduct(admin: Admin, input: ProductUpdateInput) {
             return false;
         }
 
-        if (input.active && !before.active && (await tx.productImage.count({ where: { productId: input.productId } })) === 0) {
-            throw new ProductWithoutImagesError();
-        }
-
         const after = {
             priceCents: input.price,
             compareAtPriceCents: input.compareAtPrice,
@@ -156,6 +152,12 @@ export async function updateProduct(admin: Admin, input: ProductUpdateInput) {
 
         if (count === 0) {
             throw new ProductConflictError();
+        }
+
+        // Checked after the update, which locks the row: a photo deleted
+        // concurrently (lib/admin/product-images.ts) is seen here.
+        if (input.active && !before.active && (await tx.productImage.count({ where: { productId: input.productId } })) === 0) {
+            throw new ProductWithoutImagesError();
         }
 
         const changes = Object.fromEntries(
