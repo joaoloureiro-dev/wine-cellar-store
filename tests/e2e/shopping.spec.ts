@@ -42,3 +42,14 @@ test("filters in the URL narrow the catalogue and are not indexed", async ({ pag
     await expect(page.getByText("Classic 24")).toHaveCount(0);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
+
+test("the buying guide leads to a filtered catalogue", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "Como escolher" }).first().click();
+    await expect(page).toHaveURL(/\/guia$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Como escolher");
+
+    await page.getByRole("main").getByRole("link", { name: "2 zonas" }).click();
+    await expect(page).toHaveURL(/\/caves\?zonas=2$/);
+    await expect(page.getByRole("link", { name: /Dual Zone 45/ }).first()).toBeVisible();
+});

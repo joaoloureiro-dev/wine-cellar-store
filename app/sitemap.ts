@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: absoluteUrl("/"), lastModified: latestProductUpdate, changeFrequency: "weekly", priority: 1 },
         { url: absoluteUrl("/caves"), lastModified: latestProductUpdate, changeFrequency: "daily", priority: 0.9 },
         { url: absoluteUrl("/marcas"), changeFrequency: "monthly", priority: 0.6 },
+        { url: absoluteUrl("/guia"), changeFrequency: "yearly", priority: 0.5 },
         { url: absoluteUrl("/reservas"), changeFrequency: "yearly", priority: 0.4 },
         ...legalLinks.map((link) => ({ url: absoluteUrl(link.href), changeFrequency: "yearly" as const, priority: 0.2 })),
         ...brands.map((brand) => ({
