@@ -5,6 +5,7 @@ import {
     type BreadcrumbItem,
 } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 type PageIntroProps = {
     breadcrumbs: BreadcrumbItem[];
@@ -22,21 +23,20 @@ export function PageIntro({
     meta,
 }: PageIntroProps) {
     return (
-        <section className="border-b border-border bg-background">
-            <Container className="py-10 sm:py-14 lg:py-20">
+        <section className="relative overflow-hidden border-b border-border bg-background">
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full border border-champagne/25 sm:size-[28rem]"
+            />
+
+            <Container className="relative py-8 sm:py-12 lg:py-16">
                 <Breadcrumbs items={breadcrumbs} />
 
-                <div className="mt-8 flex flex-col gap-6 lg:mt-12 lg:flex-row lg:items-end lg:justify-between">
+                <div className="mt-8 flex flex-col gap-6 sm:mt-10 lg:mt-12 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-3xl">
-                        <div className="mb-4 flex items-center gap-3">
-                            <span className="h-px w-8 bg-champagne" />
+                        <Eyebrow>{eyebrow}</Eyebrow>
 
-                            <span className="text-xs font-bold uppercase tracking-[0.24em] text-wine">
-                                {eyebrow}
-                            </span>
-                        </div>
-
-                        <h1 className="font-display text-4xl font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-5xl lg:text-7xl">
+                        <h1 className="mt-4 text-balance font-display text-[2.75rem] font-medium leading-[0.98] tracking-[-0.04em] text-charcoal sm:text-6xl lg:text-7xl">
                             {title}
                         </h1>
 

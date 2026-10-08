@@ -146,10 +146,10 @@ export function ActiveFilters({ query, brandNames }: ActiveFiltersProps) {
                         <Link
                             href={getCatalogHref(chip.query)}
                             scroll={false}
-                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface py-1 pl-3.5 pr-2.5 text-xs font-semibold text-charcoal transition-colors hover:border-wine hover:text-wine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                            className="group inline-flex min-h-9 animate-rise items-center gap-1.5 rounded-full bg-wine-light py-1 pl-3.5 pr-2 text-xs font-semibold text-wine-dark transition-colors hover:bg-wine hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine motion-reduce:animate-none"
                         >
                             {chip.label}
-                            <X size={14} strokeWidth={2} aria-hidden="true" />
+                            <X size={14} strokeWidth={2} aria-hidden="true" className="transition-transform duration-200 group-hover:rotate-90 motion-reduce:transition-none" />
                             <span className="sr-only">(remover filtro)</span>
                         </Link>
                     </li>

@@ -274,54 +274,88 @@ html:has(dialog[open]:modal) {
   Slide-in panel for a native modal <dialog> (mobile menu, filters).
   @starting-style and allow-discrete animate both opening and closing
   without JavaScript; Escape, focus trapping and focus return stay native.
+  Scoped below the lg breakpoint, where these dialogs are used as modals
+  (the catalogue filters render inline as a sidebar on larger screens).
 */
-.drawer {
-  transform: translateX(100%);
-  transition:
-    transform 400ms var(--ease-cellar),
-    overlay 400ms allow-discrete,
-    display 400ms allow-discrete;
-}
-
-.drawer.drawer-left {
-  transform: translateX(-100%);
-}
-
-.drawer[open] {
-  transform: none;
-}
-
-@starting-style {
-  .drawer[open] {
+@media not (min-width: 1024px) {
+  .drawer {
     transform: translateX(100%);
+    transition:
+      transform 400ms var(--ease-cellar),
+      overlay 400ms allow-discrete,
+      display 400ms allow-discrete;
   }
 
-  .drawer.drawer-left[open] {
+  .drawer.drawer-left {
     transform: translateX(-100%);
   }
-}
 
-.drawer::backdrop {
-  background: rgb(20 16 14 / 0);
-  transition:
-    background-color 400ms var(--ease-cellar),
-    overlay 400ms allow-discrete,
-    display 400ms allow-discrete;
-}
+  .drawer[open] {
+    transform: none;
+  }
 
-.drawer[open]::backdrop {
-  background: rgb(20 16 14 / 0.5);
-}
+  @starting-style {
+    .drawer[open] {
+      transform: translateX(100%);
+    }
 
-@starting-style {
-  .drawer[open]::backdrop {
+    .drawer.drawer-left[open] {
+      transform: translateX(-100%);
+    }
+  }
+
+  .drawer::backdrop {
     background: rgb(20 16 14 / 0);
+    transition:
+      background-color 400ms var(--ease-cellar),
+      overlay 400ms allow-discrete,
+      display 400ms allow-discrete;
+  }
+
+  .drawer[open]::backdrop {
+    background: rgb(20 16 14 / 0.5);
+  }
+
+  @starting-style {
+    .drawer[open]::backdrop {
+      background: rgb(20 16 14 / 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer,
+    .drawer::backdrop {
+      transition: none;
+    }
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .drawer,
-  .drawer::backdrop {
-    transition: none;
+/* Checkbox in the cellar style; still a native input (keyboard, forms, no JS). */
+@utility checkbox-cellar {
+  appearance: none;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid rgb(36 32 32 / 0.3);
+  border-radius: 0.375rem;
+  background: var(--surface) center / 0.75rem no-repeat;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ease-cellar),
+    border-color 150ms var(--ease-cellar);
+
+  &:hover {
+    border-color: var(--wine);
+  }
+
+  &:checked {
+    border-color: var(--wine);
+    background-color: var(--wine);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--wine);
+    outline-offset: 2px;
   }
 }

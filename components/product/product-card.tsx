@@ -103,22 +103,23 @@ export function ProductCard({
                     {product.shortDescription}
                 </p>
 
-                <dl className="mt-4 grid grid-cols-3 gap-2">
+                <dl className="mt-4 flex flex-wrap gap-1.5">
                     {specs.map(({ label, value, icon: Icon }) => (
-                        <div key={label} className="min-w-0 rounded-2xl bg-background px-3 py-2.5">
-                            <dt className="flex items-center gap-1.5 text-[0.6875rem] text-muted">
+                        <div
+                            key={label}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs"
+                        >
+                            <dt className="flex items-center">
                                 <Icon
                                     size={13}
                                     strokeWidth={1.8}
                                     aria-hidden="true"
                                     className="shrink-0 text-wine"
                                 />
-                                {label}
+                                <span className="sr-only">{label}</span>
                             </dt>
 
-                            <dd className="mt-1 truncate text-sm font-semibold text-charcoal">
-                                {value}
-                            </dd>
+                            <dd className="font-semibold text-charcoal">{value}</dd>
                         </div>
                     ))}
                 </dl>

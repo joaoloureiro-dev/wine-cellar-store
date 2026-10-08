@@ -86,9 +86,12 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
     const activeFilterCount = countActiveFilters(query);
 
     return (
-        <Container className="py-8 sm:py-12 lg:py-16">
-            <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10 xl:gap-14">
-                <aside aria-label="Filtros do catálogo" className="lg:sticky lg:top-6 lg:self-start">
+        <Container className="py-6 sm:py-10 lg:py-14">
+            <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[18rem_minmax(0,1fr)] xl:gap-12">
+                <aside
+                    aria-label="Filtros do catálogo"
+                    className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:rounded-3xl lg:border lg:border-charcoal/8 lg:bg-surface lg:px-6 lg:pb-6 lg:shadow-card"
+                >
                     <CatalogFilters
                         key={queryKey}
                         query={query}
@@ -99,10 +102,10 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
                 </aside>
 
                 <div className="mt-5 lg:mt-0">
-                    <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+                    <div className="flex items-center justify-between gap-4 border-b border-border pb-4 lg:pt-1">
                         <p
                             aria-live="polite"
-                            className="text-sm font-semibold text-charcoal"
+                            className="font-display text-xl font-medium text-charcoal sm:text-2xl"
                         >
                             {getProductCountLabel(products.length)}
                         </p>

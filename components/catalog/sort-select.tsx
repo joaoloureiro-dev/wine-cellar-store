@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -39,7 +40,7 @@ export function SortSelect({ query }: SortSelectProps) {
                 name={sort === DEFAULT_SORT ? undefined : catalogParams.sort}
                 value={sort}
                 onChange={(event) => handleChange(event.target.value as SortValue)}
-                className="h-11 rounded-md border border-border bg-surface px-3 text-sm font-semibold text-charcoal focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30"
+                className="h-11 cursor-pointer appearance-none rounded-full border border-border bg-surface pl-4 pr-10 text-sm font-semibold text-charcoal transition-colors hover:border-champagne focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30"
             >
                 {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -47,6 +48,12 @@ export function SortSelect({ query }: SortSelectProps) {
                     </option>
                 ))}
             </select>
+            <ChevronDown
+                size={16}
+                strokeWidth={1.8}
+                aria-hidden="true"
+                className="pointer-events-none -ml-9 mr-4 text-charcoal"
+            />
         </label>
     );
 }
