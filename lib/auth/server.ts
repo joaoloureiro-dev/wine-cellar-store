@@ -7,6 +7,7 @@ import { nextCookies } from "better-auth/next-js";
 
 import { anonymiseBeforeDeletion, getDeletionBlocker } from "@/lib/account/deletion";
 import { createRateLimitStorage } from "@/lib/auth/rate-limit-storage";
+import { queueAccountEmail } from "@/lib/email/account-notifications";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { createLogger } from "@/lib/logger";
@@ -52,8 +53,8 @@ function clientIpOptions() {
  *   /api/auth/*. Counters live in Redis when REDIS_URL is set (atomic,
  *   shared by all instances), otherwise in PostgreSQL. Sign-in, sign-up and password changes therefore always go
  *   through that HTTP API (auth client), never through direct server calls.
- * - Email verification, password reset and magic links need email sending
- *   and are enabled in the emails stage.
+ * - Password reset and email verification send their links through the
+ *   email outbox (lib/email). Signing in does not require a verified email.
  */
 export const auth = betterAuth({
     appName: "Cellarium",
@@ -66,6 +67,23 @@ export const auth = betterAuth({
         minPasswordLength: PASSWORD_MIN_LENGTH,
         maxPasswordLength: 128,
         requireEmailVerification: false,
+        // Password reset by email (/recuperar-password → /nova-password).
+        resetPasswordTokenExpiresIn: 60 * 60,
+        revokeSessionsOnPasswordReset: true,
+        sendResetPassword: async ({ user, url, token }) => {
+            await queueAccountEmail("account.password-reset", { to: user.email, name: user.name, url, key: token });
+        },
+        onPasswordReset: async ({ user }) => {
+            await queueAccountEmail("account.password-changed", { to: user.email, name: user.name, key: `${user.id}:${Date.now()}` });
+        },
+    },
+    // Confirms new accounts' email addresses; signing in does not require it.
+    emailVerification: {
+        sendOnSignUp: true,
+        expiresIn: 60 * 60 * 24,
+        sendVerificationEmail: async ({ user, url, token }) => {
+            await queueAccountEmail("account.verify-email", { to: user.email, name: user.name, url, key: token });
+        },
     },
     socialProviders:
         env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
@@ -91,6 +109,9 @@ export const auth = betterAuth({
             "/sign-up/email": { window: 60, max: 3 },
             "/change-password": { window: 60, max: 5 },
             "/delete-user": { window: 60, max: 5 },
+            "/request-password-reset": { window: 60, max: 3 },
+            "/reset-password": { window: 60, max: 5 },
+            "/send-verification-email": { window: 60, max: 3 },
         },
     },
     user: {

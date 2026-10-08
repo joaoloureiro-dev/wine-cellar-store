@@ -47,6 +47,7 @@ export default function PrivacyPage() {
                     <li>Alojamento e base de dados: Vercel, Railway, Neon e Upstash (servidores na União Europeia sempre que configurável).</li>
                     <li>Armazenamento de imagens e rede: Cloudflare.</li>
                     <li>Pagamentos: ifthenpay e eupago (MB WAY e Multibanco), Stripe e Klarna (pagamento Klarna). Os dados de pagamento são tratados por eles; não guardamos dados de cartões.</li>
+                    <li>Envio de emails (confirmações de encomenda, reservas e conta): Resend.</li>
                     <li>Login com Google (só se o escolher): Google.</li>
                     <li>Transporte: a transportadora que faz a entrega recebe nome, telefone e morada.</li>
                 </ul>
