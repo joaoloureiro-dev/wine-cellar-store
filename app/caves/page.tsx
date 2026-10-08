@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { ActiveFilters } from "@/components/catalog/active-filters";
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
-import { CatalogSkeleton } from "@/components/catalog/catalog-skeleton";
 import { PageIntro } from "@/components/catalog/page-intro";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SortSelect } from "@/components/catalog/sort-select";
@@ -53,9 +51,13 @@ export async function generateMetadata(
 }
 
 /**
- * The intro is part of the static shell; filters and results depend on the
- * query string, so they stream in behind a Suspense boundary.
+ * Rendered in full on each request, without a streamed Suspense boundary:
+ * streamed content is revealed by a script, and the catalogue (filters,
+ * sorting, results) must work without JavaScript. The data itself comes
+ * from the catalogue cache, so this costs little.
  */
+export const instant = false;
+
 export default function CatalogPage(props: PageProps<"/caves">) {
     return (
         <main>
@@ -67,9 +69,7 @@ export default function CatalogPage(props: PageProps<"/caves">) {
                 description="Compare capacidades, zonas de temperatura e tipos de instalação para encontrar a cave certa para a sua coleção."
             />
 
-            <Suspense fallback={<CatalogSkeleton />}>
-                <CatalogResults searchParams={props.searchParams} />
-            </Suspense>
+            <CatalogResults searchParams={props.searchParams} />
         </main>
     );
 }
