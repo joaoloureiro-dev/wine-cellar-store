@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 
+import { buttonStyles } from "@/components/ui/button-styles";
 import type { Cart } from "@/lib/cart/cart";
 import { formatCurrency } from "@/lib/format";
 
@@ -12,11 +13,11 @@ export function CartSummary({ cart }: CartSummaryProps) {
     return (
         <section
             aria-labelledby="cart-summary-heading"
-            className="rounded-xl border border-border bg-surface p-5 sm:p-6"
+            className="rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-lift sm:p-7"
         >
             <h2
                 id="cart-summary-heading"
-                className="font-display text-2xl font-semibold text-charcoal"
+                className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal"
             >
                 Resumo
             </h2>
@@ -45,7 +46,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
 
                 <div className="flex items-baseline justify-between gap-4 border-t border-border pt-4">
                     <dt className="font-semibold text-charcoal">Total estimado</dt>
-                    <dd className="text-2xl font-semibold tracking-tight text-charcoal">
+                    <dd className="text-2xl font-semibold tabular-nums tracking-tight text-charcoal">
                         {formatCurrency(cart.subtotalCents / 100)}
                     </dd>
                 </div>
@@ -54,7 +55,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
             <p className="mt-1 text-right text-xs text-muted">IVA incluído</p>
 
             {cart.hasIssues && (
-                <p role="status" className="mt-5 rounded-md bg-warning/10 px-3 py-2.5 text-xs font-medium text-warning">
+                <p role="status" className="mt-5 rounded-2xl bg-warning/10 px-4 py-3 text-xs font-medium text-warning">
                     Resolva os avisos do carrinho antes de continuar.
                 </p>
             )}
@@ -63,7 +64,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
                 <button
                     type="button"
                     disabled
-                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className={buttonStyles({ block: true, className: "mt-6 disabled:cursor-not-allowed" })}
                 >
                     <Lock size={16} strokeWidth={1.8} aria-hidden="true" />
                     Finalizar compra
@@ -71,7 +72,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
             ) : (
                 <Link
                     href="/checkout"
-                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                    className={buttonStyles({ block: true, className: "mt-6" })}
                 >
                     <Lock size={16} strokeWidth={1.8} aria-hidden="true" />
                     Finalizar compra
@@ -80,7 +81,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
 
             <Link
                 href="/caves"
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-border text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                className={buttonStyles({ variant: "secondary", block: true, className: "mt-3" })}
             >
                 Continuar a comprar
             </Link>
