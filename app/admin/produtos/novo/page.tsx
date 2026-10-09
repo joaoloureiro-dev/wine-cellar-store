@@ -6,13 +6,14 @@ import { AccountHeading } from "@/components/account/account-heading";
 import { Panel } from "@/components/admin/panel";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { requireAdmin } from "@/lib/admin/auth";
+import { getCategoryOptions } from "@/lib/admin/categories";
 import { getBrandOptions } from "@/lib/admin/products";
 
 export const metadata: Metadata = { title: "Novo produto · Backoffice" };
 
 export default async function NewProductPage() {
     await requireAdmin("/admin/produtos/novo");
-    const brands = await getBrandOptions();
+    const [brands, categories] = await Promise.all([getBrandOptions(), getCategoryOptions()]);
 
     return (
         <>
@@ -23,7 +24,7 @@ export default async function NewProductPage() {
                 <AccountHeading title="Novo produto" description="O produto fica oculto até o publicar na página do produto." />
             </div>
             <Panel title="Dados do produto">
-                <ProductDetailsForm brands={brands} />
+                <ProductDetailsForm brands={brands} categories={categories} />
             </Panel>
         </>
     );

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, LayoutDashboard, Package, ReceiptText, Tags, type LucideIcon } from "lucide-react";
+import { CalendarCheck, FolderTree, LayoutDashboard, Package, ReceiptText, Tags, type LucideIcon } from "lucide-react";
 
 const links: readonly { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/admin", label: "Resumo", icon: LayoutDashboard },
@@ -10,6 +10,7 @@ const links: readonly { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/admin/reservas", label: "Reservas", icon: CalendarCheck },
     { href: "/admin/produtos", label: "Produtos", icon: Package },
     { href: "/admin/marcas", label: "Marcas", icon: Tags },
+    { href: "/admin/categorias", label: "Categorias", icon: FolderTree },
 ];
 
 /**

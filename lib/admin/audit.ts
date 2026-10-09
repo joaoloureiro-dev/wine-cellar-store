@@ -5,7 +5,7 @@ import type { Admin } from "@/lib/admin/auth";
 
 type AuditEntry = {
     action: string;
-    entityType: "order" | "reservation" | "product" | "payment" | "brand";
+    entityType: "order" | "reservation" | "product" | "payment" | "brand" | "category";
     entityId: string;
     data?: Prisma.InputJsonValue;
 };

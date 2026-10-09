@@ -10,6 +10,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { ProductImages } from "@/components/admin/product-images";
 import { requireAdmin } from "@/lib/admin/auth";
 import { dateTime, describeProductAudit, stockStatusTone } from "@/lib/admin/format";
+import { getCategoryOptions } from "@/lib/admin/categories";
 import { getAdminProduct, getBrandOptions, getCommittedUnits, getProductAuditLog, getProductDetails } from "@/lib/admin/products";
 import { listProductImages } from "@/lib/admin/product-images";
 import { stockStatusLabels } from "@/lib/product-display";
@@ -27,12 +28,13 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
         notFound();
     }
 
-    const [auditLog, committed, details, brands, images] = await Promise.all([
+    const [auditLog, committed, details, brands, images, categories] = await Promise.all([
         getProductAuditLog(product.id),
         getCommittedUnits(product.id),
         getProductDetails(product.id),
         getBrandOptions(),
         listProductImages(product.id),
+        getCategoryOptions(),
     ]);
 
     if (!details) {
@@ -84,7 +86,11 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
                         <ProductImages productId={product.id} productName={product.name} images={images} />
                     </Panel>
                     <Panel title="Detalhes do produto">
-                        <ProductDetailsForm brands={brands} product={{ ...details, version: details.updatedAt.getTime() }} />
+                        <ProductDetailsForm
+                            brands={brands}
+                            categories={categories}
+                            product={{ ...details, version: details.updatedAt.getTime(), categoryIds: details.categories.map((entry) => entry.categoryId) }}
+                        />
                     </Panel>
                 </div>
 

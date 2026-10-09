@@ -8,13 +8,19 @@ import { uniqueViolationField } from "@/lib/admin/unique-violation";
 import { fieldErrorsFrom, formValues, type AdminFormState } from "@/lib/admin/form-state";
 import { productCreateSchema, productDetailsSchema } from "@/lib/admin/product-details-schema";
 import { createProduct, ProductConflictError, updateProductDetails } from "@/lib/admin/products";
-import { invalidateCatalog } from "@/lib/catalog/cache";
+import { invalidateCategories } from "@/lib/catalog/cache";
 
 const uniqueMessages: Record<string, string> = {
     slug: "Já existe um produto com este endereço.",
     sku: "Já existe um produto com este SKU.",
     ean: "Já existe um produto com este EAN.",
 };
+
+/** Form values, with the checked category boxes joined into one field. */
+function withCategories(formData: FormData) {
+    const categoryIds = formData.getAll("categoryIds").filter((value): value is string => typeof value === "string");
+    return { ...formValues(formData), categoryIds: categoryIds.join(",") };
+}
 
 function invalidResult(values: Record<string, string>, submissionId: number, fieldErrors: Record<string, string>): AdminFormState {
     return { status: "error", message: "Verifique os campos assinalados.", fieldErrors, values, submissionId };
@@ -41,7 +47,7 @@ export async function createProductAction(previousState: AdminFormState, formDat
 
     if (!admin) return { status: "error", message: "Sem permissão para esta operação.", submissionId };
 
-    const values = formValues(formData);
+    const values = withCategories(formData);
     const parsed = productCreateSchema.safeParse(values);
 
     if (!parsed.success) return invalidResult(values, submissionId, fieldErrorsFrom(parsed.error));
@@ -63,7 +69,7 @@ export async function saveProductDetailsAction(previousState: AdminFormState, fo
 
     if (!admin) return { status: "error", message: "Sem permissão para esta operação.", submissionId };
 
-    const values = formValues(formData);
+    const values = withCategories(formData);
     const parsed = productDetailsSchema.safeParse(values);
 
     if (!parsed.success) return invalidResult(values, submissionId, fieldErrorsFrom(parsed.error));
@@ -81,7 +87,8 @@ export async function saveProductDetailsAction(previousState: AdminFormState, fo
         return constraintResult(error, values, submissionId);
     }
 
-    invalidateCatalog();
+    // Product pages and category pages (and their counts) change.
+    invalidateCategories();
     revalidatePath(`/admin/produtos/${parsed.data.productId}`);
 
     return { status: "success", message: "Detalhes guardados", submissionId };
