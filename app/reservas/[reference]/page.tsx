@@ -65,10 +65,10 @@ export default async function ReservationPage(props: PageProps<"/reservas/[refer
 
                     <section
                         aria-label="Detalhes da reserva"
-                        className="mt-8 rounded-xl border border-border bg-surface p-5 sm:p-6"
+                        className="mt-8 rounded-3xl border border-charcoal/8 bg-surface shadow-card p-5 sm:p-6"
                     >
                         <div className="flex gap-5">
-                            <div className="relative aspect-4/5 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted">
+                            <div className="relative aspect-4/5 w-20 shrink-0 overflow-hidden rounded-2xl bg-surface-muted">
                                 <ProductImage
                                     src={product.images[0]?.url}
                                     alt={`Cave de vinho ${product.brand.name} ${product.name}`}
@@ -130,7 +130,7 @@ export default async function ReservationPage(props: PageProps<"/reservas/[refer
 
                     <Link
                         href="/caves"
-                        className="mt-10 inline-flex min-h-11 items-center justify-center rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                        className="mt-10 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-surface px-6 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                     >
                         Continuar a explorar
                     </Link>
