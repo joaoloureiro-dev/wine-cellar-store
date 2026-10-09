@@ -41,7 +41,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
 
                 <div className="flex justify-between gap-4">
                     <dt className="text-muted">Envio</dt>
-                    <dd className="text-right text-charcoal">Calculado no checkout</dd>
+                    <dd className="text-right text-charcoal">Calculado na finalização da compra</dd>
                 </div>
 
                 <div className="flex items-baseline justify-between gap-4 border-t border-border pt-4">

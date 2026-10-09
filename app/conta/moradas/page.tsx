@@ -15,7 +15,7 @@ export default async function AccountAddressesPage() {
 
     return (
         <>
-            <AccountHeading title="Moradas" description="A morada principal é usada para preencher o checkout." />
+            <AccountHeading title="Moradas" description="A morada principal é usada para preencher a finalização da compra." />
 
             {addresses.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2">

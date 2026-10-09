@@ -53,7 +53,7 @@ export default async function AccountPage() {
                             {address.postalCode} {address.city}
                         </address>
                     ) : (
-                        <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface px-6 py-6 text-sm text-muted">Guarde uma morada para acelerar o checkout.</p>
+                        <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface px-6 py-6 text-sm text-muted">Guarde uma morada para finalizar compras mais depressa.</p>
                     )}
                 </LinkedSection>
             </div>
