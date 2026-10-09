@@ -59,11 +59,11 @@ async function SearchResults({ searchParams }: Pick<PageProps<"/pesquisa">, "sea
                     maxLength={MAX_QUERY_LENGTH}
                     placeholder="Ex.: encastrável 2 zonas"
                     autoComplete="off"
-                    className="min-h-12 w-full rounded-md border border-border bg-surface px-4 text-base text-charcoal focus:border-wine focus:outline-2 focus:outline-wine/30"
+                    className="min-h-12 w-full rounded-full border border-border bg-surface px-5 text-base text-charcoal focus:border-wine focus:outline-2 focus:outline-wine/30"
                 />
                 <button
                     type="submit"
-                    className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                    className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                 >
                     <Search size={17} aria-hidden="true" />
                     Pesquisar
