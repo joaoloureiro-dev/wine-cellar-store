@@ -61,8 +61,8 @@ export default async function ReserveProductPage(props: ReservePageProps) {
                 {/* Mobile order: product, form, steps. Desktop: product + steps | form. */}
                 <div className="mt-8 grid gap-10 lg:mt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-x-16 lg:gap-y-8">
                     <aside aria-label="Produto a reservar" className="lg:col-start-1 lg:row-start-1">
-                        <div className="flex gap-5 rounded-xl border border-border bg-surface p-5">
-                            <div className="relative aspect-4/5 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-muted sm:w-28">
+                        <div className="flex gap-5 rounded-3xl border border-charcoal/8 bg-surface shadow-card p-5">
+                            <div className="relative aspect-4/5 w-24 shrink-0 overflow-hidden rounded-2xl bg-surface-muted sm:w-28">
                                 <ProductImage
                                     src={product.images[0]}
                                     alt={getProductImageAlt(product)}

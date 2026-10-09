@@ -38,7 +38,7 @@ export default function ReservationsPage() {
 
                 <section
                     aria-labelledby="start-reservation-heading"
-                    className="rounded-xl border border-border bg-surface p-6 sm:p-8"
+                    className="rounded-3xl border border-charcoal/8 bg-surface shadow-card p-6 sm:p-8"
                 >
                     <h2
                         id="start-reservation-heading"
@@ -52,7 +52,7 @@ export default function ReservationsPage() {
                     </p>
                     <Link
                         href="/caves"
-                        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                     >
                         Ver caves de vinho
                     </Link>
