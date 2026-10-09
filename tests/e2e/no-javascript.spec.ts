@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
  */
 test.use({ javaScriptEnabled: false });
 
-for (const path of ["/", "/caves", "/caves?zonas=2", "/caves/la-sommeliere/classic-24", "/marcas", "/guia", "/pesquisa?q=classic", "/carrinho", "/reservas"]) {
+for (const path of ["/", "/caves", "/caves?zonas=2", "/caves/la-sommeliere/classic-24", "/marcas", "/categorias/caves-de-servico", "/guia", "/pesquisa?q=classic", "/carrinho", "/reservas"]) {
     test(`${path} renders without streamed-hidden content`, async ({ request }) => {
         const html = await (await request.get(path)).text();
 

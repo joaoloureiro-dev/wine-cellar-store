@@ -37,6 +37,10 @@ const productInclude = {
     brand: { select: { name: true, slug: true } },
     temperatureZones: { orderBy: { position: "asc" } },
     images: { orderBy: { position: "asc" } },
+    categories: {
+        select: { category: { select: { slug: true, name: true } } },
+        orderBy: [{ category: { position: "asc" } }, { category: { name: "asc" } }],
+    },
 } satisfies Prisma.ProductInclude;
 
 type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
@@ -65,6 +69,7 @@ function toDomainProduct(row: ProductRow): WineCellarProduct {
         name: row.name,
         brand: row.brand.name,
         brandSlug: row.brand.slug,
+        categories: row.categories.map((entry) => entry.category),
         shortDescription: row.shortDescription,
         description: row.description,
         price: row.priceCents / 100,
@@ -136,6 +141,22 @@ export async function getProductsByBrand(
     brandSlug: string,
 ): Promise<WineCellarProduct[]> {
     return findProducts({ brand: { slug: brandSlug } });
+}
+
+export async function getProductsByCategory(categorySlug: string): Promise<WineCellarProduct[]> {
+    return findProducts({ categories: { some: { category: { slug: categorySlug } } } });
+}
+
+/** Active products per category slug. */
+export async function getProductCountByCategory(): Promise<Map<string, number>> {
+    "use cache";
+    cacheCatalogData();
+
+    const categories = await db.category.findMany({
+        select: { slug: true, _count: { select: { products: { where: { product: { active: true } } } } } },
+    });
+
+    return new Map(categories.map((category) => [category.slug, category._count.products]));
 }
 
 export async function getProductCountByBrand(): Promise<Map<string, number>> {

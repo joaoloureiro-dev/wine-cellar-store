@@ -1,7 +1,10 @@
 import type { WineCellarProduct } from "../../types/product";
 
-/** Seed products; `brandSlug` is resolved from the brand name when seeding. */
-export type SeedProduct = Omit<WineCellarProduct, "brandSlug">;
+/**
+ * Seed products; `brandSlug` is resolved from the brand name and
+ * `categories` lists category slugs (prisma/seed-data/categories.ts).
+ */
+export type SeedProduct = Omit<WineCellarProduct, "brandSlug" | "categories"> & { categories: string[] };
 
 export const products: SeedProduct[] = [
     {
@@ -12,6 +15,7 @@ export const products: SeedProduct[] = [
 
         name: "Classic 24",
         brand: "La Sommelière",
+        categories: ["caves-compactas", "caves-de-servico"],
 
         shortDescription:
             "Cave de vinho compacta para conservação diária de pequenas coleções.",
@@ -78,6 +82,7 @@ export const products: SeedProduct[] = [
 
         name: "Dual Zone 45",
         brand: "Avintage",
+        categories: ["caves-de-servico"],
 
         shortDescription:
             "Cave de dupla zona para conservar diferentes estilos de vinho.",
@@ -148,6 +153,7 @@ export const products: SeedProduct[] = [
 
         name: "Collection 109",
         brand: "Climadiff",
+        categories: ["caves-de-envelhecimento"],
 
         shortDescription:
             "Cave de grande capacidade para coleções de vinho em crescimento.",

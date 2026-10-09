@@ -61,6 +61,7 @@ export const DEFAULT_SORT: SortValue = "relevancia";
 /** URL search param names. */
 export const catalogParams = {
     brand: "marca",
+    category: "categoria",
     minPrice: "preco_min",
     maxPrice: "preco_max",
     capacity: "capacidade",

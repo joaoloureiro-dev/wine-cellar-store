@@ -211,6 +211,10 @@ action, and each change made in the backoffice is recorded in
 
 Catalogue management:
 
+- **Categories** (`/admin/categorias`): name, fixed URL, description, order
+  and optional SEO. A product can be in several; each category has a page
+  (`/categorias/<slug>`) and a catalogue filter (`?categoria=`). Deleting a
+  category keeps its products.
 - **Brands** (`/admin/marcas`) and **products** (`/admin/produtos/novo`):
   specifications, temperature zones, dimensions, energy and SEO. The URL
   (slug) is fixed after creation. New products start hidden.

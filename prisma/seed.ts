@@ -12,6 +12,7 @@ import {
     StockStatus,
 } from "../generated/prisma/client";
 import { brands } from "./seed-data/brands";
+import { categories } from "./seed-data/categories";
 import { products, type SeedProduct } from "./seed-data/products";
 
 const installationTypes = {
@@ -83,6 +84,13 @@ async function main() {
             brandIds.set(brand.name, id);
         }
 
+        const categoryIds = new Map<string, string>();
+
+        for (const category of categories) {
+            const { id } = await db.category.upsert({ where: { slug: category.slug }, create: category, update: category });
+            categoryIds.set(category.slug, id);
+        }
+
         for (const product of products) {
             const brandId = brandIds.get(product.brand);
 
@@ -116,10 +124,14 @@ async function main() {
                 await tx.productImage.createMany({
                     data: images.map((image) => ({ ...image, productId: id })),
                 });
+                await tx.productCategory.deleteMany({ where: { productId: id } });
+                await tx.productCategory.createMany({
+                    data: product.categories.map((slug) => ({ productId: id, categoryId: categoryIds.get(slug)! })),
+                });
             });
         }
 
-        console.log(`Seeded ${brands.length} brands and ${products.length} products.`);
+        console.log(`Seeded ${brands.length} brands, ${categories.length} categories and ${products.length} products.`);
     } finally {
         await db.$disconnect();
     }

@@ -16,6 +16,7 @@ import { getZonesLabel } from "@/lib/product-display";
 type ActiveFiltersProps = {
     query: CatalogQuery;
     brandNames: Map<string, string>;
+    categoryNames?: Map<string, string>;
 };
 
 type Chip = {
@@ -38,8 +39,16 @@ function getPriceLabel(minPrice?: number, maxPrice?: number) {
         : `Até ${formatCurrency(maxPrice ?? 0)}`;
 }
 
-function getChips(query: CatalogQuery, brandNames: Map<string, string>): Chip[] {
+function getChips(query: CatalogQuery, brandNames: Map<string, string>, categoryNames: Map<string, string>): Chip[] {
     const chips: Chip[] = [];
+
+    for (const category of query.categories) {
+        chips.push({
+            key: `category-${category}`,
+            label: categoryNames.get(category) ?? category,
+            query: { ...query, categories: without(query.categories, category) },
+        });
+    }
 
     for (const brand of query.brands) {
         chips.push({
@@ -129,8 +138,8 @@ function getChips(query: CatalogQuery, brandNames: Map<string, string>): Chip[] 
     return chips;
 }
 
-export function ActiveFilters({ query, brandNames }: ActiveFiltersProps) {
-    const chips = getChips(query, brandNames);
+export function ActiveFilters({ query, brandNames, categoryNames = new Map() }: ActiveFiltersProps) {
+    const chips = getChips(query, brandNames, categoryNames);
 
     if (chips.length === 0) {
         return null;

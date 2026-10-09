@@ -8,6 +8,7 @@ import { SortSelect } from "@/components/catalog/sort-select";
 import { Container } from "@/components/layout/container";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getBrands } from "@/lib/brands";
+import { getCategories } from "@/lib/categories";
 import {
     clearCatalogFilters,
     countActiveFilters,
@@ -29,10 +30,11 @@ const description =
     "Catálogo de caves de vinho de livre instalação, encastre e sob bancada, com uma, duas ou três zonas de temperatura.";
 
 async function getQuery(searchParams: PageProps<"/caves">["searchParams"]) {
-    const [params, brands] = await Promise.all([searchParams, getBrands()]);
+    const [params, brands, categories] = await Promise.all([searchParams, getBrands(), getCategories()]);
 
     return parseCatalogQuery(params, {
         brandSlugs: brands.map((brand) => brand.slug),
+        categorySlugs: categories.map((category) => category.slug),
     });
 }
 
@@ -75,9 +77,10 @@ export default function CatalogPage(props: PageProps<"/caves">) {
 }
 
 async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searchParams">) {
-    const [query, brands, energyClasses] = await Promise.all([
+    const [query, brands, categories, energyClasses] = await Promise.all([
         getQuery(searchParams),
         getBrands(),
+        getCategories(),
         getAvailableEnergyClasses(),
     ]);
 
@@ -96,6 +99,7 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
                         key={queryKey}
                         query={query}
                         brands={brands.map(({ slug, name }) => ({ slug, name }))}
+                        categories={categories.map(({ slug, name }) => ({ slug, name }))}
                         energyClasses={energyClasses}
                         activeFilterCount={activeFilterCount}
                     />
@@ -120,6 +124,7 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
                                 brandNames={
                                     new Map(brands.map((brand) => [brand.slug, brand.name]))
                                 }
+                                categoryNames={new Map(categories.map((category) => [category.slug, category.name]))}
                             />
                         </div>
                     )}

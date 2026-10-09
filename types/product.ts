@@ -35,6 +35,8 @@ export type WineCellarProduct = {
     name: string;
     brand: WineCellarBrand;
     brandSlug: string;
+    /** Categories the product belongs to, in display order. */
+    categories: { slug: string; name: string }[];
 
     shortDescription: string;
     description: string;
