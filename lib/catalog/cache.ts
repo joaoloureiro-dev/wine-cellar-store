@@ -12,11 +12,18 @@ import { cacheLife, cacheTag, revalidateTag } from "next/cache";
  */
 export const CATALOG_TAG = "catalog";
 export const BRANDS_TAG = "brands";
+export const CATEGORIES_TAG = "categories";
 
 /** Call at the top of a 'use cache' scope that reads products. */
 export function cacheCatalogData() {
     cacheLife("hours");
     cacheTag(CATALOG_TAG);
+}
+
+/** Call at the top of a 'use cache' scope that reads categories. */
+export function cacheCategoryData() {
+    cacheLife("days");
+    cacheTag(CATEGORIES_TAG);
 }
 
 /** Call at the top of a 'use cache' scope that reads brands. */
@@ -37,4 +44,13 @@ export function invalidateCatalog() {
 /** Expires brand caches (name, country or description changed, brand added). */
 export function invalidateBrands() {
     revalidateTag(BRANDS_TAG, { expire: 0 });
+}
+
+/**
+ * Expires category caches. Products carry their category names (cards,
+ * search, filters), so the catalogue is refreshed too.
+ */
+export function invalidateCategories() {
+    revalidateTag(CATEGORIES_TAG, { expire: 0 });
+    revalidateTag(CATALOG_TAG, { expire: 0 });
 }

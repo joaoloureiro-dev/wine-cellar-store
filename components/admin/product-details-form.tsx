@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { useActionState } from "react";
 
@@ -38,10 +39,12 @@ export type ProductDetails = {
     seoDescription: string | null;
     version: number;
     temperatureZones: Zone[];
+    categoryIds: string[];
 };
 
 type Props = {
     brands: { id: string; name: string }[];
+    categories: { id: string; name: string }[];
     product?: ProductDetails;
 };
 
@@ -54,6 +57,7 @@ function productValues(product: ProductDetails): Record<string, string> {
     const values: Record<string, string> = {
         name: product.name,
         brandId: product.brandId,
+        categoryIds: product.categoryIds.join(","),
         sku: product.sku,
         ean: product.ean ?? "",
         shortDescription: product.shortDescription,
@@ -94,7 +98,7 @@ const featureFields = [
 const legendClass = "mb-3 text-sm font-semibold text-charcoal";
 
 /** Creates a product, or edits its content and specifications. Works without JavaScript. */
-export function ProductDetailsForm({ brands, product }: Props) {
+export function ProductDetailsForm({ brands, categories, product }: Props) {
     const [state, formAction, isPending] = useActionState(product ? saveProductDetailsAction : createProductAction, initialAdminFormState);
     const errors = state.fieldErrors ?? {};
 
@@ -190,6 +194,31 @@ export function ProductDetailsForm({ brands, product }: Props) {
                     </Field>
                 </fieldset>
             )}
+
+            <fieldset>
+                <legend className={legendClass}>Categorias</legend>
+                {categories.length > 0 ? (
+                    <div className="grid gap-x-5 gap-y-2 sm:grid-cols-2">
+                        {categories.map((category) => (
+                            <label key={category.id} className="flex items-center gap-3 text-sm text-charcoal">
+                                <input
+                                    type="checkbox"
+                                    name="categoryIds"
+                                    value={category.id}
+                                    defaultChecked={(values.categoryIds ?? "").split(",").includes(category.id)}
+                                    className="size-4 accent-wine"
+                                />
+                                {category.name}
+                            </label>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted">
+                        Ainda não há categorias. <Link href="/admin/categorias/nova" className="font-semibold text-wine underline underline-offset-4">Criar categoria</Link>
+                    </p>
+                )}
+                {errors.categoryIds && <p className="mt-2 text-sm text-danger">{errors.categoryIds}</p>}
+            </fieldset>
 
             <fieldset className="space-y-5">
                 <legend className={legendClass}>Textos</legend>

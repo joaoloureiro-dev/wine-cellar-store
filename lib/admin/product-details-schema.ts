@@ -101,6 +101,12 @@ const detailsShape = {
     lock: feature,
     seoTitle: optionalText(70, "Título SEO"),
     seoDescription: optionalText(160, "Descrição SEO"),
+    /** Comma-separated ids (the action joins the checked boxes). */
+    categoryIds: z
+        .string()
+        .optional()
+        .transform((value) => [...new Set((value ?? "").split(",").filter(Boolean))])
+        .pipe(z.array(z.string().regex(/^[a-z0-9-]{1,64}$/i)).max(20, "Máximo de 20 categorias.")),
 };
 
 type DetailsShape = z.infer<z.ZodObject<typeof detailsShape>>;
@@ -150,6 +156,7 @@ function finishDetails(input: DetailsShape, ctx: z.RefinementCtx) {
             seoDescription: input.seoDescription || input.shortDescription.slice(0, 160),
         },
         zones,
+        categoryIds: input.categoryIds,
     };
 }
 

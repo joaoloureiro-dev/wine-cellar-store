@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Admin } from "@/lib/admin/auth";
 import { recordAudit } from "@/lib/admin/audit";
+import { setProductCategories } from "@/lib/admin/categories";
 import { ADMIN_PAGE_SIZE } from "@/lib/admin/list-params";
 import type { ProductCreateInput, ProductDetailsInput } from "@/lib/admin/product-details-schema";
 import { deriveStockStatus, type ProductUpdateInput } from "@/lib/admin/product-schema";
@@ -219,6 +220,7 @@ export async function getProductDetails(id: string) {
             seoDescription: true,
             updatedAt: true,
             temperatureZones: { orderBy: { position: "asc" }, select: { position: true, minCelsius: true, maxCelsius: true } },
+            categories: { select: { categoryId: true } },
         },
     });
 }
@@ -233,6 +235,8 @@ export async function createProduct(admin: Admin, input: ProductCreateInput) {
             data: { ...input.data, temperatureZones: { create: input.zones } },
             select: { id: true, slug: true },
         });
+
+        await setProductCategories(tx, product.id, input.categoryIds);
 
         await recordAudit(tx, admin, {
             action: "product.create",
@@ -267,6 +271,7 @@ export async function updateProductDetails(admin: Admin, input: ProductDetailsIn
         await tx.productTemperatureZone.createMany({
             data: input.zones.map((zone) => ({ ...zone, productId: input.productId })),
         });
+        await setProductCategories(tx, input.productId, input.categoryIds);
 
         await recordAudit(tx, admin, {
             action: "product.details_update",

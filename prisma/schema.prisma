@@ -38,6 +38,35 @@ model Brand {
   products    Product[]
 }
 
+/// Editable grouping of products ("Caves de serviço", "Caves de design"…),
+/// with its own page (/categorias/<slug>) and catalogue filter. A product
+/// can be in several categories.
+model Category {
+  id             String            @id @default(cuid())
+  /// Public URL segment; fixed after creation.
+  slug           String            @unique
+  name           String            @unique
+  description    String
+  /// Display order (menus, lists); lowest first.
+  position       Int               @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  products       ProductCategory[]
+}
+
+model ProductCategory {
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  // Category pages and the category filter.
+  @@index([categoryId])
+}
+
 model Product {
   id                  String           @id @default(cuid())
   slug                String           @unique
@@ -78,6 +107,7 @@ model Product {
   reservations     Reservation[]
   orderItems       OrderItem[]
   favorites        Favorite[]
+  categories       ProductCategory[]
 
   // Homepage featured products.
   @@index([active, featured])
