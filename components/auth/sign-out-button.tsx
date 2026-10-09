@@ -25,7 +25,7 @@ export function SignOutButton() {
             type="button"
             onClick={signOut}
             disabled={isPending}
-            className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-4 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
         >
             <LogOut size={16} strokeWidth={1.8} aria-hidden="true" />
             Terminar sessão

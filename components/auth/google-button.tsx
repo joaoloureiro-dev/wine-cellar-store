@@ -28,7 +28,7 @@ export function GoogleButton({ next }: { next: string }) {
                 type="button"
                 onClick={signIn}
                 disabled={isPending}
-                className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-md border border-border bg-surface px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-surface px-6 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
             >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
                     <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8Z" />

@@ -17,7 +17,7 @@ const date = new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium", timeZone: "
 
 export function OrderList({ orders }: { orders: OrderRow[] }) {
     return (
-        <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
             {orders.map((order) => (
                 <li key={order.reference}>
                     <Link

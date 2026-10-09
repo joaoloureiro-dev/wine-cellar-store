@@ -11,7 +11,7 @@ import { authClient } from "@/lib/auth/client";
 import { getAuthErrorMessage } from "@/lib/auth/messages";
 
 const buttonClass =
-    "inline-flex min-h-11 items-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
+    "inline-flex min-h-11 items-center gap-2 rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
 
 const initialProfile: ProfileFormState = { status: "idle", submissionId: 0 };
 
@@ -146,7 +146,7 @@ export function DeleteAccountForm({ hasPassword, blocker }: { hasPassword: boole
     }
 
     if (blocker) {
-        return <p className="rounded-md border border-border bg-surface-muted p-4 text-sm text-charcoal">{getAuthErrorMessage({ code: blocker })}</p>;
+        return <p className="rounded-2xl border border-border bg-surface-muted p-4 text-sm text-charcoal">{getAuthErrorMessage({ code: blocker })}</p>;
     }
 
     return (
@@ -166,7 +166,7 @@ export function DeleteAccountForm({ hasPassword, blocker }: { hasPassword: boole
             <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-danger px-5 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger disabled:opacity-60"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-danger px-6 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger disabled:opacity-60"
             >
                 {isPending && <LoaderCircle size={16} strokeWidth={1.8} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
                 Eliminar conta

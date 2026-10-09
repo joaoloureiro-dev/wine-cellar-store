@@ -20,7 +20,7 @@ export function AddressCard({ address }: { address: Required<Pick<AddressValues,
 
     if (mode === "edit") {
         return (
-            <div className="rounded-xl border border-wine/40 bg-surface p-5">
+            <div className="rounded-3xl border border-wine/40 bg-surface p-5 shadow-card sm:p-6">
                 <AddressForm address={address} onDone={() => setMode("view")} />
             </div>
         );
@@ -30,7 +30,7 @@ export function AddressCard({ address }: { address: Required<Pick<AddressValues,
         "rounded-sm text-sm font-semibold text-wine underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-wine disabled:opacity-50";
 
     return (
-        <article className="rounded-xl border border-border bg-surface p-5" aria-busy={isPending}>
+        <article className="rounded-3xl border border-charcoal/8 bg-surface shadow-card p-5" aria-busy={isPending}>
             <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-charcoal">{address.label || "Morada"}</h3>
                 {address.isDefault && (
@@ -47,7 +47,7 @@ export function AddressCard({ address }: { address: Required<Pick<AddressValues,
             </address>
 
             {mode === "confirm-delete" ? (
-                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-md bg-danger/10 px-3 py-2.5 text-sm text-danger">
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-danger/10 px-4 py-3 text-sm text-danger">
                     Eliminar esta morada?
                     <button type="button" disabled={isPending} onClick={() => run(() => deleteAddressAction(address.id))} className="font-semibold underline underline-offset-4">
                         Eliminar

@@ -16,7 +16,7 @@ const date = new Intl.DateTimeFormat("pt-PT", { dateStyle: "medium", timeZone: "
 
 export function ReservationList({ reservations }: { reservations: ReservationRow[] }) {
     return (
-        <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
             {reservations.map((reservation) => (
                 <li key={reservation.reference}>
                     <Link
