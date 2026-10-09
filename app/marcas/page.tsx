@@ -44,27 +44,32 @@ export default async function BrandsPage() {
                     className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8"
                 >
                     {brands.map((brand) => (
-                        <li key={brand.slug}>
-                            <article className="group relative flex h-full flex-col rounded-xl border border-border bg-surface p-6 transition-shadow duration-300 focus-within:shadow-lg hover:shadow-lg sm:p-8">
-                                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
+                        <li key={brand.slug} className="reveal">
+                            <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card transition-[transform,box-shadow,border-color] duration-500 ease-cellar focus-within:-translate-y-1 focus-within:shadow-lift hover:-translate-y-1 hover:border-champagne/40 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0 sm:p-8">
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full border border-champagne/25 transition-transform duration-700 ease-cellar group-hover:scale-110 motion-reduce:transition-none"
+                                />
+
+                                <p className="text-[0.6875rem] font-bold uppercase tracking-[0.24em] text-champagne-ink">
                                     {brand.country}
                                 </p>
 
-                                <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-charcoal">
+                                <h2 className="mt-4 font-display text-[2.5rem] font-medium leading-none tracking-[-0.03em] text-charcoal">
                                     <Link
                                         href={getBrandHref(brand.slug)}
-                                        className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-wine focus-visible:after:ring-offset-2"
+                                        className="after:absolute after:inset-0 after:rounded-3xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-wine focus-visible:after:ring-offset-2"
                                     >
                                         {brand.name}
                                     </Link>
                                 </h2>
 
-                                <p className="mt-3 text-sm leading-6 text-muted">
+                                <p className="mt-4 text-sm leading-6 text-muted">
                                     {brand.description}
                                 </p>
 
                                 <div className="mt-auto flex items-center justify-between pt-8">
-                                    <span className="text-sm font-semibold text-charcoal">
+                                    <span className="rounded-full bg-background px-3.5 py-1.5 text-xs font-semibold text-charcoal">
                                         {getProductCountLabel(
                                             productCounts.get(brand.slug) ?? 0,
                                         )}

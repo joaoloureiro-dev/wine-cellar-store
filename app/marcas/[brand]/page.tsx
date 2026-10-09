@@ -59,7 +59,7 @@ export default async function BrandPage(props: PageProps<"/marcas/[brand]">) {
                 eyebrow={`Marca · ${brand.country}`}
                 title={brand.name}
                 description={brand.description}
-                meta={<p>{getProductCountLabel(products.length)}</p>}
+                meta={<p className="rounded-full border border-border bg-surface px-4 py-2 text-charcoal">{getProductCountLabel(products.length)}</p>}
             />
 
             <Container className="py-10 sm:py-14 lg:py-20">
