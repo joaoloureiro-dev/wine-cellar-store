@@ -21,13 +21,17 @@ export const metadata: Metadata = {
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
     return (
-        <main>
-            <Container className="py-8 sm:py-12 lg:py-16">
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
-                    <aside className="lg:sticky lg:top-6 lg:self-start">
-                        <p className="mb-3 hidden text-xs font-semibold uppercase tracking-[0.2em] text-wine lg:block">
-                            Backoffice
-                        </p>
+        <main className="bg-surface-muted/40">
+            <Container className="py-6 sm:py-10 lg:py-12">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+                    <aside className="lg:sticky lg:top-24 lg:self-start lg:rounded-3xl lg:p-4 lg:shadow-lift lg:surface-cellar">
+                        <div className="mb-4 hidden px-3 pt-2 lg:block">
+                            <p className="font-display text-2xl font-semibold tracking-[-0.02em] text-cellar-ink">
+                                Backoffice
+                            </p>
+                            <p className="mt-1 text-xs text-cellar-muted">Gestão da loja</p>
+                            <span aria-hidden="true" className="gold-rule mt-4 block" />
+                        </div>
                         <AdminNav />
                     </aside>
                     <div className="min-w-0">{children}</div>

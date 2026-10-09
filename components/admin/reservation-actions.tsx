@@ -8,9 +8,9 @@ import { saveReservationNotesAction, transitionReservationAction } from "@/lib/a
 import { canTransition, type ReservationStatus } from "@/lib/reservations/status";
 
 const primaryButton =
-    "inline-flex min-h-11 w-full items-center justify-center rounded-md bg-wine px-4 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
+    "inline-flex min-h-11 w-full items-center justify-center rounded-full bg-wine px-5 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
 const inputClass =
-    "mt-1.5 block w-full rounded-md border border-border bg-surface px-3 text-sm text-charcoal focus:border-wine focus:outline-2 focus:outline-wine/30";
+    "mt-1.5 block w-full rounded-3xl border border-charcoal/8 bg-surface shadow-card px-3.5 text-sm text-charcoal focus:border-wine focus:outline-2 focus:outline-wine/30";
 
 const nextSteps: Partial<Record<ReservationStatus, { to: "AWAITING_PAYMENT" | "PAID"; label: string; hint: string }>> = {
     CONFIRMED: {
@@ -107,7 +107,7 @@ export function ReservationActions({ reference, status }: { reference: string; s
             {canCancel &&
                 (cancelOpen ? (
                     <form
-                        className="rounded-lg border border-danger/30 bg-danger/5 p-4"
+                        className="rounded-2xl border border-danger/30 bg-danger/5 p-5"
                         onSubmit={(event) => {
                             event.preventDefault();
                             run(
@@ -133,7 +133,7 @@ export function ReservationActions({ reference, status }: { reference: string; s
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="inline-flex min-h-10 items-center rounded-md bg-danger px-4 text-sm font-semibold text-white disabled:opacity-60"
+                                className="inline-flex min-h-10 items-center rounded-full bg-danger px-5 text-sm font-semibold text-white disabled:opacity-60"
                             >
                                 Cancelar reserva
                             </button>
@@ -181,7 +181,7 @@ export function ReservationNotesForm({ reference, notes }: { reference: string; 
             <button
                 type="submit"
                 disabled={isPending || value === (notes ?? "")}
-                className="mt-3 inline-flex min-h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal disabled:opacity-50"
+                className="mt-3 inline-flex min-h-10 items-center rounded-full border border-border bg-surface px-5 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal disabled:opacity-50"
             >
                 Guardar notas
             </button>

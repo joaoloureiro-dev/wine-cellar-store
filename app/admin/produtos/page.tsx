@@ -39,7 +39,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
             <ListToolbar pathname={pathname} statuses={statusOptions} status={status} q={q} searchPlaceholder="Nome, SKU ou marca" />
 
             {products.length > 0 ? (
-                <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
                     {products.map((product) => (
                         <li key={product.id}>
                             <Link
@@ -70,7 +70,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
                     ))}
                 </ul>
             ) : (
-                <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
+                <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface p-8 text-center text-sm text-muted">
                     Nenhum produto encontrado com estes filtros.
                 </p>
             )}

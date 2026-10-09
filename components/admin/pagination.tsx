@@ -18,7 +18,7 @@ export function Pagination({
     q?: string;
 }) {
     const linkClass =
-        "inline-flex h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine";
+        "inline-flex h-10 items-center rounded-full border border-border bg-surface px-5 text-sm font-semibold text-charcoal transition-colors hover:border-champagne focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine";
 
     return (
         <nav aria-label="Paginação" className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">

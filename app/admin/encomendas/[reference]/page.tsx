@@ -86,7 +86,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/encom
                                 {order.country}
                             </address>
                             {order.customerNotes && (
-                                <p className="mt-3 rounded-md bg-surface-muted p-3 text-sm break-words text-charcoal">
+                                <p className="mt-3 rounded-2xl bg-surface-muted p-4 text-sm break-words text-charcoal">
                                     <span className="block text-xs font-semibold text-muted">Nota do cliente</span>
                                     {order.customerNotes}
                                 </p>
@@ -98,7 +98,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/encom
                         {order.payments.length > 0 ? (
                             <ul role="list" className="space-y-4">
                                 {order.payments.map((payment) => (
-                                    <li key={payment.id} className="rounded-lg border border-border p-4">
+                                    <li key={payment.id} className="rounded-2xl border border-border p-4">
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <p className="text-sm font-semibold text-charcoal">
                                                 {getPaymentMethodLabel(payment.method)} · {paymentProviderLabels[payment.provider]}
