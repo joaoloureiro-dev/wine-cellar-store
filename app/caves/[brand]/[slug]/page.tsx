@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
+import { ProductDimensions } from "@/components/product/product-dimensions";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { ProductServices } from "@/components/product/product-services";
 import { ProductSpecs } from "@/components/product/product-specs";
+import { TemperatureZones } from "@/components/product/temperature-zones";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
     getProductHighlights,
@@ -86,15 +89,15 @@ export default async function ProductPage(props: ProductPageProps) {
             </Container>
 
             <Container className="py-6 sm:py-8 lg:py-12">
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 xl:gap-20">
-                    <div className="lg:sticky lg:top-6 lg:self-start">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 xl:gap-20">
+                    <div className="lg:sticky lg:top-24 lg:self-start">
                         <ProductGallery
                             images={product.images}
                             alt={getProductImageAlt(product)}
                         />
                     </div>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-5">
                         <ProductPurchasePanel product={product} />
                         <ProductServices />
                     </div>
@@ -103,74 +106,101 @@ export default async function ProductPage(props: ProductPageProps) {
 
             <section
                 aria-labelledby="product-details-heading"
-                className="border-t border-border bg-surface-muted/40"
+                className="border-t border-border bg-surface-muted/50"
             >
-                <h2 id="product-details-heading" className="sr-only">
-                    Detalhes do produto
-                </h2>
+                <Container className="py-14 sm:py-16 lg:py-24">
+                    <SectionHeading
+                        id="product-details-heading"
+                        eyebrow="Detalhes"
+                        title="Conheça a cave em pormenor"
+                        className="reveal"
+                    />
 
-                <Container className="grid gap-12 py-14 sm:py-16 lg:grid-cols-2 lg:gap-16 lg:py-20">
-                    <div>
-                        <h3 className="font-display text-3xl font-medium tracking-[-0.03em] text-charcoal sm:text-4xl">
-                            Descrição
-                        </h3>
+                    <div className="mt-10 grid gap-4 lg:grid-cols-2 lg:gap-6">
+                        <article className="reveal rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card sm:p-8">
+                            <h3 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">
+                                Descrição
+                            </h3>
 
-                        <p className="mt-5 text-base leading-8 text-muted">
-                            {product.description}
-                        </p>
+                            <p className="mt-4 text-base leading-8 text-muted">
+                                {product.description}
+                            </p>
 
-                        {highlights.length > 0 && (
-                            <>
-                                <h3 className="mt-10 font-display text-2xl font-medium tracking-[-0.02em] text-charcoal">
-                                    Características principais
+                            {highlights.length > 0 && (
+                                <>
+                                    <h3 className="mt-8 text-[0.6875rem] font-bold uppercase tracking-[0.24em] text-champagne-ink">
+                                        Características principais
+                                    </h3>
+
+                                    <ul role="list" className="mt-4 space-y-3">
+                                        {highlights.map((highlight) => (
+                                            <li
+                                                key={highlight}
+                                                className="flex gap-3 text-sm leading-6 text-charcoal"
+                                            >
+                                                <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-wine-light text-wine">
+                                                    <Check size={12} strokeWidth={2.5} aria-hidden="true" />
+                                                </span>
+                                                {highlight}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+                        </article>
+
+                        <div className="grid gap-4 lg:gap-6">
+                            {product.temperatureRanges.length > 0 && (
+                                <article className="reveal rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card sm:p-8">
+                                    <h3 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">
+                                        Zonas de temperatura
+                                    </h3>
+                                    <div className="mt-6">
+                                        <TemperatureZones ranges={product.temperatureRanges} />
+                                    </div>
+                                </article>
+                            )}
+
+                            <article className="reveal rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card sm:p-8">
+                                <h3 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">
+                                    Dimensões
                                 </h3>
-
-                                <ul role="list" className="mt-5 space-y-3">
-                                    {highlights.map((highlight) => (
-                                        <li
-                                            key={highlight}
-                                            className="flex gap-3 text-sm leading-6 text-charcoal"
-                                        >
-                                            <Check
-                                                size={18}
-                                                strokeWidth={2}
-                                                aria-hidden="true"
-                                                className="mt-0.5 shrink-0 text-wine"
-                                            />
-                                            {highlight}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-                    </div>
-
-                    <div>
-                        <h3 className="font-display text-3xl font-medium tracking-[-0.03em] text-charcoal sm:text-4xl">
-                            Ficha técnica
-                        </h3>
-
-                        <div className="mt-5">
-                            <ProductSpecs product={product} />
+                                <p className="mt-1 text-sm text-muted">Confirme se cabe no espaço que tem disponível.</p>
+                                <div className="mt-6">
+                                    <ProductDimensions dimensions={product.dimensions} weight={product.weight} />
+                                </div>
+                            </article>
                         </div>
+
+                        <details className="reveal group/specs rounded-3xl border border-charcoal/8 bg-surface shadow-card lg:col-span-2" open>
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-3xl p-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine sm:p-8 [&::-webkit-details-marker]:hidden">
+                                <h3 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">
+                                    Ficha técnica
+                                </h3>
+                                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-border text-charcoal transition-transform duration-300 ease-cellar group-open/specs:rotate-180 motion-reduce:transition-none">
+                                    <ChevronDown size={18} strokeWidth={1.8} aria-hidden="true" />
+                                </span>
+                            </summary>
+
+                            <div className="px-6 pb-6 group-open/specs:animate-rise motion-reduce:animate-none sm:px-8 sm:pb-8 lg:columns-2 lg:gap-12">
+                                <ProductSpecs product={product} />
+                            </div>
+                        </details>
                     </div>
                 </Container>
             </section>
 
             {relatedProducts.length > 0 && (
-                <section
-                    aria-labelledby="related-products-heading"
-                    className="border-t border-border"
-                >
-                    <Container className="py-14 sm:py-16 lg:py-20">
-                        <h2
+                <section aria-labelledby="related-products-heading">
+                    <Container className="py-14 sm:py-16 lg:py-24">
+                        <SectionHeading
                             id="related-products-heading"
-                            className="font-display text-3xl font-medium tracking-[-0.03em] text-charcoal sm:text-4xl"
-                        >
-                            Também lhe pode interessar
-                        </h2>
+                            eyebrow="Seleção"
+                            title="Também lhe pode interessar"
+                            className="reveal"
+                        />
 
-                        <div className="mt-8 sm:mt-10">
+                        <div className="mt-10">
                             <ProductGrid products={relatedProducts} headingLevel="h3" />
                         </div>
                     </Container>

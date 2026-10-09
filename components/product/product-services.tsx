@@ -21,15 +21,12 @@ export const services = [
 
 export function ProductServices() {
     return (
-        <ul role="list" className="divide-y divide-border rounded-xl border border-border bg-surface">
+        <ul role="list" className="divide-y divide-border rounded-3xl border border-charcoal/8 bg-surface">
             {services.map(({ icon: Icon, title, description }) => (
-                <li key={title} className="flex gap-4 p-5">
-                    <Icon
-                        size={20}
-                        strokeWidth={1.6}
-                        aria-hidden="true"
-                        className="mt-0.5 shrink-0 text-wine"
-                    />
+                <li key={title} className="flex items-start gap-4 p-5">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-wine-light text-wine">
+                        <Icon size={18} strokeWidth={1.6} aria-hidden="true" />
+                    </span>
                     <div>
                         <p className="text-sm font-semibold text-charcoal">{title}</p>
                         <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
