@@ -20,7 +20,7 @@ const navigation = [
     },
     {
         label: "Como escolher",
-        href: "/#como-escolher",
+        href: "/guia",
     },
     {
         label: "Reservas",

@@ -42,7 +42,7 @@ export function Hero() {
                                 <ArrowRight size={18} strokeWidth={1.8} aria-hidden="true" className={buttonArrowStyles} />
                             </Link>
 
-                            <Link href="#como-escolher" className={buttonStyles({ variant: "ghost-dark" })}>
+                            <Link href="/guia" className={buttonStyles({ variant: "ghost-dark" })}>
                                 Encontrar a cave ideal
                             </Link>
                         </div>
