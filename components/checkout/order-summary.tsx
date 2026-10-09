@@ -16,7 +16,7 @@ export function OrderSummary({ cart, shippingCents }: OrderSummaryProps) {
             <ul role="list" className="divide-y divide-border">
                 {cart.items.map((item) => (
                     <li key={item.product.id} className="flex gap-4 py-4 first:pt-0">
-                        <div className="relative aspect-4/5 w-14 shrink-0 overflow-hidden rounded-md border border-border bg-surface-muted">
+                        <div className="relative aspect-4/5 w-14 shrink-0 overflow-hidden rounded-xl bg-surface-muted">
                             <ProductImage
                                 src={item.product.images[0]}
                                 alt={getProductImageAlt(item.product)}
@@ -24,7 +24,7 @@ export function OrderSummary({ cart, shippingCents }: OrderSummaryProps) {
                             />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-wine">
+                            <p className="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-champagne-ink">
                                 {item.product.brand}
                             </p>
                             <p className="truncate text-sm font-semibold text-charcoal">
@@ -54,7 +54,7 @@ export function OrderSummary({ cart, shippingCents }: OrderSummaryProps) {
                 </div>
                 <div className="flex items-baseline justify-between gap-4 border-t border-border pt-3">
                     <dt className="font-semibold text-charcoal">Total</dt>
-                    <dd className="text-2xl font-semibold tracking-tight text-charcoal">
+                    <dd className="text-2xl font-semibold tabular-nums tracking-tight text-charcoal">
                         {formatCurrency(totalCents / 100)}
                     </dd>
                 </div>

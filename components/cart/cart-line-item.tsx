@@ -23,7 +23,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
                 href={href}
                 tabIndex={-1}
                 aria-hidden="true"
-                className="relative aspect-4/5 w-24 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-muted sm:w-28"
+                className="relative aspect-4/5 w-24 shrink-0 overflow-hidden rounded-2xl bg-surface-muted sm:w-28"
             >
                 <ProductImage
                     src={product.images[0]}
@@ -35,11 +35,11 @@ export function CartLineItem({ item }: CartLineItemProps) {
             <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine">
+                        <p className="text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-champagne-ink">
                             {product.brand}
                         </p>
 
-                        <h2 className="mt-1 font-display text-xl font-semibold leading-tight text-charcoal sm:text-2xl">
+                        <h2 className="mt-1 font-display text-2xl font-medium leading-tight tracking-[-0.02em] text-charcoal">
                             <Link
                                 href={href}
                                 className="rounded-sm transition-colors hover:text-wine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
@@ -54,7 +54,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
                         </p>
                     </div>
 
-                    <p className="text-base font-semibold text-charcoal sm:text-right">
+                    <p className="text-base font-semibold tabular-nums text-charcoal sm:text-right">
                         <span className="sr-only">Total da linha: </span>
                         {formatCurrency(item.lineTotalCents / 100)}
                     </p>

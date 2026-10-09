@@ -6,6 +6,7 @@ import { CartLineItem } from "@/components/cart/cart-line-item";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
+import { buttonStyles } from "@/components/ui/button-styles";
 import { getCart } from "@/lib/cart/get-cart";
 
 /** Per-request page (session, cookies or private data): rendered on demand. */
@@ -27,13 +28,13 @@ export default async function CartPage() {
                     items={[{ label: "Início", href: "/" }, { label: "Carrinho" }]}
                 />
 
-                <div className="mt-6 flex items-baseline justify-between gap-4 sm:mt-8">
-                    <h1 className="font-display text-4xl font-medium tracking-[-0.035em] text-charcoal sm:text-5xl">
+                <div className="mt-8 flex items-end justify-between gap-4 sm:mt-10">
+                    <h1 className="font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-6xl">
                         Carrinho
                     </h1>
 
                     {!isEmpty && (
-                        <p className="text-sm font-medium text-muted">
+                        <p className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-charcoal">
                             {cart.itemCount} {cart.itemCount === 1 ? "artigo" : "artigos"}
                         </p>
                     )}
@@ -42,7 +43,7 @@ export default async function CartPage() {
                 {cart.missingProductCount > 0 && (
                     <p
                         role="status"
-                        className="mt-6 flex items-start gap-2 rounded-md bg-warning/10 px-4 py-3 text-sm text-warning"
+                        className="mt-6 flex items-start gap-2 rounded-2xl bg-warning/10 px-4 py-3 text-sm text-warning"
                     >
                         <TriangleAlert size={18} strokeWidth={1.8} aria-hidden="true" className="mt-px shrink-0" />
                         Alguns produtos deixaram de estar disponíveis e foram retirados da
@@ -51,10 +52,12 @@ export default async function CartPage() {
                 )}
 
                 {isEmpty ? (
-                    <div className="mt-10 flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
-                        <ShoppingBag size={32} strokeWidth={1.3} aria-hidden="true" className="text-wine" />
+                    <div className="mt-10 flex flex-col items-center rounded-3xl border border-dashed border-charcoal/15 bg-surface px-6 py-16 text-center sm:py-24">
+                        <span className="inline-flex size-16 items-center justify-center rounded-full bg-wine-light text-wine">
+                            <ShoppingBag size={28} strokeWidth={1.4} aria-hidden="true" />
+                        </span>
 
-                        <h2 className="mt-4 font-display text-2xl font-semibold text-charcoal">
+                        <h2 className="mt-6 font-display text-3xl font-medium tracking-[-0.02em] text-charcoal">
                             O seu carrinho está vazio
                         </h2>
 
@@ -64,14 +67,14 @@ export default async function CartPage() {
 
                         <Link
                             href="/caves"
-                            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                            className={buttonStyles({ className: "mt-8" })}
                         >
                             Explorar caves
                         </Link>
                     </div>
                 ) : (
-                    <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12">
-                        <ul role="list" className="divide-y divide-border border-y border-border">
+                    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_25rem] lg:gap-10">
+                        <ul role="list" className="divide-y divide-border self-start rounded-3xl border border-charcoal/8 bg-surface px-4 shadow-card sm:px-6">
                             {cart.items.map((item) => (
                                 <li key={item.product.id}>
                                     <CartLineItem item={item} />
@@ -79,7 +82,7 @@ export default async function CartPage() {
                             ))}
                         </ul>
 
-                        <div className="lg:sticky lg:top-6 lg:self-start">
+                        <div className="lg:sticky lg:top-24 lg:self-start">
                             <CartSummary cart={cart} />
                         </div>
                     </div>

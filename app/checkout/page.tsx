@@ -70,11 +70,11 @@ export default async function CheckoutPage() {
     return (
         <main>
             <Container className="py-8 sm:py-12 lg:py-16">
-                <h1 className="font-display text-4xl font-medium tracking-[-0.035em] text-charcoal sm:text-5xl">
-                    Checkout
+                <h1 className="font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-6xl">
+                    Finalizar compra
                 </h1>
 
-                <details className="group mt-6 rounded-xl border border-border bg-surface lg:hidden">
+                <details className="group mt-6 rounded-2xl border border-charcoal/8 bg-surface shadow-card lg:hidden">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 text-sm font-semibold text-charcoal [&::-webkit-details-marker]:hidden">
                         <span>
                             Resumo da encomenda
@@ -97,15 +97,15 @@ export default async function CheckoutPage() {
                             isSignedIn={Boolean(session)}
                         />
                     ) : (
-                        <p role="status" className="rounded-xl border border-border bg-surface p-6 text-sm leading-6 text-charcoal">
+                        <p role="status" className="rounded-3xl border border-border bg-surface p-6 text-sm leading-6 text-charcoal">
                             De momento não é possível concluir encomendas online. Contacte-nos ou
                             faça uma reserva na página do produto.
                         </p>
                     )}
 
                     <aside aria-label="Resumo da encomenda" className="hidden lg:block">
-                        <div className="sticky top-6 rounded-xl border border-border bg-surface p-6">
-                            <h2 className="font-display text-2xl font-semibold text-charcoal">Resumo</h2>
+                        <div className="sticky top-24 rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-lift">
+                            <h2 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">Resumo</h2>
                             <div className="mt-5">{summary}</div>
                             <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-muted">
                                 <ShieldCheck size={16} strokeWidth={1.6} aria-hidden="true" className="shrink-0 text-wine" />

@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { BankTransferDetails, type BankTransferInfo } from "@/components/payments/bank-transfer-details";
+import { buttonStyles } from "@/components/ui/button-styles";
 import { errorProps, Field, FieldError, inputClassName } from "@/components/ui/form-field";
 import { useToast } from "@/components/ui/toast";
 import { placeOrderAction, type CheckoutFormState, type CheckoutFormValues } from "@/lib/checkout/actions";
@@ -218,9 +219,9 @@ function CheckoutSteps({
                             Passo {currentIndex + 1} de {checkoutSteps.length}
                             <span className="text-muted"> · {checkoutSteps[currentIndex].label}</span>
                         </p>
-                        <div aria-hidden="true" className="mt-2 h-1 overflow-hidden rounded-full bg-border">
+                        <div aria-hidden="true" className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-border">
                             <div
-                                className="h-full rounded-full bg-wine transition-[width] duration-300 motion-reduce:transition-none"
+                                className="h-full rounded-full bg-linear-to-r from-wine to-champagne transition-[width] duration-500 ease-cellar motion-reduce:transition-none"
                                 style={{ width: `${((currentIndex + 1) / checkoutSteps.length) * 100}%` }}
                             />
                         </div>
@@ -249,12 +250,12 @@ function CheckoutSteps({
                                         <span
                                             aria-current={isCurrent ? "step" : undefined}
                                             className={`${stepPillClassName} ${
-                                                isCurrent ? "bg-charcoal text-white" : "text-muted"
+                                                isCurrent ? "bg-wine text-white shadow-wine" : "text-muted"
                                             }`}
                                         >
                                             <span
                                                 className={`flex size-6 items-center justify-center rounded-full text-[11px] ${
-                                                    isCurrent ? "bg-white text-charcoal" : "border border-border"
+                                                    isCurrent ? "bg-white text-wine" : "border border-border"
                                                 }`}
                                             >
                                                 {index + 1}
@@ -263,7 +264,7 @@ function CheckoutSteps({
                                         </span>
                                     )}
                                     {index < checkoutSteps.length - 1 && (
-                                        <span aria-hidden="true" className="h-px w-6 bg-border" />
+                                        <span aria-hidden="true" className="h-px w-6 bg-champagne/60" />
                                     )}
                                 </li>
                             );
@@ -275,7 +276,7 @@ function CheckoutSteps({
             {state.status === "error" && state.message && (
                 <div
                     role="alert"
-                    className="mb-6 rounded-md bg-danger/10 px-4 py-3 text-sm font-medium text-danger"
+                    className="mb-6 rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger"
                 >
                     {state.message}
                     {state.actionHref && (
@@ -344,7 +345,7 @@ function CheckoutSteps({
                     </div>
                     {isSignedIn && (
                         <label className="flex cursor-pointer items-center gap-3 text-sm text-charcoal">
-                            <input type="checkbox" name="saveAddress" className="size-4 cursor-pointer accent-wine" />
+                            <input type="checkbox" name="saveAddress" className="checkbox-cellar" />
                             Guardar esta morada na minha conta
                         </label>
                     )}
@@ -420,7 +421,7 @@ function CheckoutSteps({
                     headingRef={(element) => (headingRefs.current.review = element)}
                 >
                     {isEnhanced && (
-                        <dl className="divide-y divide-border rounded-xl border border-border bg-surface text-sm">
+                        <dl className="divide-y divide-border rounded-2xl border border-border bg-background text-sm">
                             <ReviewRow label="Dados" onEdit={() => goTo("customer")}>
                                 {review.name}
                                 <br />
@@ -461,7 +462,7 @@ function CheckoutSteps({
                                 name="termsAccepted"
                                 required
                                 {...errorProps("termsAccepted", errors.termsAccepted)}
-                                className="mt-1 size-4 shrink-0 cursor-pointer accent-wine"
+                                className="checkbox-cellar mt-1"
                             />
                             <span>
                                 Confirmo que os dados estão corretos e aceito os{" "}
@@ -482,7 +483,7 @@ function CheckoutSteps({
                         type="submit"
                         disabled={isPending}
                         aria-busy={isPending}
-                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:cursor-not-allowed disabled:opacity-60"
+                        className={buttonStyles({ block: true, className: "disabled:cursor-not-allowed" })}
                     >
                         {isPending ? (
                             <LoaderCircle size={18} strokeWidth={1.8} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
@@ -500,7 +501,7 @@ function CheckoutSteps({
                         <button
                             type="button"
                             onClick={() => goTo(checkoutSteps[currentIndex - 1].id)}
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                            className={buttonStyles({ variant: "secondary" })}
                         >
                             <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
                             Voltar
@@ -508,7 +509,7 @@ function CheckoutSteps({
                     ) : (
                         <Link
                             href="/carrinho"
-                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                            className={buttonStyles({ variant: "secondary" })}
                         >
                             <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
                             Carrinho
@@ -518,7 +519,7 @@ function CheckoutSteps({
                     <button
                         type="button"
                         onClick={goNext}
-                        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-charcoal px-6 text-sm font-semibold text-white transition-colors hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                        className={buttonStyles()}
                     >
                         Continuar
                         <ArrowRight size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -530,7 +531,7 @@ function CheckoutSteps({
                 <button
                     type="button"
                     onClick={() => goTo("payment")}
-                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-semibold text-muted hover:text-charcoal focus-visible:outline-2 focus-visible:outline-wine"
+                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-muted hover:text-charcoal focus-visible:outline-2 focus-visible:outline-wine"
                 >
                     <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
                     Voltar ao pagamento
@@ -552,14 +553,18 @@ function Step({ id, title, visible, headingRef, children }: StepProps) {
     const index = checkoutSteps.findIndex((step) => step.id === id);
 
     return (
-        <section hidden={!visible} aria-labelledby={`step-${id}`} className="space-y-5">
+        <section
+            hidden={!visible}
+            aria-labelledby={`step-${id}`}
+            className="animate-rise space-y-5 rounded-3xl border border-charcoal/8 bg-surface p-5 shadow-card motion-reduce:animate-none sm:p-8"
+        >
             <h2
                 id={`step-${id}`}
                 ref={headingRef}
                 tabIndex={-1}
-                className="font-display text-3xl font-medium tracking-[-0.02em] text-charcoal outline-none"
+                className="font-display text-[2rem] font-medium leading-tight tracking-[-0.02em] text-charcoal outline-none"
             >
-                <span className="mr-2 text-champagne">{index + 1}.</span>
+                <span className="mr-2 text-champagne-ink">{index + 1}.</span>
                 {title}
             </h2>
             {children}
@@ -581,7 +586,7 @@ type OptionCardProps = {
 function OptionCard({ name, value, defaultChecked, title, description, aside, details }: OptionCardProps) {
     return (
         <div className="group">
-            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-charcoal/40 has-checked:border-wine has-checked:bg-wine-light/30 has-focus-visible:outline-2 has-focus-visible:outline-wine">
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors duration-200 hover:border-champagne has-checked:border-wine has-checked:bg-wine-light/40 has-focus-visible:outline-2 has-focus-visible:outline-wine sm:p-5">
                 <input
                     type="radio"
                     name={name}
@@ -599,7 +604,7 @@ function OptionCard({ name, value, defaultChecked, title, description, aside, de
                 </span>
             </label>
             {details && (
-                <div className="mt-2 hidden rounded-lg border border-border bg-background p-4 group-has-checked:block">
+                <div className="mt-2 hidden animate-rise rounded-2xl border border-border bg-background p-4 group-has-checked:block motion-reduce:animate-none">
                     {details}
                 </div>
             )}
