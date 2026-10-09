@@ -21,8 +21,8 @@ export default async function AccountLayout({ children }: { children: ReactNode 
     return (
         <main>
             <Container className="py-8 sm:py-12 lg:py-16">
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
-                    <aside className="lg:sticky lg:top-6 lg:self-start">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+                    <aside className="lg:sticky lg:top-24 lg:self-start lg:rounded-3xl lg:border lg:border-charcoal/8 lg:bg-surface lg:p-3 lg:shadow-card">
                         <AccountNav showAdmin={Boolean(admin)} />
                     </aside>
                     <div className="min-w-0">{children}</div>

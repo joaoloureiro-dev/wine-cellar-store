@@ -55,7 +55,7 @@ export function SignInForm({ next }: { next: string }) {
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {formError && (
-                <p role="alert" className="rounded-md bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+                <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
                     {formError}
                 </p>
             )}
@@ -69,7 +69,7 @@ export function SignInForm({ next }: { next: string }) {
                 type="submit"
                 disabled={isPending}
                 aria-busy={isPending}
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
             >
                 {isPending && <LoaderCircle size={18} strokeWidth={1.8} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
                 Entrar

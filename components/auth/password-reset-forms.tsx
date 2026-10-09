@@ -12,7 +12,7 @@ import { authClient } from "@/lib/auth/client";
 import { getAuthErrorMessage } from "@/lib/auth/messages";
 
 const buttonClass =
-    "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
+    "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60";
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Indique um email válido."));
 
@@ -48,7 +48,7 @@ export function RequestPasswordResetForm() {
 
     if (sentTo) {
         return (
-            <div role="status" className="space-y-3 rounded-md border border-border bg-surface-muted p-5 text-sm text-charcoal">
+            <div role="status" className="space-y-3 rounded-2xl border border-border bg-surface-muted p-5 text-sm text-charcoal">
                 <p className="flex items-center gap-2 font-semibold">
                     <MailCheck size={18} aria-hidden="true" /> Verifique o seu email
                 </p>
@@ -63,7 +63,7 @@ export function RequestPasswordResetForm() {
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {formError && (
-                <p role="alert" className="rounded-md bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+                <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
                     {formError}
                 </p>
             )}
@@ -113,7 +113,7 @@ export function NewPasswordForm({ token, minPasswordLength }: { token: string; m
     return (
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {formError && (
-                <p role="alert" className="rounded-md bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+                <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
                     {formError}{" "}
                     <Link href="/recuperar-password" className="underline underline-offset-4">
                         Pedir novo link

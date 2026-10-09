@@ -45,13 +45,15 @@ export function FavoritesView() {
 
     if (visible.length === 0) {
         return (
-            <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
-                <Heart size={32} strokeWidth={1.3} aria-hidden="true" className="text-wine" />
-                <h2 className="mt-4 font-display text-2xl font-semibold text-charcoal">Ainda não tem favoritos</h2>
+            <div className="flex flex-col items-center rounded-3xl border border-dashed border-charcoal/15 bg-surface px-6 py-16 text-center">
+                <span className="inline-flex size-16 items-center justify-center rounded-full bg-wine-light text-wine">
+                    <Heart size={28} strokeWidth={1.4} aria-hidden="true" />
+                </span>
+                <h2 className="mt-6 font-display text-3xl font-medium tracking-[-0.02em] text-charcoal">Ainda não tem favoritos</h2>
                 <p className="mt-2 max-w-md text-sm leading-6 text-muted">
                     Toque no coração de uma cave para a guardar aqui e comparar mais tarde.
                 </p>
-                <Link href="/caves" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine">
+                <Link href="/caves" className="mt-8 inline-flex min-h-11 items-center justify-center rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine">
                     Explorar caves
                 </Link>
             </div>

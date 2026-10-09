@@ -32,7 +32,7 @@ export default async function NewPasswordPage(props: PageProps<"/nova-password">
             {token ? (
                 <NewPasswordForm token={token} minPasswordLength={PASSWORD_MIN_LENGTH} />
             ) : (
-                <p role="alert" className="rounded-md bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+                <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
                     Este link já não é válido ou expirou.{" "}
                     <Link href="/recuperar-password" className="underline underline-offset-4">
                         Peça um novo link

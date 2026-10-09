@@ -30,7 +30,7 @@ export default async function AccountAddressesPage() {
                     <h2 id="new-address-heading" className="mb-4 font-display text-2xl font-semibold text-charcoal">
                         Adicionar morada
                     </h2>
-                    <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
+                    <div className="rounded-3xl border border-charcoal/8 bg-surface shadow-card p-5 sm:p-6">
                         <AddressForm />
                     </div>
                 </section>
