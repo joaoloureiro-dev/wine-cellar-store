@@ -34,7 +34,7 @@ export default async function AdminReservationsPage({ searchParams }: PageProps<
             />
 
             {reservations.length > 0 ? (
-                <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
                     {reservations.map((reservation) => (
                         <li key={reservation.reference}>
                             <Link
@@ -69,7 +69,7 @@ export default async function AdminReservationsPage({ searchParams }: PageProps<
                     ))}
                 </ul>
             ) : (
-                <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
+                <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface p-8 text-center text-sm text-muted">
                     Nenhuma reserva encontrada com estes filtros.
                 </p>
             )}

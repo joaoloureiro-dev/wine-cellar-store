@@ -13,7 +13,7 @@ import { imageAction, uploadImageAction } from "@/lib/admin/product-image-action
 type ProductImage = { id: string; url: string; alt: string | null };
 
 const iconButtonClass =
-    "inline-flex size-10 items-center justify-center rounded-md border border-border text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-40";
+    "inline-flex size-10 items-center justify-center rounded-full border border-border text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-40";
 
 type RowProps = {
     image: ProductImage;
@@ -31,7 +31,7 @@ function ImageRow({ image, index, count, formAction, isPending, altError }: RowP
         <li>
             <form action={formAction} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
                 <input type="hidden" name="imageId" value={image.id} />
-                <div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-surface-muted">
+                <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-surface-muted">
                     <Image src={image.url} alt={image.alt ?? ""} fill sizes="96px" className="object-contain" />
                 </div>
                 <div className="min-w-0">
@@ -50,7 +50,7 @@ function ImageRow({ image, index, count, formAction, isPending, altError }: RowP
                             className={`${inputClassName} mt-0`}
                             {...errorProps(altId, altError)}
                         />
-                        <button type="submit" name="intent" value="alt" disabled={isPending} className="shrink-0 rounded-md border border-border px-3 text-sm font-semibold text-charcoal hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-wine">
+                        <button type="submit" name="intent" value="alt" disabled={isPending} className="shrink-0 rounded-full border border-border px-4 text-sm font-semibold text-charcoal hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-wine">
                             Guardar
                         </button>
                     </div>
@@ -126,7 +126,7 @@ function UploadForm({ productId, productName }: { productId: string; productName
             <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-wine px-5 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
             >
                 {isPending ? <LoaderCircle size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <ImagePlus size={16} aria-hidden="true" />}
                 Adicionar fotografia
@@ -159,7 +159,7 @@ export function ProductImages({ productId, productName, images }: { productId: s
                     ))}
                 </ul>
             ) : (
-                <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted">
+                <p className="rounded-2xl border border-dashed border-charcoal/15 p-5 text-center text-sm text-muted">
                     Ainda sem fotografias. Adicione pelo menos uma antes de tornar o produto visível.
                 </p>
             )}

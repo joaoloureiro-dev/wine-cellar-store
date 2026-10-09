@@ -7,7 +7,8 @@ const tones = {
 
 export function StatusBadge({ label, tone }: { label: string; tone: keyof typeof tones }) {
     return (
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
             {label}
         </span>
     );

@@ -24,7 +24,7 @@ export default async function AdminBrandsPage() {
                 }
             />
             {brands.length > 0 ? (
-                <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
                     {brands.map((brand) => (
                         <li key={brand.id}>
                             <Link
@@ -46,7 +46,7 @@ export default async function AdminBrandsPage() {
                     ))}
                 </ul>
             ) : (
-                <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">Ainda não há marcas.</p>
+                <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface p-8 text-center text-sm text-muted">Ainda não há marcas.</p>
             )}
         </>
     );

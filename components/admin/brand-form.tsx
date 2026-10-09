@@ -11,7 +11,7 @@ import { initialAdminFormState } from "@/lib/admin/form-state";
 type Brand = { id: string; slug: string; name: string; country: string; description: string };
 
 export const textareaClassName =
-    "mt-1.5 block w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-sm text-charcoal transition-colors focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30 aria-invalid:border-danger";
+    "mt-1.5 block w-full rounded-3xl border border-charcoal/8 bg-surface shadow-card px-3.5.5 py-2.5 text-sm text-charcoal transition-colors focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30 aria-invalid:border-danger";
 
 export function BrandForm({ brand }: { brand?: Brand }) {
     const [state, formAction, isPending] = useActionState(saveBrandAction, initialAdminFormState);
@@ -46,7 +46,7 @@ export function BrandForm({ brand }: { brand?: Brand }) {
             <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-wine px-5 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
             >
                 {isPending && <LoaderCircle size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
                 {brand ? "Guardar marca" : "Criar marca"}

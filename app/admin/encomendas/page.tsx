@@ -36,7 +36,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
             />
 
             {orders.length > 0 ? (
-                <ul role="list" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+                <ul role="list" className="divide-y divide-border overflow-hidden rounded-3xl border border-charcoal/8 bg-surface shadow-card">
                     {orders.map((order) => (
                         <li key={order.reference}>
                             <Link
@@ -68,7 +68,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
                     ))}
                 </ul>
             ) : (
-                <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
+                <p className="rounded-3xl border border-dashed border-charcoal/15 bg-surface p-8 text-center text-sm text-muted">
                     Nenhuma encomenda encontrada com estes filtros.
                 </p>
             )}

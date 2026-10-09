@@ -83,7 +83,7 @@ export default async function AdminReservationPage({ params }: PageProps<"/admin
                         </p>
                         <p className="mt-2 text-xs text-muted">{reservation.user ? `Conta: ${reservation.user.email}` : "Pedido sem conta"}</p>
                         {reservation.customerNotes && (
-                            <p className="mt-3 rounded-md bg-surface-muted p-3 text-sm break-words text-charcoal">
+                            <p className="mt-3 rounded-2xl bg-surface-muted p-4 text-sm break-words text-charcoal">
                                 <span className="block text-xs font-semibold text-muted">Mensagem do cliente</span>
                                 {reservation.customerNotes}
                             </p>
