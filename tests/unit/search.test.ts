@@ -11,6 +11,7 @@ function product(overrides: Partial<WineCellarProduct>): WineCellarProduct {
         name: "Modelo",
         brand: "Marca",
         brandSlug: "marca",
+        categories: [],
         shortDescription: "Cave de vinho.",
         description: "Cave de vinho com prateleiras.",
         price: 499,
@@ -88,6 +89,15 @@ describe("searchProducts", () => {
         ["xyz", []],
     ])("%s → %o", (query, expected) => {
         expect(slugs(query)).toEqual(expected);
+    });
+
+    it("finds products by category name", () => {
+        const items = [
+            product({ slug: "service", categories: [{ slug: "caves-de-servico", name: "Caves de serviço" }] }),
+            product({ slug: "other" }),
+        ];
+
+        expect(searchProducts(items, "serviço")?.map((item) => item.slug)).toEqual(["service"]);
     });
 
     it("ranks matches in the name above matches in the description", () => {

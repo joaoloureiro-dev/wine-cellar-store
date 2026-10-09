@@ -35,6 +35,7 @@ type BrandOption = {
 type CatalogFiltersProps = {
     query: CatalogQuery;
     brands: BrandOption[];
+    categories: BrandOption[];
     energyClasses: string[];
     activeFilterCount: number;
 };
@@ -53,6 +54,7 @@ type CatalogFiltersProps = {
 export function CatalogFilters({
     query,
     brands,
+    categories,
     energyClasses,
     activeFilterCount,
 }: CatalogFiltersProps) {
@@ -135,6 +137,21 @@ export function CatalogFilters({
                     </div>
 
                     <div className="flex-1 divide-y divide-border px-5 sm:px-6 lg:px-0">
+                        {categories.length > 0 && (
+                            <FilterGroup legend="Categoria">
+                                {categories.map((category) => (
+                                    <Checkbox
+                                        key={category.slug}
+                                        name={catalogParams.category}
+                                        value={category.slug}
+                                        defaultChecked={query.categories.includes(category.slug)}
+                                    >
+                                        {category.name}
+                                    </Checkbox>
+                                ))}
+                            </FilterGroup>
+                        )}
+
                         {brands.length > 0 && (
                             <FilterGroup legend="Marca">
                                 {brands.map((brand) => (

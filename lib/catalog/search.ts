@@ -83,6 +83,7 @@ function searchFields(product: WineCellarProduct): Field[] {
             ],
             weight: 3,
         },
+        { words: product.categories.flatMap((category) => words(category.name)), weight: 3 },
         { words: words(product.shortDescription), weight: 1 },
         { words: words(product.description), weight: 0.5 },
     ];

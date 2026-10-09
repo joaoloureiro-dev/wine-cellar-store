@@ -16,6 +16,7 @@ import type { TemperatureZoneCount } from "@/types/product";
 
 export type CatalogQuery = {
     brands: string[];
+    categories: string[];
     minPrice?: number;
     maxPrice?: number;
     capacity: CapacitySegmentValue[];
@@ -83,9 +84,10 @@ const energyClassSchema = z
         ...new Set(values.filter((value) => /^[A-G]$/.test(value))),
     ]);
 
-function createCatalogQuerySchema(brandSlugs: readonly string[]) {
+function createCatalogQuerySchema(brandSlugs: readonly string[], categorySlugs: readonly string[]) {
     return z.object({
         [catalogParams.brand]: oneOf(brandSlugs).catch([]),
+        [catalogParams.category]: oneOf(categorySlugs).catch([]),
         [catalogParams.minPrice]: optionalNumber(MAX_PRICE),
         [catalogParams.maxPrice]: optionalNumber(MAX_PRICE),
         [catalogParams.capacity]: oneOf(
@@ -114,9 +116,9 @@ function createCatalogQuerySchema(brandSlugs: readonly string[]) {
 
 export function parseCatalogQuery(
     searchParams: CatalogSearchParams,
-    { brandSlugs }: { brandSlugs: readonly string[] },
+    { brandSlugs, categorySlugs = [] }: { brandSlugs: readonly string[]; categorySlugs?: readonly string[] },
 ): CatalogQuery {
-    const parsed = createCatalogQuerySchema(brandSlugs).parse(searchParams);
+    const parsed = createCatalogQuerySchema(brandSlugs, categorySlugs).parse(searchParams);
 
     let minPrice = parsed[catalogParams.minPrice];
     let maxPrice = parsed[catalogParams.maxPrice];
@@ -127,6 +129,7 @@ export function parseCatalogQuery(
 
     return {
         brands: parsed[catalogParams.brand],
+        categories: parsed[catalogParams.category],
         minPrice,
         maxPrice,
         capacity: parsed[catalogParams.capacity],
@@ -145,6 +148,7 @@ export function toCatalogSearchParams(query: CatalogQuery) {
     const params = new URLSearchParams();
 
     query.brands.forEach((brand) => params.append(catalogParams.brand, brand));
+    query.categories.forEach((category) => params.append(catalogParams.category, category));
 
     if (query.minPrice !== undefined) {
         params.set(catalogParams.minPrice, String(query.minPrice));
@@ -191,6 +195,7 @@ export function toCatalogSearchParams(query: CatalogQuery) {
 export function clearCatalogFilters(query: CatalogQuery): CatalogQuery {
     return {
         brands: [],
+        categories: [],
         capacity: [],
         zones: [],
         installation: [],
@@ -209,6 +214,7 @@ export function getCatalogHref(query: CatalogQuery, pathname = "/caves") {
 export function countActiveFilters(query: CatalogQuery) {
     return (
         query.brands.length +
+        query.categories.length +
         (query.minPrice !== undefined || query.maxPrice !== undefined ? 1 : 0) +
         query.capacity.length +
         query.zones.length +

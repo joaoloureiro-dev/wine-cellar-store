@@ -19,7 +19,7 @@ export const metadata: Metadata = pageMetadata({ title, description, path: "/gui
 
 /** Catalogue link with only the given filters. */
 function catalog(filters: Partial<Pick<CatalogQuery, "capacity" | "zones" | "installation" | "maxNoise">>) {
-    const none: CatalogQuery = { brands: [], capacity: [], zones: [], installation: [], inStock: false, energyClasses: [], sort: DEFAULT_SORT };
+    const none: CatalogQuery = { brands: [], categories: [], capacity: [], zones: [], installation: [], inStock: false, energyClasses: [], sort: DEFAULT_SORT };
 
     return getCatalogHref({ ...none, ...filters });
 }

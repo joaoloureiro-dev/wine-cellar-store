@@ -27,6 +27,10 @@ const installationTypes = {
 export function buildCatalogWhere(query: CatalogQuery): Prisma.ProductWhereInput {
     const and: Prisma.ProductWhereInput[] = [{ active: true }];
 
+    if (query.categories.length > 0) {
+        and.push({ categories: { some: { category: { slug: { in: query.categories } } } } });
+    }
+
     if (query.brands.length > 0) {
         and.push({ brand: { slug: { in: query.brands } } });
     }
