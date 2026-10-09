@@ -109,7 +109,7 @@ export function PaymentInstructions({ reference, view, bankTransfer, returnState
                 <Panel tone="info" icon={CreditCard} title="Pague por Multibanco">
                     Use estes dados no homebanking, na app do seu banco ou numa caixa Multibanco
                     («Pagamentos de serviços»).
-                    <dl className="mt-4 divide-y divide-border rounded-lg border border-border bg-surface text-sm">
+                    <dl className="mt-4 divide-y divide-border rounded-2xl border border-border bg-surface text-sm">
                         <Row label="Entidade" value={payment.mbEntity} copyLabel="Entidade" />
                         <Row label="Referência" value={formatMbReference(payment.mbReference)} copyLabel="Referência" />
                         <Row label="Montante" value={formatCurrency(totalCents / 100)} />
@@ -158,7 +158,7 @@ export function PaymentInstructions({ reference, view, bankTransfer, returnState
                         <div className="mt-4">
                             <a
                                 href={payment.checkoutUrl}
-                                className="inline-flex min-h-11 items-center justify-center rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                                className="inline-flex min-h-11 items-center justify-center rounded-full bg-wine px-6 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                             >
                                 Continuar na Klarna
                             </a>
@@ -201,7 +201,7 @@ function Panel({
     children: ReactNode;
 }) {
     return (
-        <section aria-labelledby="payment-heading" className={`rounded-xl border bg-surface p-5 sm:p-6 ${tones[tone]}`}>
+        <section aria-labelledby="payment-heading" className={`rounded-3xl border bg-surface p-5 shadow-card sm:p-7 ${tones[tone]}`}>
             <h2 id="payment-heading" className="flex items-center gap-2 text-sm font-semibold text-charcoal">
                 <Icon size={18} strokeWidth={1.8} aria-hidden="true" className={iconTones[tone]} />
                 {title}

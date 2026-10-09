@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { OrderPlacedEffects } from "@/components/checkout/order-placed-effects";
 import { PaymentInstructions } from "@/components/payments/payment-instructions";
 import { Container } from "@/components/layout/container";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { ProductImage } from "@/components/product/product-image";
 import { formatCurrency } from "@/lib/format";
 import { getPublicOrder } from "@/lib/orders/service";
@@ -44,14 +45,9 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
 
             <Container className="py-10 sm:py-14 lg:py-20">
                 <div className="mx-auto max-w-2xl">
-                    <div className="flex items-center gap-3">
-                        <span className="h-px w-8 bg-champagne" />
-                        <span className="text-xs font-bold uppercase tracking-[0.24em] text-wine">
-                            Encomenda {order.reference}
-                        </span>
-                    </div>
+                    <Eyebrow>Encomenda {order.reference}</Eyebrow>
 
-                    <h1 className="mt-4 font-display text-4xl font-medium tracking-[-0.035em] text-charcoal sm:text-5xl">
+                    <h1 className="mt-4 text-balance font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-6xl">
                         {isAwaitingPayment ? "Obrigado pela sua encomenda" : "A sua encomenda"}
                     </h1>
 
@@ -73,11 +69,11 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
                         </div>
                     )}
 
-                    <section aria-label="Detalhes da encomenda" className="mt-8 rounded-xl border border-border bg-surface p-5 sm:p-6">
+                    <section aria-label="Detalhes da encomenda" className="mt-8 rounded-3xl border border-charcoal/8 bg-surface p-5 shadow-card sm:p-7">
                         <ul role="list" className="divide-y divide-border">
                             {order.items.map((item) => (
                                 <li key={item.productName} className="flex gap-4 py-4 first:pt-0">
-                                    <div className="relative aspect-4/5 w-16 shrink-0 overflow-hidden rounded-md bg-surface-muted">
+                                    <div className="relative aspect-4/5 w-16 shrink-0 overflow-hidden rounded-2xl bg-surface-muted">
                                         <ProductImage
                                             src={item.product.images[0]?.url}
                                             alt={`Cave de vinho ${item.product.brand.name} ${item.productName}`}
@@ -85,7 +81,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
                                         />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-wine">
+                                        <p className="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-champagne-ink">
                                             {item.product.brand.name}
                                         </p>
                                         <Link
@@ -108,7 +104,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
                         <dl className="mt-2 space-y-2.5 border-t border-border pt-4 text-sm">
                             <div className="flex justify-between gap-4">
                                 <dt className="text-muted">Estado</dt>
-                                <dd className="font-semibold text-charcoal">{orderStatusLabels[order.status]}</dd>
+                                <dd><span className="rounded-full bg-wine-light px-3 py-1 text-xs font-semibold text-wine-dark">{orderStatusLabels[order.status]}</span></dd>
                             </div>
                             <div className="flex justify-between gap-4">
                                 <dt className="text-muted">Subtotal</dt>
@@ -122,7 +118,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
                             </div>
                             <div className="flex items-baseline justify-between gap-4 border-t border-border pt-3">
                                 <dt className="font-semibold text-charcoal">Total</dt>
-                                <dd className="text-2xl font-semibold tracking-tight text-charcoal">
+                                <dd className="text-2xl font-semibold tabular-nums tracking-tight text-charcoal">
                                     {formatCurrency(order.totalCents / 100)}
                                 </dd>
                             </div>
@@ -135,7 +131,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
 
                     <Link
                         href="/caves"
-                        className="mt-10 inline-flex min-h-11 items-center justify-center rounded-md border border-border px-5 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
+                        className="mt-10 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-surface px-6 text-sm font-semibold text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine"
                     >
                         Continuar a explorar
                     </Link>

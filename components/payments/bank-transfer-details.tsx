@@ -63,7 +63,7 @@ export function BankTransferDetails({ details, amountCents, orderReference }: Ba
                 </li>
             </ol>
 
-            <dl className="divide-y divide-border rounded-lg border border-border bg-surface text-sm">
+            <dl className="divide-y divide-border rounded-2xl border border-border bg-surface text-sm">
                 {rows.map((row) => (
                     <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5">
                         <dt className="shrink-0 text-muted">{row.label}</dt>
