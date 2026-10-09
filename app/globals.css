@@ -359,3 +359,9 @@ html:has(dialog[open]:modal) {
     outline-offset: 2px;
   }
 }
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}

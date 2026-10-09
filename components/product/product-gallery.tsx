@@ -17,18 +17,19 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="relative aspect-4/5 overflow-hidden rounded-xl border border-border bg-surface-muted">
+            <div className="group relative aspect-4/5 overflow-hidden rounded-[2rem] border border-charcoal/8 bg-surface-muted shadow-card">
                 {/* Main product image is the LCP element: preload it. */}
                 <ProductImage
                     src={images[activeIndex]}
                     alt={hasThumbnails ? `${alt} (imagem ${activeIndex + 1} de ${images.length})` : alt}
                     sizes={mainImageSizes}
                     preload={activeIndex === 0}
+                    className="transition-transform duration-700 ease-cellar group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
             </div>
 
             {hasThumbnails && (
-                <ul role="list" className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                <ul role="list" className="grid grid-cols-4 gap-2.5 sm:grid-cols-5 sm:gap-3">
                     {images.map((image, index) => (
                         <li key={image}>
                             <button
@@ -36,10 +37,10 @@ export function ProductGallery({ images, alt }: ProductGalleryProps) {
                                 onClick={() => setActiveIndex(index)}
                                 aria-label={`Ver imagem ${index + 1} de ${images.length}`}
                                 aria-pressed={index === activeIndex}
-                                className={`relative block aspect-square w-full overflow-hidden rounded-md border bg-surface-muted transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine ${
+                                className={`relative block aspect-square w-full overflow-hidden rounded-2xl border-2 bg-surface-muted transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine ${
                                     index === activeIndex
                                         ? "border-wine"
-                                        : "border-border hover:border-charcoal/40"
+                                        : "border-transparent hover:border-champagne"
                                 }`}
                             >
                                 <ProductImage src={image} alt="" sizes="120px" />

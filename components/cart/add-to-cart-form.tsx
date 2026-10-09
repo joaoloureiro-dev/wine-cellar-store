@@ -4,6 +4,7 @@ import { LoaderCircle, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
 import { useCartAction } from "@/components/cart/use-cart-action";
+import { buttonStyles } from "@/components/ui/button-styles";
 import { addToCart } from "@/lib/cart/actions";
 
 type AddToCartFormProps = {
@@ -43,7 +44,7 @@ export function AddToCartForm({
                         value={quantity}
                         onChange={(event) => setQuantity(Number(event.target.value))}
                         disabled={isPending}
-                        className="h-12 rounded-md border border-border bg-surface px-3 text-sm font-semibold text-charcoal focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30"
+                        className="h-12 cursor-pointer rounded-full border border-border bg-surface px-4 text-sm font-semibold text-charcoal transition-colors hover:border-champagne focus:border-wine focus:outline-2 focus:outline-offset-0 focus:outline-wine/30"
                     >
                         {Array.from({ length: maxQuantity }, (_, index) => index + 1).map(
                             (value) => (
@@ -60,7 +61,7 @@ export function AddToCartForm({
                 type="submit"
                 disabled={!isAvailable || isPending}
                 aria-busy={isPending}
-                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-wine"
+                className={buttonStyles({ className: "flex-1 whitespace-nowrap px-4 disabled:cursor-not-allowed sm:px-6" })}
             >
                 {isPending ? (
                     <LoaderCircle

@@ -75,14 +75,14 @@ function getSpecRows(product: WineCellarProduct): SpecRow[] {
 
 export function ProductSpecs({ product }: ProductSpecsProps) {
     return (
-        <dl className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <dl className="divide-y divide-border">
             {getSpecRows(product).map((row) => (
                 <div
                     key={row.label}
-                    className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 px-5 py-3.5 text-sm sm:px-6"
+                    className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 py-3.5 text-sm"
                 >
                     <dt className="text-muted">{row.label}</dt>
-                    <dd className="text-right font-semibold text-charcoal sm:text-left">
+                    <dd className="text-right font-semibold tabular-nums text-charcoal">
                         {row.value}
                     </dd>
                 </div>
