@@ -103,7 +103,7 @@ export default function GuidePage() {
                         </h3>
                         <p>Para coleções variadas: conservação, tintos à temperatura de serviço e brancos ou espumantes, tudo na mesma cave.</p>
 
-                        <div className="mt-6 overflow-x-auto rounded-xl border border-border">
+                        <div className="mt-6 overflow-x-auto rounded-3xl border border-charcoal/8">
                             <table className="w-full min-w-[20rem] text-left text-sm">
                                 <caption className="px-3 pt-3 text-left text-xs text-muted">Temperaturas de serviço habituais</caption>
                                 <thead className="text-charcoal">
@@ -175,7 +175,7 @@ export default function GuidePage() {
                         </ul>
                     </section>
 
-                    <section id="resumo" aria-labelledby="resumo-title" className="scroll-mt-24 rounded-xl border border-border bg-surface p-5 sm:p-6">
+                    <section id="resumo" aria-labelledby="resumo-title" className="scroll-mt-24 rounded-3xl border border-charcoal/8 bg-surface shadow-card p-5 sm:p-6">
                         <h2 id="resumo-title">Em resumo</h2>
                         <ul>
                             <li>Escolha a capacidade a pensar na coleção que vai ter, não só na que tem hoje.</li>
