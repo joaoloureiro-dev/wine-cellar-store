@@ -5,7 +5,7 @@ export const services = [
         icon: Truck,
         title: "Entrega especializada",
         description:
-            "Entrega em Portugal Continental. Prazo e custo calculados no checkout.",
+            "Entrega em Portugal Continental. Prazo e custo calculados na finalização da compra.",
     },
     {
         icon: ShieldCheck,

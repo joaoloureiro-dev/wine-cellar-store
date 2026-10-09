@@ -212,7 +212,7 @@ function CheckoutSteps({
             <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
 
             {isEnhanced && (
-                <nav aria-label="Passos do checkout" className="mb-8">
+                <nav aria-label="Passos da finalização da compra" className="mb-8">
                     {/* Mobile: compact progress instead of a horizontal list. */}
                     <div className="sm:hidden">
                         <p className="text-xs font-semibold text-charcoal">
