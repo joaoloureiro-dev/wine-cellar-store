@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { House, Layers, Wine, type LucideIcon } from "lucide-react";
+import { ArrowRight, House, Layers, Wine, type LucideIcon } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -72,6 +72,19 @@ export function CellarGuide() {
                     description="A capacidade, as zonas de temperatura e o tipo de instalação definem a cave certa. Escolha uma opção para ver os modelos que correspondem."
                     className="reveal"
                 />
+
+                <Link
+                    href="/guia"
+                    className="group reveal mt-6 inline-flex items-center gap-2 rounded-sm border-b border-champagne-soft/60 pb-1 text-sm font-semibold text-champagne-soft transition-colors hover:text-cellar-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne-soft"
+                >
+                    Ler o guia completo
+                    <ArrowRight
+                        size={16}
+                        strokeWidth={1.8}
+                        aria-hidden="true"
+                        className="transition-transform duration-300 ease-cellar group-hover:translate-x-1 motion-reduce:transition-none"
+                    />
+                </Link>
 
                 <ol role="list" className="mt-10 grid gap-4 sm:mt-12 lg:grid-cols-3 lg:gap-6">
                     {criteria.map(({ icon: Icon, title, description, links }, index) => (

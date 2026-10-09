@@ -12,7 +12,7 @@ import { siteConfig } from "@/lib/site";
 const shopLinks = [
     { label: "Caves de Vinho", href: "/caves" },
     { label: "Marcas", href: "/marcas" },
-    { label: "Como escolher", href: "/#como-escolher" },
+    { label: "Como escolher", href: "/guia" },
     { label: "Reservas", href: "/reservas" },
     { label: "Favoritos", href: "/favoritos" },
     { label: "Carrinho", href: "/carrinho" },
