@@ -74,7 +74,7 @@ export function CategoryForm({ category, productCount = 0 }: { category?: Catego
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-md bg-wine px-5 text-sm font-semibold text-white transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-wine px-5 text-sm font-semibold text-white shadow-wine transition-colors hover:bg-wine-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-60"
                 >
                     {isPending && <LoaderCircle size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
                     {category ? "Guardar categoria" : "Criar categoria"}
@@ -94,7 +94,7 @@ export function CategoryForm({ category, productCount = 0 }: { category?: Catego
                         onClick={(event) => {
                             if (!window.confirm(`Eliminar a categoria "${category.name}"?`)) event.preventDefault();
                         }}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-md border border-danger px-5 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-danger px-6 text-sm font-semibold text-danger transition-colors hover:bg-danger hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
                     >
                         <Trash2 size={16} aria-hidden="true" /> Eliminar categoria
                     </button>
