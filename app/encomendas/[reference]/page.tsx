@@ -85,7 +85,7 @@ export default async function OrderPage(props: PageProps<"/encomendas/[reference
                                             {item.product.brand.name}
                                         </p>
                                         <Link
-                                            href={getProductHref({ brandSlug: item.product.brand.slug, slug: item.product.slug })}
+                                            href={getProductHref({ brandSlug: item.product.brand.slug, slug: item.product.slug, kind: item.product.kind })}
                                             className="text-sm font-semibold text-charcoal hover:text-wine"
                                         >
                                             {item.productName}

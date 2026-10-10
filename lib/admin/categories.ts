@@ -4,12 +4,13 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { Admin } from "@/lib/admin/auth";
 import { recordAudit } from "@/lib/admin/audit";
 import type { CategoryInput } from "@/lib/admin/category-schema";
+import type { ProductKindValue } from "@/lib/admin/product-details-schema";
 import { db } from "@/lib/db";
 
 export async function listAdminCategories() {
     return db.category.findMany({
         orderBy: [{ position: "asc" }, { name: "asc" }],
-        select: { id: true, slug: true, name: true, position: true, _count: { select: { products: true } } },
+        select: { id: true, slug: true, name: true, position: true, kind: true, _count: { select: { products: true } } },
     });
 }
 
@@ -18,13 +19,13 @@ export async function getAdminCategory(id: string) {
 
     return db.category.findUnique({
         where: { id },
-        select: { id: true, slug: true, name: true, description: true, position: true, seoTitle: true, seoDescription: true },
+        select: { id: true, slug: true, name: true, description: true, position: true, kind: true, seoTitle: true, seoDescription: true },
     });
 }
 
-/** Options for the product form. */
-export async function getCategoryOptions() {
-    return db.category.findMany({ orderBy: [{ position: "asc" }, { name: "asc" }], select: { id: true, name: true } });
+/** Options for the product form: categories of the product's kind. */
+export async function getCategoryOptions(kind: ProductKindValue = "WINE_CELLAR") {
+    return db.category.findMany({ where: { kind }, orderBy: [{ position: "asc" }, { name: "asc" }], select: { id: true, name: true } });
 }
 
 export async function createCategory(admin: Admin, input: CategoryInput) {
@@ -36,10 +37,11 @@ export async function createCategory(admin: Admin, input: CategoryInput) {
 }
 
 /** The slug is fixed after creation: changing it would break published URLs. */
-export async function updateCategory(admin: Admin, id: string, input: Omit<CategoryInput, "slug">) {
+export async function updateCategory(admin: Admin, id: string, input: Omit<CategoryInput, "slug" | "kind">) {
     return db.$transaction(async (tx) => {
         const { count } = await tx.category.updateMany({
             where: { id },
+            // Slug and kind are fixed after creation.
             data: { name: input.name, description: input.description, position: input.position, seoTitle: input.seoTitle, seoDescription: input.seoDescription },
         });
 
@@ -73,7 +75,9 @@ export async function deleteCategory(admin: Admin, id: string) {
  * not assigned.
  */
 export async function setProductCategories(tx: Prisma.TransactionClient, productId: string, categoryIds: string[]) {
-    const existing = await tx.category.findMany({ where: { id: { in: categoryIds } }, select: { id: true } });
+    // Only categories of the product's own kind.
+    const product = await tx.product.findUniqueOrThrow({ where: { id: productId }, select: { kind: true } });
+    const existing = await tx.category.findMany({ where: { id: { in: categoryIds }, kind: product.kind }, select: { id: true } });
 
     await tx.productCategory.deleteMany({ where: { productId } });
     await tx.productCategory.createMany({ data: existing.map(({ id }) => ({ productId, categoryId: id })) });

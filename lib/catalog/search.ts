@@ -1,4 +1,4 @@
-import type { WineCellarProduct } from "@/types/product";
+import type { Product, WineCellarProduct } from "@/types/product";
 
 /**
  * Catalogue search.
@@ -16,7 +16,7 @@ const MAX_TERMS = 8;
 /** Words that describe every product in the store or carry no meaning. */
 const STOP_WORDS = new Set([
     "a", "o", "as", "os", "e", "de", "da", "do", "das", "dos", "em", "na", "no", "para", "com", "por", "um", "uma",
-    "cave", "caves", "vinho", "vinhos", "garrafeira", "garrafeiras", "frigorifico", "adega", "adegas",
+    "cave", "caves", "vinho", "vinhos", "frigorifico", "adega", "adegas",
 ]);
 
 const installationKeywords: Record<WineCellarProduct["installationType"], string> = {
@@ -67,22 +67,39 @@ export function parseSearchTerms(query: string): Term[] {
 
 type Field = { words: string[]; weight: number };
 
-function searchFields(product: WineCellarProduct): Field[] {
-    const words = (text: string) => normalizeSearchText(text).split(" ").filter(Boolean);
+const kindKeywords: Record<Exclude<Product["kind"], "wine-cellar">, string> = {
+    "climate-unit": "climatizador climatizadores climatizacao adega",
+    "wine-rack": "garrafeira garrafeiras estante estantes modulo prateleira",
+    accessory: "acessorio acessorios",
+};
 
-    return [
-        { words: words(product.name), weight: 6 },
-        { words: [...words(product.brand), ...words(product.sku), normalizeSearchText(product.sku).replace(/ /g, "")], weight: 5 },
-        {
-            words: [
+const words = (text: string) => normalizeSearchText(text).split(" ").filter(Boolean);
+
+/** Kind-specific words: installation and zones for cellars, room volume, material… */
+function featureWords(product: Product): string[] {
+    switch (product.kind) {
+        case "wine-cellar":
+            return [
                 ...words(installationKeywords[product.installationType]),
                 ...words(zoneKeywords[product.zones]),
                 `z${product.zones}`,
                 `g${product.capacity}`,
                 String(product.capacity),
-            ],
-            weight: 3,
-        },
+            ];
+        case "climate-unit":
+            return [...words(kindKeywords[product.kind]), String(product.roomVolume)];
+        case "wine-rack":
+            return [...words(kindKeywords[product.kind]), ...words(product.material ?? ""), `g${product.capacity}`, String(product.capacity)];
+        case "accessory":
+            return words(kindKeywords[product.kind]);
+    }
+}
+
+function searchFields(product: Product): Field[] {
+    return [
+        { words: words(product.name), weight: 6 },
+        { words: [...words(product.brand), ...words(product.sku), normalizeSearchText(product.sku).replace(/ /g, "")], weight: 5 },
+        { words: featureWords(product), weight: 3 },
         { words: product.categories.flatMap((category) => words(category.name)), weight: 3 },
         { words: words(product.shortDescription), weight: 1 },
         { words: words(product.description), weight: 0.5 },
@@ -99,12 +116,12 @@ function termMatches(term: Term, word: string) {
  * then descriptions). An empty query returns null; one made only of
  * generic words ("caves de vinho") returns the whole catalogue.
  */
-export function searchProducts(products: WineCellarProduct[], query: string): WineCellarProduct[] | null {
+export function searchProducts<T extends Product>(products: T[], query: string): T[] | null {
     const terms = parseSearchTerms(query);
 
     if (terms.length === 0) return normalizeSearchText(query) ? products : null;
 
-    const scored: { product: WineCellarProduct; score: number }[] = [];
+    const scored: { product: T; score: number }[] = [];
 
     for (const product of products) {
         const fields = searchFields(product);

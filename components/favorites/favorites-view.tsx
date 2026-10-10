@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 
 import { useFavorites } from "@/components/favorites/favorites-provider";
 import { ProductCard } from "@/components/product/product-card";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 export function FavoritesView() {
     const { ids, isReady } = useFavorites();
-    const [loaded, setLoaded] = useState<{ key: string; products: WineCellarProduct[] } | null>(null);
+    const [loaded, setLoaded] = useState<{ key: string; products: Product[] } | null>(null);
     const key = ids.join(",");
 
     useEffect(() => {
@@ -18,7 +18,7 @@ export function FavoritesView() {
 
         let cancelled = false;
         fetch(`/api/products?ids=${encodeURIComponent(key)}`)
-            .then((response) => response.json() as Promise<{ products: WineCellarProduct[] }>)
+            .then((response) => response.json() as Promise<{ products: Product[] }>)
             .then((data) => {
                 if (!cancelled) setLoaded({ key, products: data.products });
             })

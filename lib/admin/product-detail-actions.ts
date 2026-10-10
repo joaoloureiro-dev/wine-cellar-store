@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { getAdmin } from "@/lib/admin/auth";
+import { db } from "@/lib/db";
 import { uniqueViolationField } from "@/lib/admin/unique-violation";
 import { fieldErrorsFrom, formValues, type AdminFormState } from "@/lib/admin/form-state";
 import { productCreateSchema, productDetailsSchema } from "@/lib/admin/product-details-schema";
@@ -17,7 +18,7 @@ const uniqueMessages: Record<string, string> = {
 };
 
 /** Form values, with the checked category boxes joined into one field. */
-function withCategories(formData: FormData) {
+function withCategories(formData: FormData): Record<string, string> {
     const categoryIds = formData.getAll("categoryIds").filter((value): value is string => typeof value === "string");
     return { ...formValues(formData), categoryIds: categoryIds.join(",") };
 }
@@ -70,7 +71,14 @@ export async function saveProductDetailsAction(previousState: AdminFormState, fo
     if (!admin) return { status: "error", message: "Sem permissão para esta operação.", submissionId };
 
     const values = withCategories(formData);
-    const parsed = productDetailsSchema.safeParse(values);
+    // The kind is fixed after creation: validate against the stored one.
+    const stored = /^[a-z0-9-]{1,64}$/i.test(values.productId ?? "")
+        ? await db.product.findUnique({ where: { id: values.productId }, select: { kind: true } })
+        : null;
+
+    if (!stored) return { status: "error", message: "Produto não encontrado.", submissionId };
+
+    const parsed = productDetailsSchema.safeParse({ ...values, kind: stored.kind });
 
     if (!parsed.success) return invalidResult(values, submissionId, fieldErrorsFrom(parsed.error));
 

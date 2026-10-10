@@ -37,7 +37,7 @@ export async function buildAccountExport(userId: string) {
         db.favorite.findMany({
             where: { userId },
             orderBy: { createdAt: "asc" },
-            select: { createdAt: true, product: { select: { name: true, slug: true, brand: { select: { slug: true } } } } },
+            select: { createdAt: true, product: { select: { name: true, slug: true, kind: true, brand: { select: { slug: true } } } } },
         }),
         db.order.findMany({
             where: { userId },
@@ -100,7 +100,7 @@ export async function buildAccountExport(userId: string) {
         addresses,
         favorites: favorites.map((favorite) => ({
             product: favorite.product.name,
-            url: absoluteUrl(getProductHref({ brandSlug: favorite.product.brand.slug, slug: favorite.product.slug })),
+            url: absoluteUrl(getProductHref({ brandSlug: favorite.product.brand.slug, slug: favorite.product.slug, kind: favorite.product.kind })),
             addedAt: favorite.createdAt,
         })),
         orders: orders.map(({ subtotalCents, shippingCents, totalCents, items, payments, events, ...order }) => ({

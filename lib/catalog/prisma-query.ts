@@ -25,7 +25,8 @@ const installationTypes = {
 } as const;
 
 export function buildCatalogWhere(query: CatalogQuery): Prisma.ProductWhereInput {
-    const and: Prisma.ProductWhereInput[] = [{ active: true }];
+    // The /caves catalogue lists wine cellars only.
+    const and: Prisma.ProductWhereInput[] = [{ active: true }, { kind: "WINE_CELLAR" }];
 
     if (query.categories.length > 0) {
         and.push({ categories: { some: { category: { slug: { in: query.categories } } } } });

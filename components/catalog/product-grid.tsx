@@ -3,7 +3,7 @@ import { Wine } from "lucide-react";
 
 import { ProductCard } from "@/components/product/product-card";
 import { buttonStyles } from "@/components/ui/button-styles";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 type EmptyState = {
     title: string;
@@ -15,7 +15,7 @@ type EmptyState = {
 };
 
 type ProductGridProps = {
-    products: WineCellarProduct[];
+    products: Product[];
     /** `sidebar` leaves room for a filters column from `lg` up. */
     layout?: "full" | "sidebar";
     emptyState?: EmptyState;

@@ -6,6 +6,7 @@ import { AccountHeading } from "@/components/account/account-heading";
 import { primaryLinkClass } from "@/components/admin/styles";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listAdminCategories } from "@/lib/admin/categories";
+import { adminKindLabel } from "@/lib/admin/product-kinds";
 
 export const metadata: Metadata = { title: "Categorias · Backoffice" };
 
@@ -34,7 +35,7 @@ export default async function AdminCategoriesPage() {
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-semibold text-charcoal">{category.name}</p>
                                     <p className="truncate text-xs text-muted">
-                                        Ordem {category.position} · /categorias/{category.slug}
+                                        {adminKindLabel(category.kind)} · ordem {category.position} · /categorias/{category.slug}
                                     </p>
                                 </div>
                                 <span className="text-xs text-muted">
