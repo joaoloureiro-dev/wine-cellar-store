@@ -4,7 +4,7 @@ import { getBrands } from "@/lib/brands";
 import { getCategories } from "@/lib/categories";
 import { legalLinks } from "@/lib/legal/links";
 import { getActiveProducts } from "@/lib/products";
-import { getBrandHref, getCategoryHref, getProductHref } from "@/lib/routes";
+import { getBrandHref, getCategoryHref, getProductHref, kindPaths } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/metadata";
 
 /**
@@ -22,6 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
         { url: absoluteUrl("/"), lastModified: latestProductUpdate, changeFrequency: "weekly", priority: 1 },
         { url: absoluteUrl("/caves"), lastModified: latestProductUpdate, changeFrequency: "daily", priority: 0.9 },
+        ...Object.values(kindPaths)
+            .filter((path) => path !== "/caves")
+            .map((path) => ({ url: absoluteUrl(path), changeFrequency: "weekly" as const, priority: 0.8 })),
         { url: absoluteUrl("/marcas"), changeFrequency: "monthly", priority: 0.6 },
         { url: absoluteUrl("/categorias"), changeFrequency: "monthly", priority: 0.6 },
         ...categories.map((category) => ({

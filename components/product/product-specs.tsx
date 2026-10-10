@@ -5,10 +5,10 @@ import {
     getZonesLabel,
     installationTypeLabels,
 } from "@/lib/product-display";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 type ProductSpecsProps = {
-    product: WineCellarProduct;
+    product: Product;
 };
 
 type SpecRow = {
@@ -16,28 +16,55 @@ type SpecRow = {
     value: string;
 };
 
-function getSpecRows(product: WineCellarProduct): SpecRow[] {
+/** Rows only some kinds have: zones and installation for cellars, room volume… */
+function getKindRows(product: Product): (SpecRow | null)[] {
+    switch (product.kind) {
+        case "wine-cellar":
+            return [
+                { label: "Capacidade", value: `${product.capacity} garrafas` },
+                { label: "Zonas de temperatura", value: getZonesLabel(product.zones) },
+                ...product.temperatureRanges.map((range, index) => ({
+                    label:
+                        product.temperatureRanges.length > 1
+                            ? `Temperatura (zona ${index + 1})`
+                            : "Temperatura",
+                    value: formatTemperatureRange(range),
+                })),
+                {
+                    label: "Tipo de instalação",
+                    value: installationTypeLabels[product.installationType],
+                },
+            ];
+        case "climate-unit":
+            return [
+                { label: "Volume máximo da divisão", value: `${product.roomVolume} m³` },
+                product.coolingPower !== undefined
+                    ? { label: "Potência de refrigeração", value: `${product.coolingPower} W` }
+                    : null,
+            ];
+        case "wine-rack":
+            return [
+                { label: "Capacidade", value: `${product.capacity} garrafas` },
+                product.material ? { label: "Material", value: product.material } : null,
+            ];
+        case "accessory":
+            return [];
+    }
+}
+
+function getSpecRows(product: Product): SpecRow[] {
+    const cellar = product.kind === "wine-cellar" ? product : null;
     const rows: (SpecRow | null)[] = [
         { label: "Marca", value: product.brand },
         { label: "Referência", value: product.sku },
         product.ean ? { label: "EAN", value: product.ean } : null,
-        { label: "Capacidade", value: `${product.capacity} garrafas` },
-        { label: "Zonas de temperatura", value: getZonesLabel(product.zones) },
-        ...product.temperatureRanges.map((range, index) => ({
-            label:
-                product.temperatureRanges.length > 1
-                    ? `Temperatura (zona ${index + 1})`
-                    : "Temperatura",
-            value: formatTemperatureRange(range),
-        })),
-        {
-            label: "Tipo de instalação",
-            value: installationTypeLabels[product.installationType],
-        },
-        {
-            label: "Dimensões (L × A × P)",
-            value: formatDimensions(product.dimensions),
-        },
+        ...getKindRows(product),
+        product.dimensions
+            ? {
+                  label: "Dimensões (L × A × P)",
+                  value: formatDimensions(product.dimensions),
+              }
+            : null,
         product.weight !== undefined
             ? { label: "Peso", value: `${product.weight} kg` }
             : null,
@@ -53,20 +80,20 @@ function getSpecRows(product: WineCellarProduct): SpecRow[] {
         product.noiseLevel !== undefined
             ? { label: "Nível de ruído", value: `${product.noiseLevel} dB` }
             : null,
-        product.reversibleDoor !== undefined
-            ? { label: "Porta reversível", value: formatYesNo(product.reversibleDoor) }
+        cellar?.reversibleDoor !== undefined
+            ? { label: "Porta reversível", value: formatYesNo(cellar.reversibleDoor) }
             : null,
-        product.uvProtectedGlass !== undefined
+        cellar?.uvProtectedGlass !== undefined
             ? {
                   label: "Vidro com proteção UV",
-                  value: formatYesNo(product.uvProtectedGlass),
+                  value: formatYesNo(cellar.uvProtectedGlass),
               }
             : null,
-        product.ledLighting !== undefined
-            ? { label: "Iluminação LED", value: formatYesNo(product.ledLighting) }
+        cellar?.ledLighting !== undefined
+            ? { label: "Iluminação LED", value: formatYesNo(cellar.ledLighting) }
             : null,
-        product.lock !== undefined
-            ? { label: "Fechadura", value: formatYesNo(product.lock) }
+        cellar?.lock !== undefined
+            ? { label: "Fechadura", value: formatYesNo(cellar.lock) }
             : null,
     ];
 

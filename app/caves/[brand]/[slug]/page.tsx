@@ -18,8 +18,8 @@ import {
     getProductImageAlt,
 } from "@/lib/product-display";
 import {
-    getActiveProducts,
     getProductBySlug,
+    getProductsByKind,
     getRelatedProducts,
 } from "@/lib/products";
 import { getBrandHref, getProductHref } from "@/lib/routes";
@@ -29,7 +29,7 @@ import { breadcrumbNode, jsonLdGraph, organizationNode, productNode } from "@/li
 type ProductPageProps = PageProps<"/caves/[brand]/[slug]">;
 
 export async function generateStaticParams() {
-    const products = await getActiveProducts();
+    const products = await getProductsByKind("wine-cellar");
 
     return products.map((product) => ({
         brand: product.brandSlug,

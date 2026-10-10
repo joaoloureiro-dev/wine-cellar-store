@@ -211,9 +211,20 @@ action, and each change made in the backoffice is recorded in
 
 Catalogue management:
 
-- **Categories** (`/admin/categorias`): name, fixed URL, description, order
-  and optional SEO. A product can be in several; each category has a page
-  (`/categorias/<slug>`) and a catalogue filter (`?categoria=`). Deleting a
+- **Product types**: wine cellars (`/caves/<brand>/<product>`), cellar climate
+  units (`/climatizadores/...`), wine racks (`/garrafeiras/...`) and
+  accessories (`/acessorios/...`), each with its own listing. The type is
+  chosen when the product is created and never changes. The form asks only
+  for that type's fields (capacity and zones for cellars, room volume for
+  climate units, capacity for racks); the database enforces the same rules
+  with a check constraint. Only wine cellars are in the filterable `/caves`
+  catalogue and take reservations; every type can be bought and is found by
+  the search.
+- **Categories** (`/admin/categorias`): name, product type (fixed), fixed
+  URL, description, order and optional SEO. Products only join categories
+  of their own type. A product can be in several; each category has a page
+  (`/categorias/<slug>`); wine cellar categories also filter `/caves`
+  (`?categoria=`). Deleting a
   category keeps its products.
 - **Brands** (`/admin/marcas`) and **products** (`/admin/produtos/novo`):
   specifications, temperature zones, dimensions, energy and SEO. The URL

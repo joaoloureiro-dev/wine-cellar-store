@@ -13,6 +13,7 @@ import {
 } from "../generated/prisma/client";
 import { brands } from "./seed-data/brands";
 import { categories } from "./seed-data/categories";
+import { otherProducts } from "./seed-data/other-products";
 import { products, type SeedProduct } from "./seed-data/products";
 
 const installationTypes = {
@@ -131,7 +132,53 @@ async function main() {
             });
         }
 
-        console.log(`Seeded ${brands.length} brands, ${categories.length} categories and ${products.length} products.`);
+        for (const product of otherProducts) {
+            const brandId = brandIds.get(product.brand);
+
+            if (!brandId) {
+                throw new Error(`Unknown brand "${product.brand}" for ${product.slug}`);
+            }
+
+            const data = {
+                kind: product.kind,
+                sku: product.sku,
+                name: product.name,
+                brandId,
+                shortDescription: product.shortDescription,
+                description: product.description,
+                priceCents: toCents(product.price),
+                roomVolumeM3: product.roomVolumeM3 ?? null,
+                coolingPowerW: product.coolingPowerW ?? null,
+                capacity: product.capacity ?? null,
+                material: product.material ?? null,
+                widthMm: product.dimensions ? toMm(product.dimensions.width) : null,
+                heightMm: product.dimensions ? toMm(product.dimensions.height) : null,
+                depthMm: product.dimensions ? toMm(product.dimensions.depth) : null,
+                noiseDb: product.noiseLevel ?? null,
+                stockQuantity: product.stockQuantity,
+                stockStatus: StockStatus.IN_STOCK,
+                active: true,
+                seoTitle: product.seo.title,
+                seoDescription: product.seo.description,
+            };
+
+            await db.$transaction(async (tx) => {
+                const { id } = await tx.product.upsert({
+                    where: { slug: product.slug },
+                    create: { id: product.id, slug: product.slug, ...data },
+                    update: data,
+                });
+
+                await tx.productCategory.deleteMany({ where: { productId: id } });
+                await tx.productCategory.createMany({
+                    data: product.categories.map((slug) => ({ productId: id, categoryId: categoryIds.get(slug)! })),
+                });
+            });
+        }
+
+        console.log(
+            `Seeded ${brands.length} brands, ${categories.length} categories and ${products.length + otherProducts.length} products.`,
+        );
     } finally {
         await db.$disconnect();
     }

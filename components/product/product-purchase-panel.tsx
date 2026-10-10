@@ -1,36 +1,31 @@
 import Link from "next/link";
-import { CalendarClock, Layers, Thermometer, Wine } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { getFactIcon } from "@/components/product/fact-icons";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
 import { buttonStyles } from "@/components/ui/button-styles";
 import { getMaxPurchasableQuantity } from "@/lib/cart/availability";
 import {
     getDiscountPercentage,
-    getTemperatureLabel,
-    getZonesLabel,
+    getProductFacts,
     installationTypeLabels,
+    productKindLabels,
 } from "@/lib/product-display";
 import { getBrandHref, getProductHref } from "@/lib/routes";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 type ProductPurchasePanelProps = {
-    product: WineCellarProduct;
+    product: Product;
 };
 
 export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
     const discount = getDiscountPercentage(product);
-    const temperature = getTemperatureLabel(product.temperatureRanges);
-
-    const keySpecs = [
-        { label: "Capacidade", value: `${product.capacity} garrafas`, icon: Wine },
-        { label: "Zonas", value: getZonesLabel(product.zones), icon: Layers },
-        ...(temperature
-            ? [{ label: "Temperatura", value: temperature, icon: Thermometer }]
-            : []),
-    ];
+    // Reservations are taken for wine cellars only (see /reservas).
+    const reservable = product.kind === "wine-cellar";
+    const keySpecs = getProductFacts(product).map((fact) => ({ ...fact, icon: getFactIcon(fact.label) }));
 
     return (
         <div>
@@ -50,13 +45,17 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
             </div>
 
             <p className="mt-3 text-xs font-medium text-muted">
-                Ref. {product.sku} · {installationTypeLabels[product.installationType]}
+                Ref. {product.sku} ·{" "}
+                {product.kind === "wine-cellar"
+                    ? installationTypeLabels[product.installationType]
+                    : productKindLabels[product.kind].singular}
             </p>
 
             <p className="mt-5 text-base leading-7 text-muted">
                 {product.shortDescription}
             </p>
 
+            {keySpecs.length > 0 && (
             <dl className="mt-7 grid grid-cols-3 gap-2 sm:gap-3">
                 {keySpecs.map(({ label, value, icon: Icon }) => (
                     <div
@@ -78,6 +77,7 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                     </div>
                 ))}
             </dl>
+            )}
 
             <div className="mt-7 rounded-3xl border border-charcoal/8 bg-surface p-5 shadow-lift sm:p-7">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -106,24 +106,28 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                         productName={product.name}
                         maxQuantity={getMaxPurchasableQuantity(product)}
                         unavailableLabel={
-                            product.stockStatus === "preorder"
+                            reservable && product.stockStatus === "preorder"
                                 ? "Disponível por reserva"
                                 : "Esgotado"
                         }
                     />
 
-                    <Link
-                        href={`${getProductHref(product)}/reservar`}
-                        className={buttonStyles({ variant: "secondary", block: true })}
-                    >
-                        <CalendarClock size={18} strokeWidth={1.8} aria-hidden="true" />
-                        Reservar
-                    </Link>
+                    {reservable && (
+                        <Link
+                            href={`${getProductHref(product)}/reservar`}
+                            className={buttonStyles({ variant: "secondary", block: true })}
+                        >
+                            <CalendarClock size={18} strokeWidth={1.8} aria-hidden="true" />
+                            Reservar
+                        </Link>
+                    )}
                 </div>
 
-                <p className="mt-4 text-center text-xs text-muted">
-                    Reserve sem pagamento imediato. Confirmamos a disponibilidade consigo.
-                </p>
+                {reservable && (
+                    <p className="mt-4 text-center text-xs text-muted">
+                        Reserve sem pagamento imediato. Confirmamos a disponibilidade consigo.
+                    </p>
+                )}
             </div>
         </div>
     );

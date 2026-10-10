@@ -1,5 +1,5 @@
 import { formatCurrency } from "@/lib/format";
-import { getActiveProducts, getProductBySlug } from "@/lib/products";
+import { getProductBySlug, getProductsByKind } from "@/lib/products";
 import { ogImageSize, renderOgImage } from "@/lib/seo/og-image";
 import { siteConfig } from "@/lib/site";
 
@@ -9,7 +9,7 @@ export const contentType = "image/png";
 
 /** Prerender a card per product at build time (new products: on demand). */
 export async function generateStaticParams() {
-    const products = await getActiveProducts();
+    const products = await getProductsByKind("wine-cellar");
     return products.map((product) => ({ brand: product.brandSlug, slug: product.slug }));
 }
 
