@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarCheck, ShieldCheck, Truck } from "lucide-react";
 
+import { HeroCategories } from "@/components/home/hero-categories";
 import { Container } from "@/components/layout/container";
 import { buttonArrowStyles, buttonStyles } from "@/components/ui/button-styles";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -18,7 +19,7 @@ export function Hero() {
     return (
         <section aria-labelledby="hero-heading" className="surface-cellar overflow-hidden">
             <Container>
-                <div className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-24">
+                <div className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-20">
                     <div className="max-w-2xl">
                         <Eyebrow tone="dark" className="animate-rise motion-reduce:animate-none">
                             Conservação de vinho
@@ -62,6 +63,8 @@ export function Hero() {
 
                     <HeroIllustration />
                 </div>
+
+                <HeroCategories />
             </Container>
         </section>
     );
@@ -71,7 +74,7 @@ function HeroIllustration() {
     return (
         <div
             aria-hidden="true"
-            className="relative mx-auto aspect-4/5 w-full max-w-[22rem] animate-rise [animation-delay:200ms] motion-reduce:animate-none sm:max-w-md"
+            className="relative mx-auto hidden aspect-4/5 w-full max-w-[22rem] animate-rise md:block [animation-delay:200ms] motion-reduce:animate-none sm:max-w-md"
         >
             <div className="absolute inset-[8%_6%] rounded-full bg-[radial-gradient(closest-side,rgb(212_160_84/0.22),transparent)] blur-md" />
             <div className="absolute inset-0 scale-[1.08] rounded-full border border-champagne/20" />
