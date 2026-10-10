@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type BrowserContext, type Page } from "@playwright/test";
 
 import { E2E_PASSWORD, e2eUsers } from "./users";
 
@@ -14,13 +14,31 @@ export async function signUp(page: Page, { name, email }: { name: string; email:
     await expect(page).toHaveURL(new RegExp(`${next}$`));
 }
 
+type Cookies = Awaited<ReturnType<BrowserContext["cookies"]>>;
+
+/**
+ * Session cookies per account, reused by later tests in the same worker:
+ * signing in for every test would trip the sign-in rate limit (5 a minute
+ * per IP), and no test signs these accounts out.
+ */
+const sessions = new Map<keyof typeof e2eUsers, Cookies>();
+
 /** Signs in with one of the accounts created in global-setup.ts. */
 export async function signIn(page: Page, who: keyof typeof e2eUsers, next = "/conta") {
+    const cookies = sessions.get(who);
+
+    if (cookies) {
+        await page.context().addCookies(cookies);
+        await page.goto(next);
+        if (new URL(page.url()).pathname === next) return;
+    }
+
     await page.goto(`/entrar?next=${encodeURIComponent(next)}`);
     await page.getByLabel("Email").fill(e2eUsers[who].email);
     await page.locator("#password").fill(E2E_PASSWORD);
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await page.waitForURL((url) => url.pathname === next);
+    sessions.set(who, await page.context().cookies());
 }
 
 /** Adds a product from its page and waits for the server to confirm. */
