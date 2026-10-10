@@ -6,7 +6,7 @@ import { ProductImage } from "@/components/product/product-image";
 import type { CartItem } from "@/lib/cart/cart";
 import { getUnavailableMessage } from "@/lib/cart/availability";
 import { formatCurrency } from "@/lib/format";
-import { getProductImageAlt, getZonesLabel } from "@/lib/product-display";
+import { getProductFacts, getProductImageAlt } from "@/lib/product-display";
 import { getProductHref } from "@/lib/routes";
 
 type CartLineItemProps = {
@@ -49,8 +49,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
                         </h2>
 
                         <p className="mt-1 text-xs text-muted">
-                            {product.capacity} garrafas · {getZonesLabel(product.zones)} ·{" "}
-                            {formatCurrency(item.unitPriceCents / 100)} / un.
+                            {[...getProductFacts(product).slice(0, 2).map((fact) => fact.value), `${formatCurrency(item.unitPriceCents / 100)} / un.`].join(" · ")}
                         </p>
                     </div>
 

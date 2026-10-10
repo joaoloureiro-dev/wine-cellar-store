@@ -1,10 +1,11 @@
 import "server-only";
 
 import { calculateShippingCents, shippingMethods } from "@/lib/checkout/shipping";
+import { productKindLabels } from "@/lib/product-display";
 import { getProductHref } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/site";
-import type { StockStatus, WineCellarProduct } from "@/types/product";
+import type { Product, StockStatus } from "@/types/product";
 
 /**
  * schema.org structured data (JSON-LD). Only facts the store actually
@@ -45,7 +46,7 @@ const availability: Record<StockStatus, string> = {
 };
 
 /** Shipping for a single unit, from the same rules the checkout charges. */
-function shippingDetails(product: WineCellarProduct) {
+function shippingDetails(product: Product) {
     return shippingMethods.map((method) => ({
         "@type": "OfferShippingDetails",
         shippingRate: {
@@ -57,7 +58,7 @@ function shippingDetails(product: WineCellarProduct) {
     }));
 }
 
-export function productNode(product: WineCellarProduct): JsonLdNode {
+export function productNode(product: Product): JsonLdNode {
     const url = absoluteUrl(getProductHref(product));
 
     return {
@@ -68,7 +69,7 @@ export function productNode(product: WineCellarProduct): JsonLdNode {
         sku: product.sku,
         ...(product.ean && /^\d{13}$/.test(product.ean) ? { gtin13: product.ean } : {}),
         brand: { "@type": "Brand", name: product.brand },
-        category: "Caves de vinho",
+        category: productKindLabels[product.kind].plural,
         image: product.images.map((image) => absoluteUrl(image)),
         url,
         offers: {

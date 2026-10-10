@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cacheCategoryData } from "@/lib/catalog/cache";
+import type { ProductKind } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 
 export type Category = {
@@ -13,12 +14,12 @@ export type Category = {
 
 const categorySelect = { slug: true, name: true, description: true, seoTitle: true, seoDescription: true } as const;
 
-/** All categories, in display order. */
-export async function getCategories(): Promise<Category[]> {
+/** Categories in display order; optionally only those of one product kind. */
+export async function getCategories(kind?: ProductKind): Promise<Category[]> {
     "use cache";
     cacheCategoryData();
 
-    return db.category.findMany({ select: categorySelect, orderBy: [{ position: "asc" }, { name: "asc" }] });
+    return db.category.findMany({ where: kind ? { kind } : undefined, select: categorySelect, orderBy: [{ position: "asc" }, { name: "asc" }] });
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {

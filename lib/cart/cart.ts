@@ -1,11 +1,11 @@
 import { getMaxPurchasableQuantity } from "@/lib/cart/availability";
 import type { CartLine } from "@/lib/cart/schema";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 export type CartItemIssue = "unavailable" | "insufficient_stock";
 
 export type CartItem = {
-    product: WineCellarProduct;
+    product: Product;
     /** Quantity stored in the cart. */
     quantity: number;
     /** Quantity that can actually be bought now (≤ quantity). */
@@ -34,7 +34,7 @@ export function toCents(euros: number) {
 
 export function buildCart(
     lines: CartLine[],
-    products: WineCellarProduct[],
+    products: Product[],
 ): Cart {
     const productsById = new Map(products.map((product) => [product.id, product]));
     const items: CartItem[] = [];

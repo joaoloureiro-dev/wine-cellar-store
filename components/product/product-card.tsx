@@ -1,22 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Layers, Thermometer, Wine } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { getFactIcon } from "@/components/product/fact-icons";
 import { ProductImage } from "@/components/product/product-image";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
 import {
     getDiscountPercentage,
     getProductImageAlt,
-    getTemperatureLabel,
-    getZonesLabel,
+    getProductFacts,
     installationTypeLabels,
+    productKindLabels,
 } from "@/lib/product-display";
 import { getProductHref } from "@/lib/routes";
-import type { WineCellarProduct } from "@/types/product";
+import type { Product } from "@/types/product";
 
 type ProductCardProps = {
-    product: WineCellarProduct;
+    product: Product;
     imageSizes?: string;
     headingLevel?: "h2" | "h3";
 };
@@ -31,29 +32,7 @@ export function ProductCard({
 }: ProductCardProps) {
     const href = getProductHref(product);
     const discount = getDiscountPercentage(product);
-    const temperature = getTemperatureLabel(product.temperatureRanges);
-
-    const specs = [
-        {
-            label: "Capacidade",
-            value: `${product.capacity} garrafas`,
-            icon: Wine,
-        },
-        {
-            label: "Zonas",
-            value: getZonesLabel(product.zones),
-            icon: Layers,
-        },
-        ...(temperature
-            ? [
-                  {
-                      label: "Temperatura",
-                      value: temperature,
-                      icon: Thermometer,
-                  },
-              ]
-            : []),
-    ];
+    const specs = getProductFacts(product).map((fact) => ({ ...fact, icon: getFactIcon(fact.label) }));
 
     return (
         <article className="group relative flex h-full flex-col rounded-3xl border border-charcoal/8 bg-surface p-2 shadow-card transition-[transform,box-shadow,border-color] duration-500 ease-cellar focus-within:-translate-y-1 focus-within:shadow-lift hover:-translate-y-1 hover:border-champagne/40 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0">
@@ -125,7 +104,7 @@ export function ProductCard({
                 </dl>
 
                 <p className="mt-3 text-xs font-medium text-muted">
-                    {installationTypeLabels[product.installationType]}
+                    {product.kind === "wine-cellar" ? installationTypeLabels[product.installationType] : productKindLabels[product.kind].singular}
                 </p>
 
                 <div className="mt-auto flex items-end justify-between gap-4 border-t border-border pt-4">

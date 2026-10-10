@@ -8,6 +8,7 @@ import { textareaClassName } from "@/components/admin/brand-form";
 import { useAdminFormFeedback } from "@/components/admin/form-toast";
 import { errorProps, Field, inputClassName } from "@/components/ui/form-field";
 import { initialAdminFormState } from "@/lib/admin/form-state";
+import type { ProductKindValue } from "@/lib/admin/product-details-schema";
 import { createProductAction, saveProductDetailsAction } from "@/lib/admin/product-detail-actions";
 
 type Zone = { position: number; minCelsius: number; maxCelsius: number };
@@ -21,12 +22,16 @@ export type ProductDetails = {
     ean: string | null;
     shortDescription: string;
     description: string;
-    capacity: number;
-    zones: number;
-    installationType: string;
-    widthMm: number;
-    heightMm: number;
-    depthMm: number;
+    kind: ProductKindValue;
+    capacity: number | null;
+    zones: number | null;
+    installationType: string | null;
+    roomVolumeM3: number | null;
+    coolingPowerW: number | null;
+    material: string | null;
+    widthMm: number | null;
+    heightMm: number | null;
+    depthMm: number | null;
     weightGrams: number | null;
     energyClass: string | null;
     annualEnergyKwh: number | null;
@@ -45,6 +50,8 @@ export type ProductDetails = {
 type Props = {
     brands: { id: string; name: string }[];
     categories: { id: string; name: string }[];
+    /** Kind of a new product (fixed after creation). */
+    kind?: ProductKindValue;
     product?: ProductDetails;
 };
 
@@ -62,12 +69,15 @@ function productValues(product: ProductDetails): Record<string, string> {
         ean: product.ean ?? "",
         shortDescription: product.shortDescription,
         description: product.description,
-        capacity: String(product.capacity),
-        zones: String(product.zones),
-        installationType: product.installationType,
-        widthCm: decimal(product.widthMm / 10),
-        heightCm: decimal(product.heightMm / 10),
-        depthCm: decimal(product.depthMm / 10),
+        capacity: optional(product.capacity),
+        zones: optional(product.zones),
+        installationType: product.installationType ?? "",
+        roomVolumeM3: optional(product.roomVolumeM3),
+        coolingPowerW: optional(product.coolingPowerW),
+        material: product.material ?? "",
+        widthCm: optional(product.widthMm, 10),
+        heightCm: optional(product.heightMm, 10),
+        depthCm: optional(product.depthMm, 10),
         weightKg: optional(product.weightGrams, 1000),
         energyClass: product.energyClass ?? "",
         annualEnergyKwh: optional(product.annualEnergyKwh),
@@ -98,7 +108,9 @@ const featureFields = [
 const legendClass = "mb-3 text-sm font-semibold text-charcoal";
 
 /** Creates a product, or edits its content and specifications. Works without JavaScript. */
-export function ProductDetailsForm({ brands, categories, product }: Props) {
+export function ProductDetailsForm({ brands, categories, kind: newKind = "WINE_CELLAR", product }: Props) {
+    const kind = product?.kind ?? newKind;
+    const isCellar = kind === "WINE_CELLAR";
     const [state, formAction, isPending] = useActionState(product ? saveProductDetailsAction : createProductAction, initialAdminFormState);
     const errors = state.fieldErrors ?? {};
 
@@ -115,6 +127,7 @@ export function ProductDetailsForm({ brands, categories, product }: Props) {
 
     return (
         <form key={`${product?.version ?? "new"}-${typed ? state.submissionId : 0}`} action={formAction} noValidate className="space-y-8">
+            {!product && <input type="hidden" name="kind" value={kind} />}
             {product && (
                 <>
                     <input type="hidden" name="productId" value={product.id} />
@@ -248,6 +261,8 @@ export function ProductDetailsForm({ brands, categories, product }: Props) {
                 </Field>
             </fieldset>
 
+            {isCellar ? (
+                <>
             <fieldset className="grid gap-5 sm:grid-cols-3">
                 <legend className={legendClass}>Especificações</legend>
                 <Field label="Capacidade (garrafas)" name="capacity" error={errors.capacity}>
@@ -315,16 +330,39 @@ export function ProductDetailsForm({ brands, categories, product }: Props) {
                 ))}
             </fieldset>
 
+                </>
+            ) : kind === "CLIMATE_UNIT" ? (
+                <fieldset className="grid gap-5 sm:grid-cols-2">
+                    <legend className={legendClass}>Especificações</legend>
+                    <Field label="Volume máximo da divisão (m³)" name="roomVolumeM3" error={errors.roomVolumeM3}>
+                        {input("roomVolumeM3", { type: "number", inputMode: "numeric", min: 1, max: 2000, required: true })}
+                    </Field>
+                    <Field label="Potência de frio (W, opcional)" name="coolingPowerW" error={errors.coolingPowerW}>
+                        {input("coolingPowerW", { type: "number", inputMode: "numeric", min: 50, max: 20000 })}
+                    </Field>
+                </fieldset>
+            ) : kind === "WINE_RACK" ? (
+                <fieldset className="grid gap-5 sm:grid-cols-2">
+                    <legend className={legendClass}>Especificações</legend>
+                    <Field label="Capacidade (garrafas)" name="capacity" error={errors.capacity}>
+                        {input("capacity", { type: "number", inputMode: "numeric", min: 1, max: 1000, required: true })}
+                    </Field>
+                    <Field label="Material (opcional)" name="material" error={errors.material}>
+                        {input("material", { maxLength: 60, placeholder: "ex.: madeira de pinho" })}
+                    </Field>
+                </fieldset>
+            ) : null}
+
             <fieldset className="grid gap-5 sm:grid-cols-4">
-                <legend className={legendClass}>Dimensões</legend>
+                <legend className={legendClass}>{isCellar ? "Dimensões" : "Dimensões (opcional: as três ou nenhuma)"}</legend>
                 <Field label="Largura (cm)" name="widthCm" error={errors.widthCm}>
-                    {input("widthCm", { inputMode: "decimal", required: true })}
+                    {input("widthCm", { inputMode: "decimal", required: isCellar })}
                 </Field>
                 <Field label="Altura (cm)" name="heightCm" error={errors.heightCm}>
-                    {input("heightCm", { inputMode: "decimal", required: true })}
+                    {input("heightCm", { inputMode: "decimal", required: isCellar })}
                 </Field>
                 <Field label="Profundidade (cm)" name="depthCm" error={errors.depthCm}>
-                    {input("depthCm", { inputMode: "decimal", required: true })}
+                    {input("depthCm", { inputMode: "decimal", required: isCellar })}
                 </Field>
                 <Field label="Peso (kg, opcional)" name="weightKg" error={errors.weightKg}>
                     {input("weightKg", { inputMode: "decimal" })}
@@ -367,6 +405,7 @@ export function ProductDetailsForm({ brands, categories, product }: Props) {
                 </Field>
             </fieldset>
 
+{isCellar && (
             <fieldset className="grid gap-5 sm:grid-cols-2">
                 <legend className={legendClass}>Características</legend>
                 {featureFields.map(([name, label]) => (
@@ -379,10 +418,11 @@ export function ProductDetailsForm({ brands, categories, product }: Props) {
                     </Field>
                 ))}
             </fieldset>
+            )}
 
             <fieldset className="space-y-5">
                 <legend className={legendClass}>SEO (opcional)</legend>
-                <Field label="Título SEO" name="seoTitle" error={errors.seoTitle} hint="Até 70 caracteres. Vazio: «Nome | Cave de Vinho N Garrafas».">
+                <Field label="Título SEO" name="seoTitle" error={errors.seoTitle} hint="Até 70 caracteres. Vazio: gerado a partir do nome e do tipo de produto.">
                     {input("seoTitle", { maxLength: 70 })}
                 </Field>
                 <Field label="Descrição SEO" name="seoDescription" error={errors.seoDescription} hint="Até 160 caracteres. Vazio: usa o resumo.">

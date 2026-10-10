@@ -34,7 +34,7 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
         getProductDetails(product.id),
         getBrandOptions(),
         listProductImages(product.id),
-        getCategoryOptions(),
+        getCategoryOptions(product.kind),
     ]);
 
     if (!details) {
@@ -57,7 +57,7 @@ export default async function AdminProductPage({ params }: PageProps<"/admin/pro
                     {product.brand.name} · {product.sku}
                     {product.active && (
                         <Link
-                            href={getProductHref({ brandSlug: product.brand.slug, slug: product.slug })}
+                            href={getProductHref({ brandSlug: product.brand.slug, slug: product.slug, kind: product.kind })}
                             className="inline-flex items-center gap-1 font-semibold text-wine underline-offset-4 hover:underline"
                         >
                             Ver na loja <ExternalLink size={13} aria-hidden="true" />

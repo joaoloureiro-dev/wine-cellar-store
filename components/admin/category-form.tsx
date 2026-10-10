@@ -8,6 +8,8 @@ import { useAdminFormFeedback } from "@/components/admin/form-toast";
 import { errorProps, Field, inputClassName } from "@/components/ui/form-field";
 import { deleteCategoryAction, saveCategoryAction } from "@/lib/admin/category-actions";
 import { initialAdminFormState } from "@/lib/admin/form-state";
+import type { ProductKindValue } from "@/lib/admin/product-details-schema";
+import { adminKindLabel, adminProductKinds } from "@/lib/admin/product-kinds";
 
 type Category = {
     id: string;
@@ -15,6 +17,7 @@ type Category = {
     name: string;
     description: string;
     position: number;
+    kind: string;
     seoTitle: string | null;
     seoDescription: string | null;
 };
@@ -53,12 +56,24 @@ export function CategoryForm({ category, productCount = 0 }: { category?: Catego
                 </div>
                 {category ? (
                     <p className="text-sm text-muted">
-                        Endereço: <span className="font-mono text-charcoal">/categorias/{category.slug}</span> (não muda depois de criado)
+                        {adminKindLabel(category.kind as ProductKindValue)} · Endereço: <span className="font-mono text-charcoal">/categorias/{category.slug}</span> (o
+                        tipo e o endereço não mudam depois de criados)
                     </p>
                 ) : (
+                    <>
+                    <Field label="Tipo de produto" name="kind" error={errors.kind} hint="A categoria agrupa produtos deste tipo.">
+                        <select id="kind" name="kind" defaultValue={values.kind ?? "WINE_CELLAR"} className={inputClassName} {...errorProps("kind", errors.kind)}>
+                            {adminProductKinds.map((kind) => (
+                                <option key={kind.value} value={kind.value}>
+                                    {kind.label}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
                     <Field label="Endereço (opcional)" name="slug" error={errors.slug} hint="Gerado a partir do nome se ficar vazio. Não muda depois de criado.">
                         <input id="slug" name="slug" maxLength={60} defaultValue={values.slug} placeholder="ex.: caves-de-servico" className={inputClassName} {...errorProps("slug", errors.slug)} />
                     </Field>
+                    </>
                 )}
                 <Field label="Descrição" name="description" error={errors.description} hint="Aparece no topo da página da categoria.">
                     <textarea id="description" name="description" required rows={4} maxLength={600} defaultValue={values.description} className={textareaClassName} {...errorProps("description", errors.description)} />

@@ -4,7 +4,7 @@ import type { WineCellarProduct } from "../../types/product";
  * Seed products; `brandSlug` is resolved from the brand name and
  * `categories` lists category slugs (prisma/seed-data/categories.ts).
  */
-export type SeedProduct = Omit<WineCellarProduct, "brandSlug" | "categories"> & { categories: string[] };
+export type SeedProduct = Omit<WineCellarProduct, "brandSlug" | "categories" | "kind"> & { categories: string[] };
 
 export const products: SeedProduct[] = [
     {

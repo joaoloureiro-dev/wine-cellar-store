@@ -20,6 +20,16 @@ enum InstallationType {
   UNDERCOUNTER
 }
 
+/// What a product is. Wine cellars use the cellar fields (capacity, zones,
+/// installation, dimensions); a database check enforces the fields each
+/// kind requires.
+enum ProductKind {
+  WINE_CELLAR
+  CLIMATE_UNIT
+  WINE_RACK
+  ACCESSORY
+}
+
 enum StockStatus {
   IN_STOCK
   LOW_STOCK
@@ -49,6 +59,8 @@ model Category {
   description    String
   /// Display order (menus, lists); lowest first.
   position       Int               @default(0)
+  /// Categories group products of one kind (cellar categories, accessory categories…).
+  kind           ProductKind       @default(WINE_CELLAR)
   seoTitle       String?
   seoDescription String?
   createdAt      DateTime          @default(now())
@@ -68,39 +80,45 @@ model ProductCategory {
 }
 
 model Product {
-  id                  String           @id @default(cuid())
-  slug                String           @unique
-  sku                 String           @unique
-  ean                 String?          @unique
+  id                  String            @id @default(cuid())
+  kind                ProductKind       @default(WINE_CELLAR)
+  slug                String            @unique
+  sku                 String            @unique
+  ean                 String?           @unique
   name                String
   brandId             String
-  brand               Brand            @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  brand               Brand             @relation(fields: [brandId], references: [id], onDelete: Restrict)
   shortDescription    String
   description         String
   priceCents          Int
   compareAtPriceCents Int?
-  capacity            Int
-  zones               Int
-  installationType    InstallationType
-  widthMm             Int
-  heightMm            Int
-  depthMm             Int
+  capacity            Int?
+  zones               Int?
+  installationType    InstallationType?
+  widthMm             Int?
+  heightMm            Int?
+  depthMm             Int?
   weightGrams         Int?
   energyClass         String?
   annualEnergyKwh     Int?
   noiseDb             Int?
+  /// Climate units: largest room they can cool (m³) and cooling power (W).
+  roomVolumeM3        Int?
+  coolingPowerW       Int?
+  /// Wine racks: e.g. "Madeira de pinho", "Aço".
+  material            String?
   reversibleDoor      Boolean?
   uvProtectedGlass    Boolean?
   ledLighting         Boolean?
   lock                Boolean?
-  stockQuantity       Int              @default(0)
-  stockStatus         StockStatus      @default(OUT_OF_STOCK)
-  featured            Boolean          @default(false)
-  active              Boolean          @default(true)
+  stockQuantity       Int               @default(0)
+  stockStatus         StockStatus       @default(OUT_OF_STOCK)
+  featured            Boolean           @default(false)
+  active              Boolean           @default(true)
   seoTitle            String
   seoDescription      String
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   temperatureZones ProductTemperatureZone[]
   images           ProductImage[]
@@ -109,6 +127,8 @@ model Product {
   favorites        Favorite[]
   categories       ProductCategory[]
 
+  // Listings per kind (/caves, /climatizadores…).
+  @@index([kind, active])
   // Homepage featured products.
   @@index([active, featured])
   // Brand pages and brand filter.

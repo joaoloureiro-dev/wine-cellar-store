@@ -30,7 +30,7 @@ const description =
     "Catálogo de caves de vinho de livre instalação, encastre e sob bancada, com uma, duas ou três zonas de temperatura.";
 
 async function getQuery(searchParams: PageProps<"/caves">["searchParams"]) {
-    const [params, brands, categories] = await Promise.all([searchParams, getBrands(), getCategories()]);
+    const [params, brands, categories] = await Promise.all([searchParams, getBrands(), getCategories("WINE_CELLAR")]);
 
     return parseCatalogQuery(params, {
         brandSlugs: brands.map((brand) => brand.slug),
@@ -80,7 +80,7 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
     const [query, brands, categories, energyClasses] = await Promise.all([
         getQuery(searchParams),
         getBrands(),
-        getCategories(),
+        getCategories("WINE_CELLAR"),
         getAvailableEnergyClasses(),
     ]);
 

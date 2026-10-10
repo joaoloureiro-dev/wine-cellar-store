@@ -11,6 +11,7 @@ type BreadcrumbJson = { itemListElement: { item: string }[] };
 
 const product = {
     id: "p1",
+    kind: "wine-cellar",
     slug: "classic-24",
     sku: "CELLAR-CLASSIC-24",
     ean: "5601234567890",

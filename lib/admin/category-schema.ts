@@ -22,6 +22,7 @@ export const categorySchema = z
         name: text(2, 60, "Nome"),
         slug: z.string().trim().toLowerCase().optional(),
         description: text(10, 600, "Descrição"),
+        kind: z.enum(["WINE_CELLAR", "CLIMATE_UNIT", "WINE_RACK", "ACCESSORY"]).optional().default("WINE_CELLAR"),
         position: z
             .string()
             .optional()

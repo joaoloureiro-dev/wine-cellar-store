@@ -1,9 +1,20 @@
 import type {
     InstallationType,
+    Product,
+    ProductDimensions,
+    ProductKind,
     StockStatus,
     TemperatureRange,
     WineCellarProduct,
 } from "@/types/product";
+
+/** Singular and plural names per kind (headings, alt texts, structured data). */
+export const productKindLabels: Record<ProductKind, { singular: string; plural: string }> = {
+    "wine-cellar": { singular: "Cave de vinho", plural: "Caves de vinho" },
+    "climate-unit": { singular: "Climatizador de adega", plural: "Climatizadores de adega" },
+    "wine-rack": { singular: "Garrafeira", plural: "Garrafeiras e estantes" },
+    accessory: { singular: "Acessório", plural: "Acessórios" },
+};
 
 export const installationTypeLabels: Record<InstallationType, string> = {
     freestanding: "Livre instalação",
@@ -34,7 +45,7 @@ export function getTemperatureLabel(ranges: TemperatureRange[]) {
 }
 
 export function getDiscountPercentage(
-    product: Pick<WineCellarProduct, "price" | "compareAtPrice">,
+    product: Pick<Product, "price" | "compareAtPrice">,
 ) {
     const { price, compareAtPrice } = product;
 
@@ -45,10 +56,48 @@ export function getDiscountPercentage(
     return Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
 }
 
-export function getProductImageAlt(
-    product: Pick<WineCellarProduct, "brand" | "name" | "capacity">,
-) {
-    return `Cave de vinho ${product.brand} ${product.name} para ${product.capacity} garrafas`;
+export function getProductImageAlt(product: Product) {
+    const name = `${productKindLabels[product.kind].singular} ${product.brand} ${product.name}`;
+
+    switch (product.kind) {
+        case "wine-cellar":
+        case "wine-rack":
+            return `${name} para ${product.capacity} garrafas`;
+        case "climate-unit":
+            return `${name} para divisões até ${product.roomVolume} m³`;
+        default:
+            return name;
+    }
+}
+
+/**
+ * Key facts for cards and the cart, per kind: capacity and zones for
+ * cellars, room volume for climate units, capacity and material for racks.
+ */
+export function getProductFacts(product: Product): { label: string; value: string }[] {
+    switch (product.kind) {
+        case "wine-cellar": {
+            const temperature = getTemperatureLabel(product.temperatureRanges);
+            return [
+                { label: "Capacidade", value: `${product.capacity} garrafas` },
+                { label: "Zonas", value: getZonesLabel(product.zones) },
+                ...(temperature ? [{ label: "Temperatura", value: temperature }] : []),
+            ];
+        }
+        case "climate-unit":
+            return [
+                { label: "Divisão até", value: `${product.roomVolume} m³` },
+                ...(product.coolingPower ? [{ label: "Potência", value: `${product.coolingPower} W` }] : []),
+                ...(product.noiseLevel ? [{ label: "Ruído", value: `${product.noiseLevel} dB` }] : []),
+            ];
+        case "wine-rack":
+            return [
+                { label: "Capacidade", value: `${product.capacity} garrafas` },
+                ...(product.material ? [{ label: "Material", value: product.material }] : []),
+            ];
+        case "accessory":
+            return product.dimensions ? [{ label: "Medidas", value: formatDimensions(product.dimensions) }] : [];
+    }
 }
 
 export function getProductCountLabel(count: number) {
@@ -59,7 +108,7 @@ export function formatTemperatureRange(range: TemperatureRange) {
     return `${range.min}–${range.max} °C`;
 }
 
-export function formatDimensions(dimensions: WineCellarProduct["dimensions"]) {
+export function formatDimensions(dimensions: ProductDimensions) {
     return `${dimensions.width} × ${dimensions.height} × ${dimensions.depth} cm`;
 }
 
