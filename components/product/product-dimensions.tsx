@@ -1,7 +1,7 @@
-import type { WineCellarProduct } from "@/types/product";
+import type { ProductDimensions as Dimensions } from "@/types/product";
 
 type ProductDimensionsProps = {
-    dimensions: WineCellarProduct["dimensions"];
+    dimensions: Dimensions;
     weight?: number;
 };
 

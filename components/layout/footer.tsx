@@ -11,6 +11,9 @@ import { siteConfig } from "@/lib/site";
 
 const shopLinks = [
     { label: "Caves de Vinho", href: "/caves" },
+    { label: "Climatizadores", href: "/climatizadores" },
+    { label: "Garrafeiras", href: "/garrafeiras" },
+    { label: "Acessórios", href: "/acessorios" },
     { label: "Marcas", href: "/marcas" },
     { label: "Como escolher", href: "/guia" },
     { label: "Reservas", href: "/reservas" },
