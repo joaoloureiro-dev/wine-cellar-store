@@ -158,7 +158,7 @@ export async function updateProduct(admin: Admin, input: ProductUpdateInput) {
 
         // Checked after the update, which locks the row: a photo deleted
         // concurrently (lib/admin/product-images.ts) is seen here.
-        if (input.active && !before.active && (await tx.productImage.count({ where: { productId: input.productId } })) === 0) {
+        if (input.active && !before.active && (await tx.productImage.count({ where: { productId: input.productId, roomCutout: false } })) === 0) {
             throw new ProductWithoutImagesError();
         }
 
