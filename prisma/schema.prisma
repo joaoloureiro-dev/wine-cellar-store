@@ -160,6 +160,7 @@ model ProductImage {
   url       String
   alt       String?
   position  Int
+  roomCutout Boolean @default(false)
 
   @@unique([productId, position])
 }

@@ -285,7 +285,7 @@ export async function getPublicOrder(reference: string) {
                             slug: true,
                             kind: true,
                             brand: { select: { name: true, slug: true } },
-                            images: { select: { url: true }, orderBy: { position: "asc" }, take: 1 },
+                            images: { where: { roomCutout: false }, select: { url: true }, orderBy: { position: "asc" }, take: 1 },
                         },
                     },
                 },

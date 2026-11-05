@@ -9,6 +9,7 @@ import { Container } from "@/components/layout/container";
 import { ProductDimensions } from "@/components/product/product-dimensions";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
+import { RoomPreview } from "@/components/product/room-preview";
 import { ProductServices } from "@/components/product/product-services";
 import { ProductSpecs } from "@/components/product/product-specs";
 import { TemperatureZones } from "@/components/product/temperature-zones";
@@ -104,10 +105,20 @@ export default async function ProductPage(props: ProductPageProps) {
                         <div id="opcoes-compra" tabIndex={-1} className="scroll-mt-24">
                             <ProductPurchasePanel product={product} />
                         </div>
-                        <a href="#dimensoes" className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-wine hover:border-wine">
-                            <Ruler size={20} aria-hidden="true" />
-                            Ver dimensões e instalação
-                        </a>
+                        <div className="rounded-3xl border border-border bg-surface p-5">
+                            <div className="flex items-center gap-3 text-charcoal">
+                                <Ruler size={20} aria-hidden="true" className="text-wine" />
+                                <h2 className="font-display text-2xl">Cabe no meu espaço?</h2>
+                            </div>
+                            <p className="mt-2 text-sm text-muted">
+                                {product.dimensions.width} × {product.dimensions.height} × {product.dimensions.depth} cm
+                                <span className="ml-2 text-xs">(L × A × P)</span>
+                            </p>
+                            <a href="#dimensoes" className="mt-3 inline-block text-sm font-semibold text-wine underline underline-offset-4">
+                                Ver dimensões e instalação
+                            </a>
+                        </div>
+                        {product.roomCutout && <RoomPreview image={product.roomCutout} name={product.name} />}
                         <Link href={`/caves/comparar?modelo=${encodeURIComponent(product.id)}`} className="self-start text-sm font-semibold text-wine underline underline-offset-4">
                             Comparar com outra cave
                         </Link>

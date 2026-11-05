@@ -62,6 +62,7 @@ export type BaseProduct = {
     active: boolean;
 
     images: string[];
+    roomCutout?: string;
 
     seo: {
         title: string;

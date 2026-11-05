@@ -1,0 +1,1 @@
+ALTER TABLE "ProductImage" ADD COLUMN "roomCutout" BOOLEAN NOT NULL DEFAULT false;
