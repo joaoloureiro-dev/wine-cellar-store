@@ -1,6 +1,7 @@
 "use client";
 
 import { Camera, RotateCcw } from "lucide-react";
+import { getImageProps } from "next/image";
 import { useEffect, useState } from "react";
 
 const initial = { horizontal: 50, vertical: 70, size: 24 };
@@ -11,7 +12,9 @@ const controls = [
 ] as const;
 
 export function RoomPreview({ image, name }: { image: string; name: string }) {
+    const overlay = getImageProps({ src: image, alt: name, width: 640, height: 640 }).props.src;
     const [photo, setPhoto] = useState<string>();
+    const [cutoutReady, setCutoutReady] = useState(false);
     const [error, setError] = useState("");
     const [placement, setPlacement] = useState(initial);
 
@@ -40,6 +43,7 @@ export function RoomPreview({ image, name }: { image: string; name: string }) {
                                 return;
                             }
                             setError("");
+                            setCutoutReady(false);
                             setPlacement(initial);
                             setPhoto(URL.createObjectURL(next));
                         }}
@@ -54,8 +58,26 @@ export function RoomPreview({ image, name }: { image: string; name: string }) {
                                 onError={() => { setPhoto(undefined); setError("Não foi possível abrir esta fotografia."); }}
                             />
                             {/* eslint-disable-next-line @next/next/no-img-element -- overlay uses the catalogue image as supplied */}
-                            <img src={image} alt={name} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-sm"
-                                style={{ left: `${placement.horizontal}%`, top: `${placement.vertical}%`, width: `${placement.size}%` }}
+                            <img src={overlay} alt={name} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-sm"
+                                onLoad={(event) => {
+                                    const cutout = event.currentTarget;
+                                    const canvas = document.createElement("canvas");
+                                    canvas.width = canvas.height = 64;
+                                    const context = canvas.getContext("2d");
+                                    try {
+                                        context?.drawImage(cutout, 0, 0, 64, 64);
+                                        const pixels = context?.getImageData(0, 0, 64, 64).data;
+                                        if (pixels?.some((alpha, index) => index % 4 === 3 && alpha === 0)) {
+                                            setCutoutReady(true);
+                                            return;
+                                        }
+                                    } catch {
+                                        // An unreadable overlay cannot be checked for transparency.
+                                    }
+                                    setError("O recorte transparente deste modelo não está disponível.");
+                                }}
+                                onError={() => setError("O recorte transparente deste modelo não está disponível.")}
+                                style={{ visibility: cutoutReady ? "visible" : "hidden", left: `${placement.horizontal}%`, top: `${placement.vertical}%`, width: `${placement.size}%` }}
                             />
                         </div>
                         <div className="grid gap-3 sm:grid-cols-3">

@@ -61,7 +61,7 @@ export async function uploadImageAction(previousState: AdminFormState, formData:
     }
 
     try {
-        await addProductImage(admin, { productId: parsed.data.productId, file, alt: parsed.data.alt });
+        await addProductImage(admin, { productId: parsed.data.productId, file, alt: parsed.data.alt, roomCutout: formData.get("roomCutout") === "on" });
     } catch (error) {
         return { ...failure(error, submissionId), values };
     }

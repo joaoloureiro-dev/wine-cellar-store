@@ -38,7 +38,7 @@ export async function listProductImages(productId: string) {
     return db.productImage.findMany({
         where: { productId },
         orderBy: { position: "asc" },
-        select: { id: true, url: true, alt: true, position: true },
+        select: { id: true, url: true, alt: true, position: true, roomCutout: true },
     });
 }
 
@@ -47,7 +47,7 @@ export async function listProductImages(productId: string) {
  * product's last photo. If the database write fails, the stored file is
  * removed again.
  */
-export async function addProductImage(admin: Admin, { productId, file, alt }: { productId: string; file: File; alt: string }) {
+export async function addProductImage(admin: Admin, { productId, file, alt, roomCutout = false }: { productId: string; file: File; alt: string; roomCutout?: boolean }) {
     if (file.size === 0) throw new ProductImageError("Escolha uma fotografia.");
     if (file.size > MAX_IMAGE_BYTES) throw new ProductImageError("A fotografia tem de ter no máximo 4 MB.");
 
@@ -55,6 +55,10 @@ export async function addProductImage(admin: Admin, { productId, file, alt }: { 
     const type = detectImageType(bytes);
 
     if (!type) throw new ProductImageError("Formato não suportado. Use JPEG, PNG, WebP ou AVIF.");
+
+    if (roomCutout && !["png", "webp"].includes(type.extension)) {
+        throw new ProductImageError("O recorte deve ser um PNG ou WebP com fundo transparente.");
+    }
 
     if (!(await db.product.findUnique({ where: { id: productId }, select: { id: true } }))) {
         throw new ProductImageError("Produto não encontrado.");
@@ -72,9 +76,13 @@ export async function addProductImage(admin: Admin, { productId, file, alt }: { 
                 throw new ProductImageError(`Máximo de ${MAX_IMAGES_PER_PRODUCT} fotografias por produto.`);
             }
 
+            if (roomCutout && await tx.productImage.count({ where: { productId, roomCutout: true } })) {
+                throw new ProductImageError("Remova o recorte atual antes de carregar outro.");
+            }
+
             const last = await tx.productImage.aggregate({ where: { productId }, _max: { position: true } });
             const image = await tx.productImage.create({
-                data: { productId, url: storage.urlFor(key), alt, position: (last._max.position ?? 0) + 1 },
+                data: { productId, url: storage.urlFor(key), alt, roomCutout, position: (last._max.position ?? 0) + 1 },
                 select: { id: true },
             });
 
@@ -130,11 +138,12 @@ export async function deleteImage(admin: Admin, { imageId }: { imageId: string }
 
         const image = await tx.productImage.findUnique({
             where: { id: imageId },
-            select: { productId: true, url: true, product: { select: { active: true, _count: { select: { images: true } } } } },
+            select: { productId: true, url: true, roomCutout: true, product: { select: { active: true } } },
         });
         if (!image) return null;
 
-        if (image.product.active && image.product._count.images <= 1) {
+        if (image.product.active && !image.roomCutout &&
+            await tx.productImage.count({ where: { productId: image.productId, roomCutout: false } }) <= 1) {
             throw new ProductImageError("Um produto visível na loja precisa de pelo menos uma fotografia. Oculte-o primeiro.");
         }
 

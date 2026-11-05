@@ -249,7 +249,7 @@ export async function getPublicReservation(reference: string) {
                     name: true,
                     slug: true,
                     brand: { select: { name: true, slug: true } },
-                    images: { select: { url: true }, orderBy: { position: "asc" }, take: 1 },
+                    images: { where: { roomCutout: false }, select: { url: true }, orderBy: { position: "asc" }, take: 1 },
                 },
             },
         },

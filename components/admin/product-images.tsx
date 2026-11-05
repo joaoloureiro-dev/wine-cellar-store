@@ -10,7 +10,7 @@ import { errorProps, Field, inputClassName } from "@/components/ui/form-field";
 import { initialAdminFormState } from "@/lib/admin/form-state";
 import { imageAction, uploadImageAction } from "@/lib/admin/product-image-actions";
 
-type ProductImage = { id: string; url: string; alt: string | null };
+type ProductImage = { id: string; url: string; alt: string | null; roomCutout: boolean };
 
 const iconButtonClass =
     "inline-flex size-10 items-center justify-center rounded-full border border-border text-charcoal transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wine disabled:opacity-40";
@@ -46,6 +46,7 @@ function ImageRow({ image, index, count, formAction, isPending, altError }: RowP
                             name="alt"
                             maxLength={150}
                             defaultValue={image.alt ?? ""}
+                            aria-label={image.roomCutout ? "Descrição do recorte para o simulador" : undefined}
                             placeholder="Descrição (texto alternativo)"
                             className={`${inputClassName} mt-0`}
                             {...errorProps(altId, altError)}
@@ -120,6 +121,10 @@ function UploadForm({ productId, productName }: { productId: string; productName
                     {...errorProps("image", errors.image)}
                 />
             </Field>
+            <label className="flex items-start gap-2 text-sm text-charcoal">
+                <input type="checkbox" name="roomCutout" className="mt-1" />
+                <span>Recorte para «Ver a cave no meu espaço» (PNG ou WebP com fundo transparente). Fica fora da galeria.</span>
+            </label>
             <Field label="Descrição da fotografia" name="alt" error={errors.alt} hint="Para leitores de ecrã e motores de busca, ex.: «vista frontal com a porta fechada».">
                 <input id="alt" name="alt" required maxLength={150} defaultValue={state.values?.alt ?? productName} className={inputClassName} {...errorProps("alt", errors.alt)} />
             </Field>

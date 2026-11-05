@@ -118,7 +118,7 @@ export default async function ProductPage(props: ProductPageProps) {
                                 Ver dimensões e instalação
                             </a>
                         </div>
-                        {product.images[0] && <RoomPreview image={product.images[0]} name={product.name} />}
+                        {product.roomCutout && <RoomPreview image={product.roomCutout} name={product.name} />}
                         <Link href={`/caves/comparar?modelo=${encodeURIComponent(product.id)}`} className="self-start text-sm font-semibold text-wine underline underline-offset-4">
                             Comparar com outra cave
                         </Link>
