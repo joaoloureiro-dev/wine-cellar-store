@@ -1,7 +1,8 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
-import { ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronDown, ShieldCheck } from "lucide-react";
 
 import { CheckoutForm, type ShippingOption } from "@/components/checkout/checkout-form";
 import { OrderSummary } from "@/components/checkout/order-summary";
@@ -70,18 +71,28 @@ export default async function CheckoutPage() {
     return (
         <main>
             <Container className="py-8 sm:py-12 lg:py-16">
-                <h1 className="font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-6xl">
-                    Finalizar compra
-                </h1>
+                <div className="surface-cellar rounded-3xl px-5 py-7 sm:px-8 sm:py-10">
+                    <Link href="/carrinho" className="inline-flex items-center gap-2 text-sm font-semibold text-champagne-soft hover:underline">
+                        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao carrinho
+                    </Link>
+                    <h1 className="mt-4 font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-cellar-ink sm:text-6xl">
+                        Finalizar compra
+                    </h1>
+                    <p className="mt-3 max-w-prose text-sm leading-6 text-cellar-muted">
+                        {session ? "Confirme os seus dados e escolha como pretende pagar." : "Pode concluir a compra sem criar conta."}
+                    </p>
+                </div>
 
-                <details className="group mt-6 rounded-2xl border border-charcoal/8 bg-surface shadow-card lg:hidden">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 text-sm font-semibold text-charcoal [&::-webkit-details-marker]:hidden">
-                        <span>
-                            Resumo da encomenda
-                            <span className="ml-1 font-normal text-muted group-open:hidden">(mostrar)</span>
-                            <span className="ml-1 hidden font-normal text-muted group-open:inline">(ocultar)</span>
+                <details className="group mt-5 rounded-2xl border border-border bg-surface shadow-card lg:hidden">
+                    <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm text-charcoal [&::-webkit-details-marker]:hidden">
+                        <span className="min-w-0">
+                            <span className="block font-semibold">Resumo da encomenda</span>
+                            <span className="block text-xs text-muted">Total com entrega</span>
                         </span>
-                        <span>{formatCurrency((cart.subtotalCents + defaultShippingCents) / 100)}</span>
+                        <span className="flex shrink-0 items-center gap-2 font-bold tabular-nums">
+                            {formatCurrency((cart.subtotalCents + defaultShippingCents) / 100)}
+                            <ChevronDown size={17} aria-hidden="true" className="text-wine group-open:rotate-180" />
+                        </span>
                     </summary>
                     <div className="border-t border-border p-4">{summary}</div>
                 </details>

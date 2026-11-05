@@ -1,6 +1,7 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Ruler } from "lucide-react";
 
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
@@ -11,6 +12,7 @@ import { ProductPurchasePanel } from "@/components/product/product-purchase-pane
 import { ProductServices } from "@/components/product/product-services";
 import { ProductSpecs } from "@/components/product/product-specs";
 import { TemperatureZones } from "@/components/product/temperature-zones";
+import { buttonStyles } from "@/components/ui/button-styles";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
@@ -22,6 +24,7 @@ import {
     getProductsByKind,
     getRelatedProducts,
 } from "@/lib/products";
+import { formatCurrency } from "@/lib/format";
 import { getBrandHref, getProductHref } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { breadcrumbNode, jsonLdGraph, organizationNode, productNode } from "@/lib/seo/structured-data";
@@ -76,7 +79,7 @@ export default async function ProductPage(props: ProductPageProps) {
     ];
 
     return (
-        <main>
+        <main className="pb-24 lg:pb-0">
             <JsonLd
                 data={jsonLdGraph(
                     productNode(product),
@@ -98,7 +101,16 @@ export default async function ProductPage(props: ProductPageProps) {
                     </div>
 
                     <div className="flex flex-col gap-5">
-                        <ProductPurchasePanel product={product} />
+                        <div id="opcoes-compra" tabIndex={-1} className="scroll-mt-24">
+                            <ProductPurchasePanel product={product} />
+                        </div>
+                        <a href="#dimensoes" className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-wine hover:border-wine">
+                            <Ruler size={20} aria-hidden="true" />
+                            Ver dimensões e instalação
+                        </a>
+                        <Link href={`/caves/comparar?modelo=${encodeURIComponent(product.id)}`} className="self-start text-sm font-semibold text-wine underline underline-offset-4">
+                            Comparar com outra cave
+                        </Link>
                         <ProductServices />
                     </div>
                 </div>
@@ -161,11 +173,11 @@ export default async function ProductPage(props: ProductPageProps) {
                                 </article>
                             )}
 
-                            <article className="reveal rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card sm:p-8">
+                            <article id="dimensoes" className="reveal scroll-mt-24 rounded-3xl border border-charcoal/8 bg-surface p-6 shadow-card sm:p-8">
                                 <h3 className="font-display text-[1.75rem] font-medium tracking-[-0.02em] text-charcoal">
                                     Dimensões
                                 </h3>
-                                <p className="mt-1 text-sm text-muted">Confirme se cabe no espaço que tem disponível.</p>
+                                <p className="mt-1 text-sm text-muted">Medidas exteriores do equipamento. Confirme as folgas de ventilação e as medidas do nicho nas instruções do fabricante antes de instalar.</p>
                                 <div className="mt-6">
                                     <ProductDimensions dimensions={product.dimensions} weight={product.weight} />
                                 </div>
@@ -206,6 +218,17 @@ export default async function ProductPage(props: ProductPageProps) {
                     </Container>
                 </section>
             )}
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift lg:hidden">
+                <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
+                    <div className="min-w-0">
+                        <p className="truncate text-xs text-muted">{product.name}</p>
+                        <p className="font-display text-xl font-semibold text-charcoal">{formatCurrency(product.price)}</p>
+                    </div>
+                    <a href="#opcoes-compra" className={buttonStyles({ size: "sm", className: "shrink-0" })}>
+                        {product.stockStatus === "preorder" ? "Ver disponibilidade" : "Opções de compra"}
+                    </a>
+                </div>
+            </div>
         </main>
     );
 }
