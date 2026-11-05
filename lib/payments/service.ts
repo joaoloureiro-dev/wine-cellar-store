@@ -43,22 +43,11 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
             customerPhone: true,
             paymentDueAt: true,
             items: { select: { productName: true, unitPriceCents: true, quantity: true } },
-            payments: {
-                where: { status: "PENDING" },
-                orderBy: { createdAt: "desc" },
-                take: 1,
-            },
         },
     });
 
-    if (!order || order.status !== "AWAITING_PAYMENT") {
+    if (!order || order.status !== "AWAITING_PAYMENT" || order.paymentDueAt <= new Date()) {
         return { ok: false, message: "Esta encomenda já não aguarda pagamento." };
-    }
-
-    const pending = order.payments[0];
-
-    if (pending && (!pending.expiresAt || pending.expiresAt > new Date())) {
-        return { ok: true, checkoutUrl: pending.checkoutUrl ?? undefined };
     }
 
     const method = order.paymentMethod;
@@ -69,11 +58,12 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
     }
 
     const provider: PaymentProvider = method === "KLARNA" ? "STRIPE" : "MANUAL";
-    const payment = await createAttempt(order, provider, method);
+    const attempt = await claimAttempt(order, provider, method);
+    if (!attempt.claimed) return attempt.result;
+    const { payment } = attempt;
+    let update: Prisma.PaymentUpdateInput;
 
     try {
-        let update: Prisma.PaymentUpdateInput;
-
         if (method === "BANK_TRANSFER") {
             if (!getBankTransferDetails()) {
                 throw new PaymentProviderError("manual", "Bank transfer is not configured", undefined, "config");
@@ -97,13 +87,13 @@ export async function initiatePayment(orderReference: string): Promise<InitiateP
                 expiresAt: result.expiresAt,
             };
         }
-
-        const saved = await markRequested(payment.id, update, { orderReference: order.reference, provider, method });
-        return { ok: true, checkoutUrl: saved.checkoutUrl ?? undefined };
     } catch (error) {
         await markRequestFailed(payment.id, error, { orderReference: order.reference, provider, method });
         return { ok: false, message: GENERIC_PAYMENT_ERROR };
     }
+
+    const saved = await markRequested(payment.id, update, { orderReference: order.reference, provider, method });
+    return { ok: true, checkoutUrl: saved.checkoutUrl ?? undefined };
 }
 
 const GENERIC_PAYMENT_ERROR =
@@ -117,15 +107,40 @@ type PayableOrder = {
     paymentDueAt: Date;
 };
 
-async function createAttempt(order: PayableOrder, provider: PaymentProvider, method: Prisma.PaymentCreateInput["method"]) {
-    return db.payment.create({
-        data: {
-            orderId: order.id,
-            provider,
-            method,
-            amountCents: order.totalCents,
-            events: { create: { type: "CREATED" } },
-        },
+async function claimAttempt(order: PayableOrder, provider: PaymentProvider, method: Prisma.PaymentCreateInput["method"]) {
+    return db.$transaction(async (tx) => {
+        // Serialize the decision across instances without holding a lock during provider I/O.
+        await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+        const current = await tx.order.findUnique({
+            where: { id: order.id },
+            select: { status: true, paymentDueAt: true },
+        });
+        const now = new Date();
+
+        if (!current || current.status !== "AWAITING_PAYMENT" || current.paymentDueAt <= now) {
+            return { claimed: false, result: { ok: false, message: "Esta encomenda já não aguarda pagamento." } } as const;
+        }
+
+        const pending = await tx.payment.findFirst({
+            where: { orderId: order.id, status: "PENDING", OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+            orderBy: { createdAt: "desc" },
+        });
+
+        if (pending) {
+            return { claimed: false, result: { ok: true, checkoutUrl: pending.checkoutUrl ?? undefined } } as const;
+        }
+
+        const payment = await tx.payment.create({
+            data: {
+                orderId: order.id,
+                provider,
+                method,
+                amountCents: order.totalCents,
+                events: { create: { type: "CREATED" } },
+            },
+        });
+
+        return { claimed: true, payment } as const;
     });
 }
 
@@ -179,11 +194,12 @@ async function requestLocalPayment(
 
     for (const [index, provider] of providers.entries()) {
         const context = { orderReference: order.reference, provider: provider.id, method, attempt: index + 1 };
-        const payment = await createAttempt(order, provider.id, method);
+        const attempt = await claimAttempt(order, provider.id, method);
+        if (!attempt.claimed) return attempt.result;
+        const { payment } = attempt;
+        let update: Prisma.PaymentUpdateInput;
 
         try {
-            let update: Prisma.PaymentUpdateInput;
-
             if (method === "MBWAY") {
                 const result = await provider.createMbWayPayment({
                     orderReference: order.reference,
@@ -207,10 +223,13 @@ async function requestLocalPayment(
                     expiresAt: result.expiresAt ?? order.paymentDueAt,
                 };
             }
-
-            await markRequested(payment.id, update, context);
-            return { ok: true };
         } catch (error) {
+            if (method === "MBWAY" && !isSafeToFailOver(method, error) &&
+                !(error instanceof PaymentProviderError && error.kind === "rejected")) {
+                log.error("MB WAY request outcome unknown; reconciliation required", { paymentId: payment.id, ...context });
+                return { ok: false, message: "A confirmar o pedido MB WAY. Verifique a aplicação antes de tentar pagar novamente." };
+            }
+
             await markRequestFailed(payment.id, error, context);
             const next = providers[index + 1];
 
@@ -227,6 +246,9 @@ async function requestLocalPayment(
                         : GENERIC_PAYMENT_ERROR,
             };
         }
+
+        await markRequested(payment.id, update, context);
+        return { ok: true };
     }
 
     return { ok: false, message: GENERIC_PAYMENT_ERROR };

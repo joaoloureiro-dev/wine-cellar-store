@@ -3,14 +3,14 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { isReference } from "@/lib/references";
+import { canAccessOrder } from "@/lib/orders/access";
 import { initiatePayment } from "@/lib/payments/service";
 
 export type RetryPaymentResult = { ok: true } | { ok: false; message: string };
 
 /** Starts a new payment attempt for an order (expired MB WAY, cancelled Klarna…). */
 export async function retryPayment(reference: string): Promise<RetryPaymentResult> {
-    if (typeof reference !== "string" || !isReference(reference, "ENC")) {
+    if (typeof reference !== "string" || !(await canAccessOrder(reference))) {
         return { ok: false, message: "Encomenda inválida." };
     }
 

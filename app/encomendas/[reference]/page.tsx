@@ -8,6 +8,7 @@ import { Container } from "@/components/layout/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ProductImage } from "@/components/product/product-image";
 import { formatCurrency } from "@/lib/format";
+import { canAccessOrder } from "@/lib/orders/access";
 import { getPublicOrder } from "@/lib/orders/service";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { getBankTransferDetails } from "@/lib/payments/config";
@@ -30,6 +31,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
 
 export default async function OrderPage(props: PageProps<"/encomendas/[reference]">) {
     const [{ reference }, searchParams] = await Promise.all([props.params, props.searchParams]);
+    if (!(await canAccessOrder(reference))) notFound();
     const order = await getPublicOrder(reference);
 
     if (!order) {
