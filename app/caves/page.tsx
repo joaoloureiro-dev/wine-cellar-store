@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { ActiveFilters } from "@/components/catalog/active-filters";
@@ -116,6 +117,10 @@ async function CatalogResults({ searchParams }: Pick<PageProps<"/caves">, "searc
 
                         <SortSelect key={queryKey} query={query} />
                     </div>
+
+                    <Link href="/caves/comparar" className="mt-4 inline-block font-semibold text-wine underline">
+                        Comparar modelos
+                    </Link>
 
                     {activeFilterCount > 0 && (
                         <div className="mt-4">
