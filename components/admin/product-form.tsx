@@ -72,13 +72,13 @@ export function ProductForm({ product }: ProductFormProps) {
 
             <fieldset className="grid gap-4 sm:grid-cols-2">
                 <legend className="mb-3 text-sm font-semibold text-charcoal">Stock</legend>
-                <Field label="Unidades em armazém" name="stockQuantity" error={errors.stockQuantity} hint="Já descontadas as encomendas por pagar e reservas confirmadas.">
+                <Field label="Unidades disponíveis para venda" name="stockQuantity" error={errors.stockQuantity} hint="Já descontadas as encomendas por pagar e reservas confirmadas.">
                     <input id="stockQuantity" name="stockQuantity" type="number" inputMode="numeric" min={0} max={9999} required defaultValue={values.stockQuantity} className={inputClassName} {...errorProps("stockQuantity", errors.stockQuantity)} />
                 </Field>
-                <Field label="Disponibilidade" name="availability" error={errors.availability}>
+                <Field label="Disponibilidade" name="availability" error={errors.availability} hint="Use Sob consulta quando o stock ou prazo do fornecedor estiver por confirmar.">
                     <select id="availability" name="availability" defaultValue={values.availability} className={inputClassName}>
                         <option value="auto">Automática (pelo stock)</option>
-                        <option value="PREORDER">Disponível para reserva</option>
+                        <option value="PREORDER">Sob consulta (sem compra direta)</option>
                     </select>
                 </Field>
             </fieldset>
