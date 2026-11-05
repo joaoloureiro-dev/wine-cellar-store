@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -7,7 +8,7 @@ import { formatCurrency } from "@/lib/format";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 const title = "Termos e Condições";
-const description = "Condições de venda das caves de vinho Cellarium: encomendas, preços, pagamento, entrega, devoluções e garantia.";
+const description = `Condições de venda das caves de vinho ${siteConfig.name}: encomendas, preços, pagamento, entrega, devoluções e garantia.`;
 
 export const metadata: Metadata = pageMetadata({ title, description, path: "/termos" });
 
@@ -18,7 +19,7 @@ export default function TermsPage() {
         <LegalDocument title={title} description={description}>
             <Section id="identificacao" title="1. Quem somos">
                 <p>
-                    A loja online Cellarium é explorada por <CompanyDetail field="name" />, com sede em <CompanyDetail field="address" />, pessoa coletiva
+                    A loja online {siteConfig.name} é explorada por <CompanyDetail field="name" />, com sede em <CompanyDetail field="address" />, pessoa coletiva
                     n.º <CompanyDetail field="taxId" />, matriculada na <CompanyDetail field="registry" />.
                 </p>
                 <p>

@@ -1,3 +1,5 @@
+
+import { siteConfig } from "@/lib/site";
 import "server-only";
 
 import { db } from "@/lib/db";
@@ -89,7 +91,7 @@ export async function buildAccountExport(userId: string) {
 
     return {
         exportedAt: new Date().toISOString(),
-        controller: "Cellarium",
+        controller: siteConfig.name,
         account: {
             name: user.name,
             email: user.email,

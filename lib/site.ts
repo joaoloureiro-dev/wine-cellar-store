@@ -5,7 +5,7 @@
  * needs to change this file.
  */
 export const siteConfig = {
-    name: "Cellarium",
+    name: "servideco.somnelier",
     tagline: "Caves de Vinho Premium",
     description:
         "Caves de vinho premium selecionadas para conservar a sua coleção nas condições ideais.",

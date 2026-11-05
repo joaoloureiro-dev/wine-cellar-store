@@ -1,5 +1,7 @@
 "use client";
 
+import { siteConfig } from "@/lib/site";
+
 /**
  * Last-resort boundary (errors in the root layout). Renders its own
  * document without the global stylesheet, hence the inline styles.
@@ -20,7 +22,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
                     textAlign: "center",
                 }}
             >
-                <title>Erro | Cellarium</title>
+                <title>{`Erro | ${siteConfig.name}`}</title>
                 <main>
                     <h1 style={{ fontSize: 32, fontWeight: 500, margin: 0 }}>Algo correu mal</h1>
                     <p style={{ color: "#6f6a64" }}>Estamos a resolver. Tente novamente dentro de instantes.</p>

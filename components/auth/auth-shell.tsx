@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site";
 import type { ReactNode } from "react";
 import { CalendarCheck, Heart, MapPin, PackageCheck } from "lucide-react";
 
@@ -24,7 +25,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
             <Container className="py-10 sm:py-16 lg:py-20">
                 <div className="mx-auto grid max-w-md gap-10 lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-stretch lg:gap-12">
                     <div>
-                        <Eyebrow>Conta Cellarium</Eyebrow>
+                        <Eyebrow>Conta {siteConfig.name}</Eyebrow>
                         <h1 className="mt-4 text-balance font-display text-[2.75rem] font-medium leading-none tracking-[-0.04em] text-charcoal sm:text-5xl">
                             {title}
                         </h1>

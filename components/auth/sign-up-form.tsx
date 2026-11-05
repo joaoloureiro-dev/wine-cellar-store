@@ -1,5 +1,6 @@
 "use client";
 
+import { siteConfig } from "@/lib/site";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
@@ -65,7 +66,7 @@ export function SignUpForm({ next, minPasswordLength }: SignUpFormProps) {
             return;
         }
 
-        toast.success("Conta criada", { description: "Bem-vindo à Cellarium." });
+        toast.success("Conta criada", { description: `Bem-vindo à ${siteConfig.name}.` });
         router.replace(next);
         router.refresh();
     }
