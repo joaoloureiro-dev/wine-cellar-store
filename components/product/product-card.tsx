@@ -32,7 +32,14 @@ export function ProductCard({
 }: ProductCardProps) {
     const href = getProductHref(product);
     const discount = getDiscountPercentage(product);
-    const specs = getProductFacts(product).map((fact) => ({ ...fact, icon: getFactIcon(fact.label) }));
+    const facts = product.kind === "wine-cellar"
+        ? [
+            { label: "Capacidade", value: `${product.capacity} garrafas` },
+            { label: "Instalação", value: installationTypeLabels[product.installationType] },
+            { label: "Largura", value: `${product.dimensions.width} cm` },
+        ]
+        : getProductFacts(product);
+    const specs = facts.map((fact) => ({ ...fact, icon: getFactIcon(fact.label) }));
 
     return (
         <article className="group relative flex h-full flex-col rounded-3xl border border-charcoal/8 bg-surface p-2 shadow-card transition-[transform,box-shadow,border-color] duration-500 ease-cellar focus-within:-translate-y-1 focus-within:shadow-lift hover:-translate-y-1 hover:border-champagne/40 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0">
@@ -103,9 +110,17 @@ export function ProductCard({
                     ))}
                 </dl>
 
-                <p className="mt-3 text-xs font-medium text-muted">
-                    {product.kind === "wine-cellar" ? installationTypeLabels[product.installationType] : productKindLabels[product.kind].singular}
-                </p>
+                {product.kind === "wine-cellar" ? (
+                    <Link
+                        href={`/caves/comparar?modelo=${encodeURIComponent(product.id)}`}
+                        aria-label={`Comparar ${product.name}`}
+                        className="relative z-10 my-3 inline-flex min-h-10 items-center self-start rounded-full border border-border px-3 text-xs font-semibold text-wine hover:border-wine focus-visible:outline-2 focus-visible:outline-wine"
+                    >
+                        Comparar
+                    </Link>
+                ) : (
+                    <p className="my-3 text-xs font-medium text-muted">{productKindLabels[product.kind].singular}</p>
+                )}
 
                 <div className="mt-auto flex items-end justify-between gap-4 border-t border-border pt-4">
                     <div className="space-y-1.5">

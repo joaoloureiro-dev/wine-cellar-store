@@ -1,3 +1,5 @@
+
+import { siteConfig } from "@/lib/site";
 import "server-only";
 
 import { betterAuth } from "better-auth";
@@ -57,7 +59,7 @@ function clientIpOptions() {
  *   email outbox (lib/email). Signing in does not require a verified email.
  */
 export const auth = betterAuth({
-    appName: "Cellarium",
+    appName: siteConfig.name,
     baseURL: env.APP_URL,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.APP_URL],
