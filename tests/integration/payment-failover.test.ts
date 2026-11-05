@@ -104,6 +104,18 @@ describe("payment provider failover", () => {
         expect(await attempts(reference)).toEqual([{ provider: "IFTHENPAY", status: "PENDING" }]);
     });
 
+    it("creates one provider request for concurrent MB WAY attempts", async () => {
+        const { reference } = await newOrder("MBWAY");
+
+        const results = await Promise.all(
+            Array.from({ length: 4 }, () => service.initiatePayment(reference)),
+        );
+
+        expect(results.every((result) => result.ok)).toBe(true);
+        expect(calls).toHaveLength(1);
+        expect(await attempts(reference)).toEqual([{ provider: "IFTHENPAY", status: "PENDING" }]);
+    });
+
     it("moves Multibanco to the fallback when the primary answers 503", async () => {
         primaryMode = "http503";
         const { reference } = await newOrder("MULTIBANCO");
@@ -124,8 +136,9 @@ describe("payment provider failover", () => {
         const result = await service.initiatePayment(reference);
 
         expect(result.ok).toBe(false);
-        expect(await attempts(reference)).toEqual([{ provider: "IFTHENPAY", status: "FAILED" }]);
-        expect(calls.some((call) => call.startsWith("eupago"))).toBe(false);
+        await service.initiatePayment(reference);
+        expect(await attempts(reference)).toEqual([{ provider: "IFTHENPAY", status: "PENDING" }]);
+        expect(calls).toHaveLength(1);
     });
 
     it("fails MB WAY over when the primary cannot be reached at all", async () => {

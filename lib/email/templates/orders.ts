@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { renderEmail, type EmailBlock } from "@/lib/email/layout";
 import { formatCurrency } from "@/lib/format";
+import { guestOrderAccessPath } from "@/lib/orders/access";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { getBankTransferDetails } from "@/lib/payments/config";
 import { absoluteUrl } from "@/lib/seo/metadata";
@@ -21,6 +22,7 @@ async function loadOrder(orderId: unknown) {
         where: { id: orderId },
         select: {
             reference: true,
+            userId: true,
             status: true,
             paymentMethod: true,
             subtotalCents: true,
@@ -41,7 +43,8 @@ async function loadOrder(orderId: unknown) {
 
 type LoadedOrder = NonNullable<Awaited<ReturnType<typeof loadOrder>>>;
 
-const orderUrl = (reference: string) => absoluteUrl(`/encomendas/${reference}`);
+const orderUrl = (order: LoadedOrder) =>
+    absoluteUrl(order.userId ? `/entrar?next=/encomendas/${order.reference}` : guestOrderAccessPath(order.reference));
 const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 
 function summaryBlock(order: LoadedOrder): EmailBlock {
@@ -111,7 +114,7 @@ export async function renderOrderReceived(payload: Record<string, unknown>) {
             { kind: "paragraph", text: `Recebemos a sua encomenda ${order.reference}.` },
             summaryBlock(order),
             ...(awaitingPayment ? paymentBlocks(order) : []),
-            { kind: "button", label: "Ver encomenda", href: orderUrl(order.reference) },
+            { kind: "button", label: "Ver encomenda", href: orderUrl(order) },
             { kind: "note", text: "Depois de confirmado o pagamento, contactamo-lo para agendar a entrega." },
         ],
     });
@@ -159,7 +162,7 @@ export async function renderOrderStatus(payload: Record<string, unknown>) {
             { kind: "paragraph", text: `Olá ${firstName(order.customerName)},` },
             { kind: "paragraph", text: copy.text },
             summaryBlock(order),
-            { kind: "button", label: "Ver encomenda", href: orderUrl(order.reference) },
+            { kind: "button", label: "Ver encomenda", href: orderUrl(order) },
         ],
     });
 }

@@ -48,7 +48,7 @@ describe("order emails", () => {
         expect(email.text).toContain("Entidade: 12345");
         expect(email.text).toContain("Referência: 123 456 789");
         expect(email.text).toMatch(/Total: 1\s?299,00\s€/);
-        expect(email.text).toContain(`/encomendas/${order.reference}`);
+        expect(email.text).toContain(`/api/orders/${order.reference}/access?token=`);
         expect(email.html).toContain("Rita");
     });
 

@@ -16,6 +16,7 @@ import {
     type CheckoutStepId,
 } from "@/lib/checkout/schema";
 import { calculateShippingCents, getShippingMethod } from "@/lib/checkout/shipping";
+import { grantCheckoutOrderAccess } from "@/lib/orders/access";
 import { OrderError, placeOrder } from "@/lib/orders/service";
 import { getAvailablePaymentMethods } from "@/lib/payments/config";
 import { initiatePayment } from "@/lib/payments/service";
@@ -111,6 +112,9 @@ export async function placeOrderAction(
         const lines = await readCartLines();
         const session = await getSession();
         ({ reference } = await placeOrder(parsed.data, lines, { userId: session?.user.id }));
+        if (!(await grantCheckoutOrderAccess(reference, parsed.data.idempotencyKey, session?.user.id))) {
+            throw new OrderError("CONFLICT", "Esta sessão de checkout já foi utilizada. Atualize a página.");
+        }
         // Stock is now held by the order: the cart has served its purpose.
         await writeCartLines([]);
         invalidateCatalog();

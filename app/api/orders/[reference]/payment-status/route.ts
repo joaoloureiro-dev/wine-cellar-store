@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getOrderPaymentView } from "@/lib/payments/service";
-import { isReference } from "@/lib/references";
+import { canAccessOrder } from "@/lib/orders/access";
 
 /**
  * Lightweight status endpoint polled by the order page while a payment is
@@ -14,7 +14,7 @@ export async function GET(
 ) {
     const { reference } = await params;
 
-    if (!isReference(reference, "ENC")) {
+    if (!(await canAccessOrder(reference))) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
