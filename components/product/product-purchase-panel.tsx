@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Mail } from "lucide-react";
 
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
@@ -7,6 +7,7 @@ import { getFactIcon } from "@/components/product/fact-icons";
 import { ProductPrice } from "@/components/product/product-price";
 import { StockBadge } from "@/components/product/stock-badge";
 import { buttonStyles } from "@/components/ui/button-styles";
+import { getCompany } from "@/lib/legal/company";
 import { getMaxPurchasableQuantity } from "@/lib/cart/availability";
 import {
     getDiscountPercentage,
@@ -25,6 +26,9 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
     const discount = getDiscountPercentage(product);
     // Reservations are taken for wine cellars only (see /reservas).
     const reservable = product.kind === "wine-cellar";
+    const onRequest = product.stockStatus === "preorder";
+    const contactEmail = onRequest && !reservable ? getCompany().email : null;
+    const subject = encodeURIComponent(`Consulta de disponibilidade — ${product.sku}`);
     const keySpecs = getProductFacts(product).map((fact) => ({ ...fact, icon: getFactIcon(fact.label) }));
 
     return (
@@ -101,16 +105,21 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                 </div>
 
                 <div className="mt-6 space-y-3">
-                    <AddToCartForm
-                        productId={product.id}
-                        productName={product.name}
-                        maxQuantity={getMaxPurchasableQuantity(product)}
-                        unavailableLabel={
-                            reservable && product.stockStatus === "preorder"
-                                ? "Disponível por reserva"
-                                : "Esgotado"
-                        }
-                    />
+                    {!onRequest && (
+                        <AddToCartForm
+                            productId={product.id}
+                            productName={product.name}
+                            maxQuantity={getMaxPurchasableQuantity(product)}
+                            unavailableLabel="Esgotado"
+                        />
+                    )}
+
+                    {contactEmail && (
+                        <a href={`mailto:${contactEmail}?subject=${subject}`} className={buttonStyles({ variant: "secondary", block: true })}>
+                            <Mail size={18} strokeWidth={1.8} aria-hidden="true" />
+                            Consultar disponibilidade
+                        </a>
+                    )}
 
                     {reservable && (
                         <Link
@@ -118,12 +127,16 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                             className={buttonStyles({ variant: "secondary", block: true })}
                         >
                             <CalendarClock size={18} strokeWidth={1.8} aria-hidden="true" />
-                            Reservar
+                            {onRequest ? "Consultar disponibilidade" : "Reservar"}
                         </Link>
                     )}
                 </div>
 
-                {reservable && (
+                {onRequest ? (
+                    <p className="mt-4 text-center text-xs text-muted">
+                        Confirmamos a disponibilidade e o prazo de entrega antes do pagamento.
+                    </p>
+                ) : reservable && (
                     <p className="mt-4 text-center text-xs text-muted">
                         Reserve sem pagamento imediato. Confirmamos a disponibilidade consigo.
                     </p>

@@ -26,7 +26,7 @@ export const stockStatusLabels: Record<StockStatus, string> = {
     in_stock: "Em stock",
     low_stock: "Últimas unidades",
     out_of_stock: "Esgotado",
-    preorder: "Disponível para reserva",
+    preorder: "Sob consulta",
 };
 
 export function getZonesLabel(zones: WineCellarProduct["zones"]) {

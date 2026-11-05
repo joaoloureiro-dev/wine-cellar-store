@@ -300,3 +300,21 @@ Redis) on every pull request.
 - One coherent feature or update per commit, in English, following
   [Conventional Commits](https://www.conventionalcommits.org/).
 - Before committing: `npm run lint`, `npm run typecheck` and `npm run build`.
+
+
+## Gestão manual do catálogo Brilato
+
+1. Em **Admin → Produtos**, crie a ficha com a referência do fornecedor no campo
+   SKU, o preço de venda, as especificações e as imagens autorizadas. Reveja a
+   ficha antes de a tornar visível.
+2. Em **Disponibilidade**, escolha **Automática (pelo stock)** e indique apenas
+   as unidades que pode efetivamente vender, descontando as encomendas por pagar
+   e reservas confirmadas. Volte a confirmar a disponibilidade com o fornecedor
+   antes de aumentar o stock.
+3. Se o stock ou o prazo estiver por confirmar, selecione **Sob consulta**.
+   A compra direta fica desativada. Nas caves, o botão abre o formulário de
+   reserva sem pagamento. Nas outras categorias, o botão abre um email com
+   o SKU no assunto se a variável `LEGAL_EMAIL` estiver configurada.
+4. Quando receber uma encomenda paga, faça o pedido à Brilato e acompanhe a
+   expedição no backoffice. Atualize a ficha se o fornecedor alterar a
+   disponibilidade.
